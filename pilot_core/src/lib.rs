@@ -514,6 +514,7 @@ impl PyLapKernel {
             done: get(init, "done")?,
             delta_cmd: 0.0,
             a_mpc: None,
+            a_res: 0.0,
             cfg,
         };
         Ok(Self { lap })
@@ -522,10 +523,10 @@ impl PyLapKernel {
     /// Run physics steps up to the next control instant or the end of the lap.
     /// Returns (done, outcome, st, plant_state, (t, s, e_y, e_psi, v, vp, progress),
     /// (step, i_g, off_in_interval, env_step), tires_in).
-    #[pyo3(signature = (delta_cmd, a_mpc=None))]
-    fn advance<'py>(&mut self, py: Python<'py>, delta_cmd: f64, a_mpc: Option<f64>) -> Sync<'py> {
+    #[pyo3(signature = (delta_cmd, a_mpc=None, a_res=0.0))]
+    fn advance<'py>(&mut self, py: Python<'py>, delta_cmd: f64, a_mpc: Option<f64>, a_res: f64) -> Sync<'py> {
         let l = &mut self.lap;
-        l.advance(delta_cmd, a_mpc);
+        l.advance(delta_cmd, a_mpc, a_res);
         let t = l.tires_in;
         (
             l.done,

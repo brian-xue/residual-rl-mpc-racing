@@ -96,6 +96,9 @@ pub struct Lap {
     pub done: bool,
     pub delta_cmd: f64,
     pub a_mpc: Option<f64>,
+    /// Longitudinal residual [m/s^2] added to the speed command before the clip (dual-channel residual RL);
+    /// only applied when nonzero, so laps without it are bit-identical to before.
+    pub a_res: f64,
 }
 
 impl Lap {
@@ -120,13 +123,17 @@ impl Lap {
         let u_steer = self.servo(self.delta_cmd, st[2]);
         self.metrics.n_sat_rate += (u_steer.abs() >= c.sv_max - 1e-9) as u64;
         let (s, v) = (self.s, self.v);
-        let a_cmd = match self.a_mpc {
-            Some(am) => np_clip(am, -c.a_max, c.a_max),
+        let mut a_req = match self.a_mpc {
+            Some(am) => am,
             None => {
                 let dvds = (self.vplan.at(s + 0.2) - self.vplan.at(s - 0.2)) / 0.4;
-                np_clip(v * dvds + c.kv * (self.vp - v), -c.a_max, c.a_max)
+                v * dvds + c.kv * (self.vp - v)
             }
         };
+        if self.a_res != 0.0 {
+            a_req += self.a_res;
+        }
+        let a_cmd = np_clip(a_req, -c.a_max, c.a_max);
         self.plant.step(u_steer, a_cmd);
         self.env_step += 1;
         let trunc = self.env_step > c.max_episode_steps;
@@ -245,9 +252,10 @@ impl Lap {
     }
 
     /// ``LapSim.apply``'s interval reset + ``LapSim.advance_interval``. Returns ``done``.
-    pub fn advance(&mut self, delta_cmd: f64, a_mpc: Option<f64>) -> bool {
+    pub fn advance(&mut self, delta_cmd: f64, a_mpc: Option<f64>, a_res: f64) -> bool {
         self.delta_cmd = delta_cmd;
         self.a_mpc = a_mpc;
+        self.a_res = a_res;
         self.off_in_interval = 0;
         while !self.done {
             if self.physics() || self.pre() {

@@ -24,11 +24,18 @@ from .closedloop import LapSim, Scenario, Track
 from .sim import make_env
 
 PREVIEW_T = (0.0, 0.15, 0.3, 0.5, 0.75, 1.0)  # [s] look-ahead times for the curvature preview
-OBS_DIM = 10 + 2 * len(PREVIEW_T)
+OBS_DIM = 10 + 2 * len(PREVIEW_T)  # single channel (steering residual)
+OBS_DIM_DUAL = OBS_DIM + 1 + len(PREVIEW_T)  # + previous accel residual, planned-acceleration preview
 
 
-def residual_obs(sim: LapSim, prev_res: float, r_max: float) -> np.ndarray:
-    """Observation at a control instant (after ``sim.plan()``). Roughly unit-scaled, clipped to +-5."""
+def obs_dim(ra_max: float) -> int:
+    return OBS_DIM_DUAL if ra_max > 0 else OBS_DIM
+
+
+def residual_obs(sim: LapSim, prev_res: float, r_max: float, prev_ares: float = 0.0, ra_max: float = 0.0) -> np.ndarray:
+    """Observation at a control instant (after ``sim.plan()``). Roughly unit-scaled, clipped to +-5.
+    With ``ra_max > 0`` (dual channel) the previous acceleration residual and the planned longitudinal
+    acceleration v dv/ds along the preview are appended; otherwise the observation is the single-channel one."""
     x, y, delta, v, yaw, r, beta = sim.st[:7]
     s, ref = sim.s, sim.ref
     s_ahead = s + max(v, 0.5) * np.asarray(PREVIEW_T)
@@ -49,6 +56,8 @@ def residual_obs(sim: LapSim, prev_res: float, r_max: float) -> np.ndarray:
         kap / 0.3,  # curvature preview
         vpl**2 * kap / 8.0,  # planned lateral-acceleration preview
     ]
+    if ra_max > 0:
+        o = np.r_[o, prev_ares / ra_max, sim.aplan_at(s_ahead) / 4.0]
     return np.clip(o, -5.0, 5.0).astype(np.float32)
 
 
@@ -62,11 +71,13 @@ class ResidualRacingEnv(gym.Env):
         rc = cfg["residual"]
         self.cfg, self.rc = cfg, rc
         self.r_max = rc["r_max"]
+        self.ra_max = float(rc.get("accel_r_max", 0.0))  # > 0: dual channel (steering + acceleration residual)
         self.K = rc.get("base_K", 0.0)
         self.track = Track(cfg)
         self._env = make_env(cfg["track"], 1.0, cfg["steer_mode"], cfg["dt"], max_steps=10**9)
-        self.observation_space = spaces.Box(-5.0, 5.0, (OBS_DIM,), np.float32)
-        self.action_space = spaces.Box(-1.0, 1.0, (1,), np.float32)
+        self.obs_dim = obs_dim(self.ra_max)
+        self.observation_space = spaces.Box(-5.0, 5.0, (self.obs_dim,), np.float32)
+        self.action_space = spaces.Box(-1.0, 1.0, (2 if self.ra_max > 0 else 1,), np.float32)
         lo, hi = rc["a_lat_range"]
         self.a_lat_levels = np.arange(lo, hi + 1e-9, 0.5)
         self.sim = None
@@ -86,16 +97,20 @@ class ResidualRacingEnv(gym.Env):
         epsi0 = rng.uniform(-1, 1) * rc["init_epsi_rad"]
         self.sim = LapSim(self.track, scn, self.K, self.cfg, log=False, env=self._env, ey0=ey0, epsi0=epsi0,
                           steady_init=True)
-        self.prev_res = 0.0
+        self.prev_res = self.prev_ares = 0.0
         self.n = 0
         self.sim.plan()
-        return residual_obs(self.sim, 0.0, self.r_max), {"a_lat": scn.a_lat, "mu_scale": scn.mu_scale}
+        return self._obs(0.0, 0.0), {"a_lat": scn.a_lat, "mu_scale": scn.mu_scale}
+
+    def _obs(self, res, ares):
+        return residual_obs(self.sim, res, self.r_max, ares, self.ra_max)
 
     def step(self, action):
         sim, rc = self.sim, self.rc
         res = float(np.clip(action[0], -1.0, 1.0)) * self.r_max
+        ares = float(np.clip(action[1], -1.0, 1.0)) * self.ra_max if self.ra_max > 0 else 0.0
         p0 = sim.progress
-        sim.apply(res)
+        sim.apply(res, ares)
         sim.advance_interval()
         self.n += 1
         w = rc["reward"]
@@ -105,7 +120,11 @@ class ResidualRacingEnv(gym.Env):
                - w["res"] * res**2
                - w["dres"] * (res - self.prev_res) ** 2
                - w["off_track"] * (sim.off_in_interval > 0))
-        self.prev_res = res
+        if self.ra_max > 0:  # dual channel: gentle acceleration-residual regularisation (size and chatter)
+            rew -= w.get("ares", 0.0) * ares**2 + w.get("dares", 0.0) * (ares - self.prev_ares) ** 2
+        if w.get("beta", 0.0) > 0:  # high sideslip, before it becomes a spin
+            rew -= w["beta"] * max(abs(sim.st[6]) - w["beta_soft_rad"], 0.0) ** 2
+        self.prev_res, self.prev_ares = res, ares
         terminated = truncated = False
         info = {}
         if sim.outcome in ("wall_collision", "spin"):
@@ -119,10 +138,10 @@ class ResidualRacingEnv(gym.Env):
             truncated = True
         if terminated or truncated:
             info["outcome"] = sim.outcome or "running"
-            obs = np.zeros(OBS_DIM, np.float32) if sim.outcome == "wall_collision" else residual_obs(sim, res, self.r_max)
+            obs = np.zeros(self.obs_dim, np.float32) if sim.outcome == "wall_collision" else self._obs(res, ares)
             return obs, float(rew), terminated, truncated, info
         sim.plan()
-        return residual_obs(sim, res, self.r_max), float(rew), False, False, info
+        return self._obs(res, ares), float(rew), False, False, info
 
 
 # ---------------------------------------------------------------------------------- evaluation-time policy
@@ -130,31 +149,36 @@ _MODELS: dict = {}
 
 
 class ResidualPolicy:
-    """Picklable residual factory for ``run_lap(..., residual=ResidualPolicy(path, r_max))``.
-    Calling it returns a per-lap callable ``g(sim) -> delta_res`` (deterministic policy mean)."""
+    """Picklable residual factory for ``run_lap(..., residual=ResidualPolicy(path, r_max[, ra_max]))``.
+    Calling it returns a per-lap callable ``g(sim)`` (deterministic policy mean) that returns delta_res, or
+    (delta_res, a_res) for a dual-channel policy (``ra_max > 0``)."""
 
-    def __init__(self, model_path: str, r_max: float):
-        self.model_path, self.r_max = str(model_path), r_max
+    def __init__(self, model_path: str, r_max: float, ra_max: float = 0.0):
+        self.model_path, self.r_max, self.ra_max = str(model_path), r_max, float(ra_max)
 
     def __call__(self):
-        return _LapResidual(self.model_path, self.r_max)
+        return _LapResidual(self.model_path, self.r_max, self.ra_max)
 
 
 class _LapResidual:
-    def __init__(self, path, r_max):
+    def __init__(self, path, r_max, ra_max=0.0):
         if path not in _MODELS:
             import torch
             from stable_baselines3 import PPO
 
             torch.set_num_threads(1)
             _MODELS[path] = PPO.load(path, device="cpu")
-        self.model, self.r_max, self.prev = _MODELS[path], r_max, 0.0
+        self.model, self.r_max, self.ra_max = _MODELS[path], r_max, ra_max
+        self.prev = self.prev_a = 0.0
 
     def reset(self):
-        self.prev = 0.0
+        self.prev = self.prev_a = 0.0
 
     def __call__(self, sim):
-        obs = residual_obs(sim, self.prev, self.r_max)
+        obs = residual_obs(sim, self.prev, self.r_max, self.prev_a, self.ra_max)
         a, _ = self.model.predict(obs, deterministic=True)
         self.prev = float(np.clip(a[0], -1, 1)) * self.r_max
+        if self.ra_max > 0:
+            self.prev_a = float(np.clip(a[1], -1, 1)) * self.ra_max
+            return self.prev, self.prev_a
         return self.prev

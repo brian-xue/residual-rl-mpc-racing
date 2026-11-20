@@ -51,7 +51,8 @@ def select_checkpoint(cfg, out, r_max):
     if not ckpts:
         raise SystemExit(f"no checkpoints in {out}; run pilot.train_residual first")
     scns = [Scenario(a, mu, sel["start_s"]) for a in sel["a_lat"] for mu in sel["mu_scales"]]
-    jobs = [(scn, 0.0, False, None, ResidualPolicy(c, r_max)) for c in ckpts for scn in scns]
+    jobs = [(scn, cfg["residual"].get("base_K", 0.0), False, None, ResidualPolicy(c, r_max, cfg["residual"].get("accel_r_max", 0.0)))
+            for c in ckpts for scn in scns]
     res = run_many(cfg, jobs)
     rows = []
     for i, c in enumerate(ckpts):
@@ -73,6 +74,8 @@ def main():
     ap.add_argument("--no-gif", action="store_true")
     ap.add_argument("--track", default=None, help="evaluate on another map (held-out track); needs --model")
     ap.add_argument("--out", default=None, help="output folder (default residual.out, or results/heldout/<track>)")
+    ap.add_argument("--grid-min", type=float, default=None,
+                    help="supplementary: start the fastest-lap search at this a_lat (default: the full lap_time grid)")
     ap.add_argument("--K", type=float, default=None, help="K of the ff controller (default: frozen K of the pilot)")
     args = ap.parse_args()
     cfg = yaml.safe_load(open(args.config))
@@ -96,11 +99,15 @@ def main():
         model, _ = select_checkpoint(cfg, out, rc["r_max"])
     report["model"] = str(model)
     print(f"   using {model}", flush=True)
-    pol = ResidualPolicy(model, rc["r_max"])
+    pol = ResidualPolicy(model, rc["r_max"], rc.get("accel_r_max", 0.0))
     ctrls = {"nominal": (0.0, None), "ff": (K, None), "residual": (rc.get("base_K", 0.0), pol)}
     if rc.get("base_K", 0.0) > 0:  # residual on top of MPC + K v^2 kappa
         NAMES["residual"] = animate.NAMES["residual"] = "MPC + K v² κ + RL residual"
+    if rc.get("accel_r_max", 0.0) > 0:  # dual channel: steering + acceleration residual
+        NAMES["residual"] = animate.NAMES["residual"] = "MPC + RL residual (δ, a)"
     report["controllers"] = dict(NAMES)
+    report["accel_r_max"] = rc.get("accel_r_max", 0.0)
+    report["speed_plan_friction_ellipse"] = bool(cfg["speed_plan"].get("friction_ellipse", False))
 
     # 2. sweep
     print("[2/3] sweep", flush=True)
@@ -154,6 +161,9 @@ def main():
     print("[3/3] fastest qualifying lap per controller", flush=True)
     lc = cfg["lap_time"]
     grid = sorted(set(lc["a_lat_grid"]) | set(rc.get("extra_a_lat", [])))
+    if args.grid_min is not None:
+        grid = [a for a in grid if a >= args.grid_min]
+        report["lap_grid_min"] = args.grid_min
     combos = [(c, mu) for mu in lc["mu_scales"] for c in ctrls]
     chains = run_chains(cfg, [(ctrls[c][0], mu, grid, starts, None, c, ctrls[c][1]) for c, mu in combos])
     grows, summs, ltr = [], {}, {}

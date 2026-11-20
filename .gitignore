@@ -24,6 +24,7 @@ results*/**/final.zip
 !results/residual/ckpt_1750000.zip
 !results/ff_residual/ckpt_1250000.zip
 !results_st_pacejka/residual/ckpt_1250000.zip
+!results_st_pacejka/residual_dual/ckpt_1250000.zip
 results*/**/*_stdout.log
 
 # Track maps are downloaded by Gym-Khana into ~/.gymkhana/maps/ (outside the repo)

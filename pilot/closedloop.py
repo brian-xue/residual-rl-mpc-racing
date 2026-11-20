@@ -185,6 +185,7 @@ class LapSim:
         self.kv = lc["kv"]
         # longitudinal mode: "pfb" = plan feedforward + P (pilot default), "mpc" = coupled steering + speed MPC
         self.cmpc, self.smpc, self.a_mpc, self.a_prev = None, None, None, 0.0
+        self.a_res, self.sum_abs_ares = 0.0, 0.0  # longitudinal residual [m/s^2], held over the control interval
         if lc.get("mode", "pfb") == "slip" and self.planner is None:
             sw_ = lc["slip_mpc"]
             ell = None
@@ -270,10 +271,13 @@ class LapSim:
         # shared longitudinal controller: speed-plan feed-forward + P feedback
         s, v = self.s, self.v
         if self.a_mpc is not None:
-            a_cmd = float(np.clip(self.a_mpc, -self.a_max, self.a_max))
+            a_req = self.a_mpc
         else:
             dvds = (self.vplan_at(s + 0.2) - self.vplan_at(s - 0.2)) / 0.4
-            a_cmd = float(np.clip(v * dvds + self.kv * (self.vp - v), -self.a_max, self.a_max))
+            a_req = v * dvds + self.kv * (self.vp - v)
+        if self.a_res != 0.0:  # longitudinal residual (dual-channel residual RL); mirrored in pilot_core
+            a_req = a_req + self.a_res
+        a_cmd = float(np.clip(a_req, -self.a_max, self.a_max))
         # Simulator.step is the physics of GKEnv.step; the env's reward (a Frenet nearest-point search), observation,
         # render and done bookkeeping are not used here and cost ~4x the physics. Only its step counter is kept,
         # for the same max_episode_steps truncation.
@@ -356,9 +360,12 @@ class LapSim:
         self.d_mpc, self.s_p = d_mpc, s_p
         self.d_ff = d_ff if d_ff is not None else self.K * v**2 * ref.kappa_at(s_p)
 
-    def apply(self, d_res=0.0):
-        """Add the residual, clip to the steering limit, log. The servo enforces the rate limit."""
+    def apply(self, d_res=0.0, a_res=0.0):
+        """Add the residual(s), clip to the steering limit, log. The servo enforces the rate limit; ``a_res``
+        (dual-channel residual) is added to the speed command at every physics step of the interval."""
         self.d_res = float(d_res)
+        self.a_res = float(a_res)
+        self.sum_abs_ares += abs(self.a_res)
         self.sum_abs_res += abs(self.d_res)
         req = self.d_mpc + self.d_ff + self.d_res
         self.delta_cmd = float(np.clip(req, -self.s_max, self.s_max))
@@ -375,6 +382,7 @@ class LapSim:
                 row["a_mpc"] = self.a_mpc
             if self.residual_logged:
                 row["delta_res"] = self.d_res
+                row["a_res"] = self.a_res
             self.rows.append(row)
 
     def advance_interval(self):
@@ -393,7 +401,7 @@ class LapSim:
         if self.done:
             return True
         (done, outcome, st, x, (t, s, e_y, e_psi, v, vp, progress), (step, i_g, off, env_step),
-         tires_in) = self.kernel.advance(self.delta_cmd, self.a_mpc)
+         tires_in) = self.kernel.advance(self.delta_cmd, self.a_mpc, self.a_res)
         self.st, self.t, self.s, self.e_y, self.e_psi, self.v, self.vp = st, t, s, e_y, e_psi, v, vp
         self.progress, self.step, self.i_g, self.off_in_interval = progress, step, i_g, off
         self.tires_in, self.outcome, self.done = np.array(tires_in), outcome, done
@@ -436,6 +444,7 @@ class LapSim:
         )
         if self.residual_logged:
             summ["mean_abs_res"] = self.sum_abs_res / max(self.n_ctrl, 1)
+            summ["mean_abs_ares"] = self.sum_abs_ares / max(self.n_ctrl, 1)
         return summ
 
 
@@ -451,7 +460,8 @@ def run_lap(track: Track, scn: Scenario, K: float, cfg, log=True, steer_planner=
         res_fn.reset()
     while not sim.done:
         sim.plan()
-        sim.apply(res_fn(sim) if res_fn is not None else 0.0)
+        r = res_fn(sim) if res_fn is not None else 0.0
+        sim.apply(*r) if isinstance(r, tuple) else sim.apply(r)  # (d_delta, d_a) for a dual-channel policy
         sim.advance_interval()
     sim.close()
     return sim.summary(), pd.DataFrame(sim.rows)

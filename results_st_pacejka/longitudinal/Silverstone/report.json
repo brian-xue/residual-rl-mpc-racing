@@ -1,0 +1,86 @@
+{
+  "track": "Silverstone",
+  "K_ff": 0.03,
+  "controllers": {
+    "P": {
+      "mode": "pfb",
+      "plan_ellipse": false,
+      "mpc_ellipse": false
+    },
+    "P-E": {
+      "mode": "pfb",
+      "plan_ellipse": true,
+      "mpc_ellipse": false
+    },
+    "C": {
+      "mode": "mpc",
+      "plan_ellipse": false,
+      "mpc_ellipse": false
+    },
+    "C-E": {
+      "mode": "mpc",
+      "plan_ellipse": true,
+      "mpc_ellipse": true
+    },
+    "S": {
+      "mode": "slip",
+      "plan_ellipse": false,
+      "mpc_ellipse": false
+    },
+    "S-E": {
+      "mode": "slip",
+      "plan_ellipse": true,
+      "mpc_ellipse": false
+    }
+  },
+  "longitudinal_mpc": {
+    "q_v": 2.0,
+    "q_a": 0.1,
+    "r_da": 1.0,
+    "da_max": 2.0,
+    "friction_ellipse": false,
+    "ax_max": 4.0,
+    "n_facets": 8,
+    "slack_l1": 100.0,
+    "slack_l2": 1000.0
+  },
+  "sweep_qualifying": {
+    "S-E": 10
+  },
+  "lap_time_comparison": [
+    {
+      "controller": "S-E",
+      "long": "S-E",
+      "K": 0.0,
+      "mu_scale": 1.0,
+      "best_a_lat": 7.0,
+      "lap_time": 60.05999999999662,
+      "max_ey": 0.44475628252702093,
+      "ellipse_max": 1.1890291102389412,
+      "max_abs_ay": 6.484074768307317
+    },
+    {
+      "controller": "S-E",
+      "long": "S-E",
+      "K": 0.0,
+      "mu_scale": 0.8,
+      "best_a_lat": 6.0,
+      "lap_time": 60.77999999999648,
+      "max_ey": 0.16185030201434497,
+      "ellipse_max": 1.1782174857549168,
+      "max_abs_ay": 6.14674829496158
+    },
+    {
+      "controller": "S-E",
+      "long": "S-E",
+      "K": 0.0,
+      "mu_scale": 0.6,
+      "best_a_lat": 5.0,
+      "lap_time": 62.38999999999616,
+      "max_ey": 0.12741969844816883,
+      "ellipse_max": 1.158862284270188,
+      "max_abs_ay": 5.4424904025567935
+    }
+  ],
+  "runtime_s": 116.32320308685303
+}

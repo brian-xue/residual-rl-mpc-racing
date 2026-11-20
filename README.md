@@ -174,6 +174,80 @@ The whole chain (training, Austin and three held-out tracks) took 10 minutes. On
 - **Same K and MPC weights as linear ST:** K = 0.03 and the steering MPC weights were not retuned for this plant.
 - **Different speed plans:** the slip-aware MPC comparison mixes speed plans. MPC + RL runs on the standard plan; S-E on the friction-ellipse plan.
 
+## Dual-channel MPC + RL residual (`configs/pilot_st_pacejka_residual_dual.yaml`)
+
+The PPO policy now outputs two residuals on top of the Rust kinematic MPC and the **friction-ellipse speed plan**:
+- **steering:** `δ = clip(δ_MPC + 0.2·π_δ)`;
+- **acceleration:** `a = clip(a_speed + 2.0·π_a)` m/s², added to the speed controller's command at every physics step. Through the P speed gain (kv = 3), a constant ±2 m/s² shifts the speed by about ±0.67 m/s.
+
+**How it differs from the single-channel setup:**
+- **Observation:** adds the previous acceleration residual and a 1 s preview of the planned acceleration.
+- **Reward:** adds gentle penalties on the acceleration residual's size (0.01·a²) and change (0.05·Δa²), and a sideslip penalty above 0.15 rad (20·(|β| − 0.15)²). Walls and spins still cost −50, off-track intervals −1.
+- **Friction range:** μ/μ₀ 0.6–1.0.
+- **Everything else is unchanged:** PPO settings, a_lat 3–9, checkpoint-selection rule, `kernel: rust`.
+
+**Implementation.** The acceleration residual is mirrored in the Python loop and `pilot_core` and applied only when nonzero. Existing results are unchanged: `kernel_check` passes, the committed single-channel laps reproduce exactly, and Python and Rust rollouts with a nonzero residual are identical.
+
+```bash
+C=configs/pilot_st_pacejka_residual_dual.yaml
+uv run python -m pilot.train_residual --config $C                       # 3M steps: 6.2 min
+uv run python -m pilot.eval_residual  --config $C                       # Austin: 1.5 min
+uv run python -m pilot.eval_residual  --config $C --track Spielberg --model results_st_pacejka/residual_dual/ckpt_1250000.zip \
+    --out results_st_pacejka/residual_dual/heldout/Spielberg --no-gif
+uv run python -m pilot.eval_residual  --config $C --track Austin --model results_st_pacejka/residual_dual/ckpt_1250000.zip \
+    --grid-min 3.0 --out results_st_pacejka/residual_dual/grid_from3/Austin --no-gif   # supplementary search (below)
+uv run python -m pilot.longitudinal   --config configs/pilot_st_pacejka.yaml --track Spielberg --controllers S-E
+```
+
+**Comparison on all four tracks** (`results_st_pacejka/residual_dual/comparison_all_tracks.csv`).
+- Sweep columns: qualifying / spin / wall laps out of 18.
+- Lap columns: fastest qualifying lap in seconds, with its a_lat level.
+- Dual-channel lap times marked † come from a supplementary search that starts at a_lat 3 (explained below).
+
+| Track | Controller | Sweep q / spin / wall | μ/μ₀ = 1.0 | μ/μ₀ = 0.8 | μ/μ₀ = 0.6 |
+| --- | --- | --- | --- | --- | --- |
+| Austin (training) | Slip-aware MPC + ellipse (S-E) | 8 / 3 / 7 | 58.71 (6) | 59.88 (5.5) | 62.94 (4.5) |
+| | MPC + RL (δ), standard plan | 10 / 6 / 2 | **55.60** (7) | **57.16** (6) | **62.83** (4) |
+| | **MPC + RL (δ, a), ellipse plan** | **14 / 1 / 3** | 56.18† (10) | 57.91† (8) | 63.68† (5) |
+| Spielberg | S-E | **10 / 1 / 7** | **45.07** (6) | **45.11** (6) | **46.32** (5) |
+| | MPC + RL (δ) | 4 / 3 / 11 | 45.99 (4.5) | 46.92 (4) | 49.72 (3) |
+| | MPC + RL (δ, a) | 0 / 1 / 17 | 52.72 (3) | 52.72 (3) | 52.73 (3) |
+| Catalunya | S-E | 11 / 2 / 4 | 54.65 (7) | 55.67 (6) | 57.78 (5) |
+| | MPC + RL (δ) | 10 / 7 / 1 | **53.12** (7) | **54.37** (6) | 59.07 (4) |
+| | **MPC + RL (δ, a)** | **16 / 2 / 0** | 53.73† (10) | 55.07† (8) | **57.74**† (6) |
+| Silverstone | S-E | **10 / 2 / 6** | **60.06** (7) | **60.78** (6) | **62.39** (5) |
+| | MPC + RL (δ) | 4 / 5 / 9 | 61.01 (5) | 62.08 (4.5) | 65.34 (3.5) |
+| | MPC + RL (δ, a) | 0 / 0 / 18 | 81.79 (2) | 81.79 (2) | 81.79 (2) |
+| **All four tracks** | S-E | **39 / 8 / 24** | | | |
+| | MPC + RL (δ) | 28 / 21 / 23 | | | |
+| | MPC + RL (δ, a) | 30 / **4** / 38 | | | |
+
+**Findings**
+
+1. **The dual-channel policy is the best controller on the two tracks where it works, and almost never spins.**
+   - On Austin and Catalunya it qualifies 14 and 16 of 18 sweep laps, the most of any controller.
+   - Spins across all four tracks fall to 4, against 21 for the single-channel policy. The sideslip penalty and the acceleration channel make it cautious.
+   - It also reaches the highest speed levels: a_lat 8–10 at μ/μ₀ ≥ 0.8, and 5–6 at 0.6.
+2. **It learned to run about 4% slower than the plan.**
+   - Mean |a_res| is about 0.58 m/s², with lap times at 1.038–1.042 × plan in the Austin sweep. Within the 5% tolerance that qualifies.
+   - But at a_lat 1.0, below the training range of 3–9, it slows by 5.8%. The standard fastest-lap search starts there, so it gets **no qualifying fastest lap on Austin or Catalunya** (speed tolerance at the first level).
+   - The † values start the same search at a_lat 3, the bottom of the training range. The single-channel policy and S-E qualified every level below a_lat 3 on all four tracks (24 laps each), so their best laps are identical under either rule; only the dual-channel numbers are affected.
+3. **It fails to generalise to Spielberg and Silverstone** (0 of 18 each, 17 and 18 wall collisions).
+   - Every failure is at one of two places per track (Spielberg s ≈ 23 / 283 m, Silverstone s ≈ 18 / 218 m). These are straights where the reference line is only about 0.105 m from a wall.
+   - There the steering residual (+0.043 to +0.05 rad) nearly cancels the MPC's correction (−0.042 to −0.055 rad). The car holds a steady 0.08–0.10 m offset and drifts into the wall. No spin and no curvature are involved.
+   - It is a learned steering bias on straights: harmless on Austin and Catalunya, fatal on tight straights. The single-channel policy has a smaller version of it (11 and 9 wall collisions there).
+4. **The slip-aware MPC + ellipse plan is the most robust controller overall.**
+   - It qualifies 39 of 72 sweep laps, with 10–11 on every held-out track.
+   - It is the fastest on Spielberg and Silverstone, with no learning and no per-track tuning.
+   - The learned residuals are faster on the training track and on Catalunya, but not reliably elsewhere.
+
+**Caveats**
+
+- One training seed per policy.
+- **Checkpoint selection was close:** `ckpt_1250000` and `ckpt_1750000` both passed 4 of 4 validation laps, and the tie was broken by a 7e-5 difference in mean progress.
+- **The plans differ:** the single-channel policy runs on the standard plan, while S-E and the dual policy run on the ellipse plan.
+- **Untuned:** the reward weights for the new terms were not tuned.
+
 ## Speed: Rust core (`kernel: rust`)
 
 With `kernel: rust` in a config, the per-physics-step loop of `LapSim` and the kinematic steering MPC run in Rust (`pilot_core/`). That covers:
@@ -222,5 +296,6 @@ The two methods agree to 6e-16 relative. Rerunning the results above therefore m
 | `pilot/longitudinal.py` | Controller comparison: sweep, fastest-lap search, chart |
 | `configs/pilot_st_pacejka.yaml` | This plant's config; `longitudinal.slip_mpc` holds the slip-aware MPC settings |
 | `configs/pilot_st_pacejka_residual.yaml` | MPC + RL residual on this plant (`kernel: rust`, output `results_st_pacejka/residual/`) |
+| `configs/pilot_st_pacejka_residual_dual.yaml` | Dual-channel (steering + acceleration) residual on the ellipse plan (output `results_st_pacejka/residual_dual/`) |
 
 The remaining modules (pilot pipeline, residual RL, held-out evaluation, dynamic-model reference) are described in [README-simple-st-tire.md](README-simple-st-tire.md). `pilot.reference_lap` is not available for this plant, because its privileged model is linear ST.

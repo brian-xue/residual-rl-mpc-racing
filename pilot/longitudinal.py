@@ -82,6 +82,8 @@ def main():
     ap.add_argument("--config", default="configs/pilot.yaml")
     ap.add_argument("--track", default=None)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--controllers", default=None,
+                    help="comma-separated subset of controller labels to run, e.g. S-E or P-E+ff,S-E (default: all)")
     ap.add_argument("--from-grid", action="store_true",
                     help="skip the laps; rebuild lap_time_comparison/report from the saved sweep.csv and lap_time_grid.csv")
     args = ap.parse_args()
@@ -93,8 +95,14 @@ def main():
     rep_path = pathlib.Path(cfg.get("out", "results")) / "report.json"
     K_ff = json.loads(rep_path.read_text()).get("K_frozen", 0.03) if rep_path.exists() else 0.03
     t0 = time.time()
-    ctrls = [(n, K) for K in (0.0, K_ff) for n in LONG]
     label = lambda n, K: f"{n}{'+ff' if K else ''}"  # noqa: E731
+    ctrls = [(n, K) for K in (0.0, K_ff) for n in LONG]
+    if args.controllers:
+        want = set(args.controllers.split(","))
+        unknown = want - {label(n, K) for n, K in ctrls}
+        if unknown:
+            raise SystemExit(f"unknown controller(s) {sorted(unknown)}")
+        ctrls = [(n, K) for n, K in ctrls if label(n, K) in want]
     sw, lc = cfg["sweep"], cfg["lap_time"]
     starts = (sw["start_s"], sw["recheck_start_s"])
 
@@ -157,7 +165,10 @@ def summarize(cfg, ctrls, label, starts, grid, sdf, gdf, out, K_ff, t0):
     for ax, K in zip(axes, (0.0, K_ff)):
         for j, n in enumerate(LONG):
             for i, mu in enumerate(lc["mu_scales"]):
-                r = bdf[(bdf.controller == label(n, K)) & (bdf.mu_scale == mu)].iloc[0]
+                rr = bdf[(bdf.controller == label(n, K)) & (bdf.mu_scale == mu)]
+                if rr.empty:  # controller not run (--controllers)
+                    continue
+                r = rr.iloc[0]
                 x = i + (j - (len(LONG) - 1) / 2) * w
                 if r.lap_time is None or pd.isna(r.lap_time):
                     ax.text(x, 1, "none", ha="center", va="bottom", fontsize=6, rotation=90)

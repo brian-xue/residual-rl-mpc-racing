@@ -1,0 +1,99 @@
+{
+  "track": "Austin",
+  "K_ff": 0.03,
+  "r_max": 0.2,
+  "base_K": 0.0,
+  "model": "results_st_pacejka/residual_dual/ckpt_1250000.zip",
+  "controllers": {
+    "nominal": "Nominal MPC",
+    "ff": "MPC + K v\u00b2 \u03ba",
+    "residual": "MPC + RL residual (\u03b4, a)"
+  },
+  "accel_r_max": 2.0,
+  "speed_plan_friction_ellipse": true,
+  "sweep_qualifying": {
+    "ff": 4,
+    "nominal": 0,
+    "residual": 14
+  },
+  "trace_cell": [
+    8.0,
+    0.8
+  ],
+  "lap_grid_min": 3.0,
+  "lap_time_comparison": [
+    {
+      "mu_scale": 1.0,
+      "controller": "nominal",
+      "best_a_lat": 3.0,
+      "lap_time": 70.92999999999938,
+      "max_ey": 0.1520471543163726,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "ff",
+      "best_a_lat": 5.0,
+      "lap_time": 60.82999999999647,
+      "max_ey": 0.23634089048444148,
+      "gap_s_vs_nominal": 10.100000000002915
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "residual",
+      "best_a_lat": 10.0,
+      "lap_time": 56.17999999999739,
+      "max_ey": 0.3438242380282807,
+      "gap_s_vs_nominal": 14.75000000000199
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "nominal",
+      "best_a_lat": NaN,
+      "lap_time": NaN,
+      "max_ey": NaN,
+      "gap_s_vs_nominal": NaN
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "ff",
+      "best_a_lat": 4.0,
+      "lap_time": 64.57999999999613,
+      "max_ey": 0.1899120744051634,
+      "gap_s_vs_nominal": NaN
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "residual",
+      "best_a_lat": 8.0,
+      "lap_time": 57.90999999999705,
+      "max_ey": 0.2850048045937311,
+      "gap_s_vs_nominal": NaN
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "nominal",
+      "best_a_lat": NaN,
+      "lap_time": NaN,
+      "max_ey": NaN,
+      "gap_s_vs_nominal": NaN
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "ff",
+      "best_a_lat": NaN,
+      "lap_time": NaN,
+      "max_ey": NaN,
+      "gap_s_vs_nominal": NaN
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "residual",
+      "best_a_lat": 5.0,
+      "lap_time": 63.6799999999959,
+      "max_ey": 0.17810898922140225,
+      "gap_s_vs_nominal": NaN
+    }
+  ],
+  "runtime_s": 30.908951997756958
+}
