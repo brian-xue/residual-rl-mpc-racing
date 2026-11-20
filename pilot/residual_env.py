@@ -21,18 +21,30 @@ import numpy as np
 from gymnasium import spaces
 
 from .closedloop import LapSim, Scenario, Track
-from .sim import make_env
+from .sim import NOMINAL_PARAMS, make_env
 
 PREVIEW_T = (0.0, 0.15, 0.3, 0.5, 0.75, 1.0)  # [s] look-ahead times for the curvature preview
 OBS_DIM = 10 + 2 * len(PREVIEW_T)  # single channel (steering residual)
 OBS_DIM_DUAL = OBS_DIM + 1 + len(PREVIEW_T)  # + previous accel residual, planned-acceleration preview
+WALL_PREVIEW_T = (0.0, 0.25, 0.5, 1.0)  # [s] look-ahead times for the wall-clearance observation
+WALL_OBS_SCALE, WALL_CAP = 0.3, 1.5  # [m]
 
 
-def obs_dim(ra_max: float) -> int:
-    return OBS_DIM_DUAL if ra_max > 0 else OBS_DIM
+def obs_dim(ra_max: float, wall: bool = False) -> int:
+    return (OBS_DIM_DUAL if ra_max > 0 else OBS_DIM) + (2 * len(WALL_PREVIEW_T) if wall else 0)
 
 
-def residual_obs(sim: LapSim, prev_res: float, r_max: float, prev_ares: float = 0.0, ra_max: float = 0.0) -> np.ndarray:
+def wall_gaps(sim: LapSim, s_ahead: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Gap between the car body's left / right side and the first wall along the reference normal at the
+    preview points, assuming the current lateral offset e_y persists: clearance(s) -/+ e_y - width/2."""
+    s_ext, left, right = sim.track.wall_side_clearance(WALL_CAP)
+    sa = np.mod(s_ahead, sim.ref.length)
+    half_w = NOMINAL_PARAMS["width"] / 2
+    return np.interp(sa, s_ext, left) - sim.e_y - half_w, np.interp(sa, s_ext, right) + sim.e_y - half_w
+
+
+def residual_obs(sim: LapSim, prev_res: float, r_max: float, prev_ares: float = 0.0, ra_max: float = 0.0,
+                 wall: bool = False) -> np.ndarray:
     """Observation at a control instant (after ``sim.plan()``). Roughly unit-scaled, clipped to +-5.
     With ``ra_max > 0`` (dual channel) the previous acceleration residual and the planned longitudinal
     acceleration v dv/ds along the preview are appended; otherwise the observation is the single-channel one."""
@@ -58,6 +70,9 @@ def residual_obs(sim: LapSim, prev_res: float, r_max: float, prev_ares: float = 
     ]
     if ra_max > 0:
         o = np.r_[o, prev_ares / ra_max, sim.aplan_at(s_ahead) / 4.0]
+    if wall:  # gap to the side walls now and ahead (residual.obs_wall_clearance), clipped to [-1, 4] x 0.3 m
+        gl, gr = wall_gaps(sim, s + max(v, 0.5) * np.asarray(WALL_PREVIEW_T))
+        o = np.r_[o, np.clip(gl / WALL_OBS_SCALE, -1.0, 4.0), np.clip(gr / WALL_OBS_SCALE, -1.0, 4.0)]
     return np.clip(o, -5.0, 5.0).astype(np.float32)
 
 
@@ -72,10 +87,11 @@ class ResidualRacingEnv(gym.Env):
         self.cfg, self.rc = cfg, rc
         self.r_max = rc["r_max"]
         self.ra_max = float(rc.get("accel_r_max", 0.0))  # > 0: dual channel (steering + acceleration residual)
+        self.wall_obs = bool(rc.get("obs_wall_clearance", False))  # side-wall gaps in the observation
         self.K = rc.get("base_K", 0.0)
         self.track = Track(cfg)
         self._env = make_env(cfg["track"], 1.0, cfg["steer_mode"], cfg["dt"], max_steps=10**9)
-        self.obs_dim = obs_dim(self.ra_max)
+        self.obs_dim = obs_dim(self.ra_max, self.wall_obs)
         self.observation_space = spaces.Box(-5.0, 5.0, (self.obs_dim,), np.float32)
         self.action_space = spaces.Box(-1.0, 1.0, (2 if self.ra_max > 0 else 1,), np.float32)
         lo, hi = rc["a_lat_range"]
@@ -103,7 +119,7 @@ class ResidualRacingEnv(gym.Env):
         return self._obs(0.0, 0.0), {"a_lat": scn.a_lat, "mu_scale": scn.mu_scale}
 
     def _obs(self, res, ares):
-        return residual_obs(self.sim, res, self.r_max, ares, self.ra_max)
+        return residual_obs(self.sim, res, self.r_max, ares, self.ra_max, self.wall_obs)
 
     def step(self, action):
         sim, rc = self.sim, self.rc
@@ -153,29 +169,29 @@ class ResidualPolicy:
     Calling it returns a per-lap callable ``g(sim)`` (deterministic policy mean) that returns delta_res, or
     (delta_res, a_res) for a dual-channel policy (``ra_max > 0``)."""
 
-    def __init__(self, model_path: str, r_max: float, ra_max: float = 0.0):
-        self.model_path, self.r_max, self.ra_max = str(model_path), r_max, float(ra_max)
+    def __init__(self, model_path: str, r_max: float, ra_max: float = 0.0, wall_obs: bool = False):
+        self.model_path, self.r_max, self.ra_max, self.wall_obs = str(model_path), r_max, float(ra_max), bool(wall_obs)
 
     def __call__(self):
-        return _LapResidual(self.model_path, self.r_max, self.ra_max)
+        return _LapResidual(self.model_path, self.r_max, self.ra_max, self.wall_obs)
 
 
 class _LapResidual:
-    def __init__(self, path, r_max, ra_max=0.0):
+    def __init__(self, path, r_max, ra_max=0.0, wall_obs=False):
         if path not in _MODELS:
             import torch
             from stable_baselines3 import PPO
 
             torch.set_num_threads(1)
             _MODELS[path] = PPO.load(path, device="cpu")
-        self.model, self.r_max, self.ra_max = _MODELS[path], r_max, ra_max
+        self.model, self.r_max, self.ra_max, self.wall_obs = _MODELS[path], r_max, ra_max, wall_obs
         self.prev = self.prev_a = 0.0
 
     def reset(self):
         self.prev = self.prev_a = 0.0
 
     def __call__(self, sim):
-        obs = residual_obs(sim, self.prev, self.r_max, self.prev_a, self.ra_max)
+        obs = residual_obs(sim, self.prev, self.r_max, self.prev_a, self.ra_max, self.wall_obs)
         a, _ = self.model.predict(obs, deterministic=True)
         self.prev = float(np.clip(a[0], -1, 1)) * self.r_max
         if self.ra_max > 0:

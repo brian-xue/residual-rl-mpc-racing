@@ -1,0 +1,10 @@
+mu_scale,controller,best_a_lat,lap_time,max_ey,gap_s_vs_nominal
+1.000,nominal,,,,
+1.000,ff,7.000,44.070,0.335,
+1.000,residual,4.000,49.720,0.095,
+0.800,nominal,,,,
+0.800,ff,4.500,46.910,0.175,
+0.800,residual,4.000,49.730,0.094,
+0.600,nominal,,,,
+0.600,ff,3.000,50.930,0.154,
+0.600,residual,3.500,51.120,0.098,

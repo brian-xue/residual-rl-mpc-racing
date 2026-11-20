@@ -139,6 +139,22 @@ class TrackGeometry:
         np.minimum.at(d, idx[0], dist)
         return d
 
+    def ray_wall_distance(self, xy, direction, cap=1.5, tol=1e-3, max_iter=200):
+        """Distance from each point along its unit ``direction`` to the first wall cell (``cap`` if none within
+        ``cap``). Sphere tracing: step by the distance to the nearest wall, which never crosses a wall."""
+        xy, u = np.asarray(xy, float), np.asarray(direction, float)
+        t = np.zeros(len(xy))
+        active = np.ones(len(xy), bool)
+        for _ in range(max_iter):
+            if not active.any():
+                break
+            d = self.wall_distance(xy[active] + t[active, None] * u[active])
+            t[active] += d
+            hit = d < tol
+            idx = np.flatnonzero(active)
+            active[idx[hit | (t[idx] >= cap)]] = False
+        return np.minimum(t, cap)
+
     def centerline_wall_distance(self):
         """Smallest distance from the track centerline to any wall cell edge."""
         pts = shapely.points(self.center_xy)

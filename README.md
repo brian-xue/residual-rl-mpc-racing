@@ -248,6 +248,65 @@ uv run python -m pilot.longitudinal   --config configs/pilot_st_pacejka.yaml --t
 - **The plans differ:** the single-channel policy runs on the standard plan, while S-E and the dual policy run on the ellipse plan.
 - **Untuned:** the reward weights for the new terms were not tuned.
 
+## Wall-clearance observation (`configs/pilot_st_pacejka_residual_dual_wall.yaml`)
+
+The dual-channel policy failed on Spielberg and Silverstone at straights where the reference line runs about 0.105 m from a wall, because it could not see the walls. This run adds that information to its observation and changes nothing else (same reward, PPO settings, training distribution and selection rule; `kernel: rust`).
+
+- **Per track, precomputed:** `Track.wall_side_clearance` gives the distance from every reference point to the first wall along the left and right normals of the reference line.
+  - It is computed from that track's own walls, so it works on any map without per-track tuning.
+  - It uses sphere tracing (`TrackGeometry.ray_wall_distance`), takes about 0.1 s per track, and agrees with a 1 mm brute-force march to 1–5 mm.
+  - It is capped at 1.5 m (no wall in range, e.g. on curves with open run-off).
+- **Observed** (`residual.obs_wall_clearance: true`, `pilot.residual_env.wall_gaps`): 8 values, the gap between each side of the body and the wall now and 0.25 / 0.5 / 1 s ahead, assuming the current offset persists: `clearance(s) ∓ e_y − width/2`.
+- **Checks:** Python and Rust rollouts with it are identical, and the committed dual-channel laps reproduce exactly with it off.
+- **Checkpoint selection:** `ckpt_1250000` was the only checkpoint to pass all 4 validation laps; no tie this time.
+
+```bash
+C=configs/pilot_st_pacejka_residual_dual_wall.yaml
+uv run python -m pilot.train_residual --config $C
+uv run python -m pilot.eval_residual  --config $C          # then --track <held-out> and --grid-min 3.0, as above
+```
+
+**All four controllers on all four tracks** (`results_st_pacejka/residual_dual_wall/comparison_all_tracks.csv`):
+- sweep columns are qualifying / spin / wall laps out of 18;
+- lap columns are the best lap in seconds, with its a_lat level;
+- † marks the search from a_lat 3, as above.
+
+| Track | S-E (slip-aware MPC + ellipse) | MPC + RL (δ) | MPC + RL (δ, a) | **MPC + RL (δ, a) + wall obs** |
+| --- | --- | --- | --- | --- |
+| Austin: sweep | 8 / 3 / 7 | 10 / 6 / 2 | 14 / 1 / 3 | 14 / 1 / 3 |
+| Austin: μ/μ₀ 1.0 / 0.8 / 0.6 | 58.71 / 59.88 / 62.94 | **55.60** / **57.16** / 62.83 | 56.18† / 57.91† / 63.68† | 56.71† / 57.81† / **62.22**† |
+| Spielberg: sweep | **10 / 1 / 7** | 4 / 3 / 11 | 0 / 1 / 17 | 6 / 1 / 11 |
+| Spielberg: laps | **45.07 / 45.11 / 46.32** | 45.99 / 46.92 / 49.72 | 52.72 / 52.72 / 52.73 | 49.72† / 49.73† / 51.12† |
+| Catalunya: sweep | 11 / 2 / 4 | 10 / 7 / 1 | **16 / 2 / 0** | 12 / 2 / 0 |
+| Catalunya: laps | 54.65 / 55.67 / 57.78 | **53.12** / **54.37** / 59.07 | 53.73† / 55.07† / **57.74**† | 53.68† / 55.98† / 58.66† |
+| Silverstone: sweep | **10 / 2 / 6** | 4 / 5 / 9 | 0 / 0 / 18 | 8 / 1 / 9 |
+| Silverstone: laps | **60.06 / 60.78 / 62.39** | 61.01 / 62.08 / 65.34 | 81.79 (a_lat 2) | 62.62† / 63.43† / 64.47† |
+| **Total sweep (of 72)** | 39 / 8 / 24 | 28 / 21 / 23 | 30 / **4** / 38 | **40** / 5 / **23** |
+
+**Findings**
+
+1. **The wall input fixes most of the generalisation failure.**
+   - Spielberg goes from 0 to 6 qualifying sweep laps and Silverstone from 0 to 8.
+   - Wall collisions across the four tracks fall from 38 to 23.
+   - Total qualifying rises from 30 to 40 of 72, the most of any controller (S-E 39).
+   - The spin count stays low (5).
+2. **It is not a free win.**
+   - Catalunya drops from 16 to 12 qualifying laps, though it still has no wall collisions.
+   - On Austin the sweep is unchanged. Lap times move by 0.1–0.5 s at μ/μ₀ ≥ 0.8 and improve by 1.5 s at 0.6, where its 62.22 s is the fastest of all four controllers.
+3. **The slip-aware MPC is still faster and more consistent on the held-out tracks.**
+   - It is 4.6–4.8 s per lap ahead on Spielberg and 2.1–2.7 s on Silverstone.
+   - It qualifies at least 10 sweep laps on every track; the wall-aware policy ranges from 6 to 14.
+   - The learned policy now matches its robustness in total, but not per track.
+4. **The remaining wall failures moved.**
+   - The two tight straights are mostly solved.
+   - The remaining collisions cluster at new spots (Spielberg s ≈ 303 m, Silverstone s ≈ 176 m). The single-channel policy also failed at Silverstone's s ≈ 176 m.
+
+**Caveats**
+
+- One seed per policy.
+- **Validation regressed after 1.25M steps:** later checkpoints passed 0 of 4 laps, while the training crash rate kept falling.
+- **The wall input adds about 18% per lap** (0.33 vs 0.28 s, measured in isolation). This run's 80-minute total was mostly machine contention: load average about 31 on 10 cores, from macOS background processes.
+
 ## Speed: Rust core (`kernel: rust`)
 
 With `kernel: rust` in a config, the per-physics-step loop of `LapSim` and the kinematic steering MPC run in Rust (`pilot_core/`). That covers:
@@ -297,5 +356,6 @@ The two methods agree to 6e-16 relative. Rerunning the results above therefore m
 | `configs/pilot_st_pacejka.yaml` | This plant's config; `longitudinal.slip_mpc` holds the slip-aware MPC settings |
 | `configs/pilot_st_pacejka_residual.yaml` | MPC + RL residual on this plant (`kernel: rust`, output `results_st_pacejka/residual/`) |
 | `configs/pilot_st_pacejka_residual_dual.yaml` | Dual-channel (steering + acceleration) residual on the ellipse plan (output `results_st_pacejka/residual_dual/`) |
+| `configs/pilot_st_pacejka_residual_dual_wall.yaml` | Dual-channel residual with the wall-clearance observation (output `results_st_pacejka/residual_dual_wall/`) |
 
 The remaining modules (pilot pipeline, residual RL, held-out evaluation, dynamic-model reference) are described in [README-simple-st-tire.md](README-simple-st-tire.md). `pilot.reference_lap` is not available for this plant, because its privileged model is linear ST.

@@ -51,7 +51,8 @@ def select_checkpoint(cfg, out, r_max):
     if not ckpts:
         raise SystemExit(f"no checkpoints in {out}; run pilot.train_residual first")
     scns = [Scenario(a, mu, sel["start_s"]) for a in sel["a_lat"] for mu in sel["mu_scales"]]
-    jobs = [(scn, cfg["residual"].get("base_K", 0.0), False, None, ResidualPolicy(c, r_max, cfg["residual"].get("accel_r_max", 0.0)))
+    jobs = [(scn, cfg["residual"].get("base_K", 0.0), False, None, ResidualPolicy(c, r_max, cfg["residual"].get("accel_r_max", 0.0),
+                                                                        cfg["residual"].get("obs_wall_clearance", False)))
             for c in ckpts for scn in scns]
     res = run_many(cfg, jobs)
     rows = []
@@ -99,12 +100,13 @@ def main():
         model, _ = select_checkpoint(cfg, out, rc["r_max"])
     report["model"] = str(model)
     print(f"   using {model}", flush=True)
-    pol = ResidualPolicy(model, rc["r_max"], rc.get("accel_r_max", 0.0))
+    pol = ResidualPolicy(model, rc["r_max"], rc.get("accel_r_max", 0.0), rc.get("obs_wall_clearance", False))
     ctrls = {"nominal": (0.0, None), "ff": (K, None), "residual": (rc.get("base_K", 0.0), pol)}
     if rc.get("base_K", 0.0) > 0:  # residual on top of MPC + K v^2 kappa
         NAMES["residual"] = animate.NAMES["residual"] = "MPC + K v² κ + RL residual"
     if rc.get("accel_r_max", 0.0) > 0:  # dual channel: steering + acceleration residual
-        NAMES["residual"] = animate.NAMES["residual"] = "MPC + RL residual (δ, a)"
+        NAMES["residual"] = animate.NAMES["residual"] = "MPC + RL residual (δ, a)" + (
+            " + wall obs" if rc.get("obs_wall_clearance", False) else "")
     report["controllers"] = dict(NAMES)
     report["accel_r_max"] = rc.get("accel_r_max", 0.0)
     report["speed_plan_friction_ellipse"] = bool(cfg["speed_plan"].get("friction_ellipse", False))

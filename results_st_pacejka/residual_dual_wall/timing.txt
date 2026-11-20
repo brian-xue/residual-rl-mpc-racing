@@ -1,0 +1,5 @@
+start 04:08:51
+trained 04:22:50
+austin eval 04:24:25
+heldout eval 04:53:50
+grid_from3 05:28:18

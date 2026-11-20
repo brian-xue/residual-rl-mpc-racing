@@ -110,6 +110,20 @@ class Track:
     def release_env(self, env, key):
         self._env_pool.setdefault(key, []).append(env)
 
+    def wall_side_clearance(self, cap=1.5):
+        """(left, right): distance from each reference point to the first wall cell along the left / right normal
+        of the reference line (``cap`` where there is none, e.g. on curves without walls). Computed once per
+        track from its own walls (residual observation ``residual.obs_wall_clearance``)."""
+        if getattr(self, "_wall_side", None) is None:
+            ref = self.ref
+            xy = np.c_[ref.x, ref.y]
+            nrm = np.c_[-np.sin(ref.psi), np.cos(ref.psi)]  # left normal (e_y > 0 is left of the line)
+            left = self.geo.ray_wall_distance(xy, nrm, cap)
+            right = self.geo.ray_wall_distance(xy, -nrm, cap)
+            s_ext = np.r_[ref.s, ref.length]
+            self._wall_side = (s_ext, np.r_[left, left[0]], np.r_[right, right[0]])
+        return self._wall_side
+
     def plan(self, a_lat, v_cap=None, friction_ellipse=False):
         sp_ = self.cfg["speed_plan"]
         v_cap = sp_["v_cap"] if v_cap is None else v_cap
