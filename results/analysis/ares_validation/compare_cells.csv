@@ -1,0 +1,73 @@
+track,a_lat,mu_scale,start_s,status_A,qualifying_A,completed_A,lap_time_A,lap_time_ratio_A,max_ey_A,fail_s_A,min_wall_gap_A,status_B,qualifying_B,completed_B,lap_time_B,lap_time_ratio_B,max_ey_B,fail_s_B,min_wall_gap_B,group,why_A,why_B,ratio_margin_A,ey_margin_A,ratio_margin_B,ey_margin_B,dlap_B_minus_A
+Austin,4,1.0000,0,qualifying,True,True,67.4300,1.0399,0.0984,,0.0856,qualifying,True,True,67.3000,1.0379,0.0768,,0.0864,both qualify,qualifies,qualifies,0.0101,0.4016,0.0121,0.4232,-0.1300
+Austin,4,1.0000,200,qualifying,True,True,67.4300,1.0399,0.0962,,0.0888,qualifying,True,True,67.3100,1.0381,0.0807,,0.0928,both qualify,qualifies,qualifies,0.0101,0.4038,0.0119,0.4193,-0.1200
+Austin,4,0.8000,0,qualifying,True,True,67.4500,1.0402,0.0986,,0.0812,qualifying,True,True,67.3300,1.0384,0.0833,,0.0918,both qualify,qualifies,qualifies,0.0098,0.4014,0.0116,0.4167,-0.1200
+Austin,4,0.8000,200,qualifying,True,True,67.4500,1.0402,0.0997,,0.0888,qualifying,True,True,67.3300,1.0384,0.0815,,0.0948,both qualify,qualifies,qualifies,0.0098,0.4003,0.0116,0.4185,-0.1200
+Austin,4,0.6000,0,qualifying,True,True,67.5000,1.0410,0.1055,,0.0957,qualifying,True,True,67.3900,1.0393,0.0979,,0.0865,both qualify,qualifies,qualifies,0.0090,0.3945,0.0107,0.4021,-0.1100
+Austin,4,0.6000,200,qualifying,True,True,67.5100,1.0412,0.1080,,0.0888,qualifying,True,True,67.3900,1.0393,0.0978,,0.0895,both qualify,qualifies,qualifies,0.0089,0.3920,0.0107,0.4022,-0.1200
+Austin,6,1.0000,0,qualifying,True,True,60.7500,1.0365,0.1319,,0.0993,qualifying,True,True,60.9000,1.0391,0.0941,,0.0766,both qualify,qualifies,qualifies,0.0135,0.3681,0.0109,0.4059,0.1500
+Austin,6,1.0000,200,qualifying,True,True,60.7600,1.0367,0.1394,,0.0900,qualifying,True,True,60.9000,1.0391,0.0927,,0.0784,both qualify,qualifies,qualifies,0.0133,0.3606,0.0109,0.4073,0.1400
+Austin,6,0.8000,0,qualifying,True,True,60.8300,1.0379,0.1467,,0.0973,qualifying,True,True,60.9800,1.0404,0.1150,,0.0856,both qualify,qualifies,qualifies,0.0121,0.3533,0.0096,0.3850,0.1500
+Austin,6,0.8000,200,qualifying,True,True,60.8300,1.0379,0.1450,,0.0900,qualifying,True,True,60.9800,1.0404,0.1175,,0.0896,both qualify,qualifies,qualifies,0.0121,0.3550,0.0096,0.3825,0.1500
+Austin,6,0.6000,0,wall_collision,False,False,,,0.2621,150.7080,0.1253,wall_collision,False,False,,,0.3075,150.5540,0.0842,neither,crash (wall),crash (wall),,0.2379,,0.1925,
+Austin,6,0.6000,200,wall_collision,False,False,,,0.3388,379.3630,0.0900,wall_collision,False,False,,,0.3630,379.3990,0.0570,neither,crash (wall),crash (wall),,0.1612,,0.1370,
+Austin,8,1.0000,0,qualifying,True,True,57.6200,1.0360,0.1963,,0.1082,qualifying,True,True,57.8600,1.0403,0.1587,,0.0829,both qualify,qualifies,qualifies,0.0140,0.3037,0.0097,0.3413,0.2400
+Austin,8,1.0000,200,qualifying,True,True,57.6100,1.0358,0.1967,,0.1066,qualifying,True,True,57.8500,1.0401,0.1466,,0.0768,both qualify,qualifies,qualifies,0.0142,0.3033,0.0099,0.3534,0.2400
+Austin,8,0.8000,0,qualifying,True,True,57.8100,1.0394,0.4504,,0.0993,qualifying,True,True,58.0300,1.0433,0.4193,,0.0880,both qualify,qualifies,qualifies,0.0106,0.0496,0.0067,0.0807,0.2200
+Austin,8,0.8000,200,qualifying,True,True,57.8100,1.0394,0.4484,,0.0951,qualifying,True,True,58.0400,1.0435,0.4221,,0.0833,both qualify,qualifies,qualifies,0.0106,0.0516,0.0065,0.0779,0.2300
+Austin,8,0.6000,0,spin,False,False,,,0.3791,49.4966,0.1253,spin,False,False,,,0.3206,50.4105,0.1073,neither,crash (spin),crash (spin),,0.1209,,0.1794,
+Austin,8,0.6000,200,wall_collision,False,False,,,1.3769,289.0780,-0.9229,wall_collision,False,False,,,0.6223,286.0980,0.0859,neither,crash (wall),crash (wall),,-0.8769,,-0.1223,
+Spielberg,4,1.0000,0,qualifying,True,True,49.7200,1.0344,0.0951,,0.0700,qualifying,True,True,50.0200,1.0406,0.1132,,0.0370,both qualify,qualifies,qualifies,0.0156,0.4049,0.0094,0.3868,0.3000
+Spielberg,4,1.0000,200,qualifying,True,True,49.7200,1.0344,0.0934,,0.0652,qualifying,True,True,50.0300,1.0408,0.1128,,0.0363,both qualify,qualifies,qualifies,0.0156,0.4066,0.0092,0.3872,0.3100
+Spielberg,4,0.8000,0,qualifying,True,True,49.7300,1.0346,0.0945,,0.0593,qualifying,True,True,50.0300,1.0408,0.1205,,0.0383,both qualify,qualifies,qualifies,0.0154,0.4055,0.0092,0.3795,0.3000
+Spielberg,4,0.8000,200,qualifying,True,True,49.7300,1.0346,0.0929,,0.0620,qualifying,True,True,50.0400,1.0411,0.1215,,0.0443,both qualify,qualifies,qualifies,0.0154,0.4071,0.0090,0.3785,0.3100
+Spielberg,4,0.6000,0,wall_collision,False,False,,,0.0956,304.6620,0.0502,qualifying,True,True,50.0700,1.0417,0.1452,,0.0362,2.5M/α=0.75 only,crash (wall),qualifies,,0.4044,0.0083,0.3548,
+Spielberg,4,0.6000,200,wall_collision,False,False,,,0.0998,304.4760,0.0546,wall_collision,False,False,,,0.1460,304.5040,0.0503,neither,crash (wall),crash (wall),,0.4002,,0.3540,
+Spielberg,6,1.0000,0,wall_collision,False,False,,,0.1050,304.4250,0.0520,qualifying,True,True,46.8600,1.0405,0.1296,,0.0371,2.5M/α=0.75 only,crash (wall),qualifies,,0.3950,0.0095,0.3704,
+Spielberg,6,1.0000,200,wall_collision,False,False,,,0.1044,304.4270,0.0369,qualifying,True,True,46.8700,1.0407,0.1296,,0.0452,2.5M/α=0.75 only,crash (wall),qualifies,,0.3956,0.0093,0.3704,
+Spielberg,6,0.8000,0,wall_collision,False,False,,,0.1343,303.6420,0.0495,wall_collision,False,False,,,0.1648,42.1782,0.0725,neither,crash (wall),crash (wall),,0.3657,,0.3352,
+Spielberg,6,0.8000,200,wall_collision,False,False,,,0.1337,303.6260,0.0624,wall_collision,False,False,,,0.1713,303.6120,0.0750,neither,crash (wall),crash (wall),,0.3663,,0.3287,
+Spielberg,6,0.6000,0,wall_collision,False,False,,,0.2262,42.0399,0.0756,wall_collision,False,False,,,0.2965,42.0332,0.0725,neither,crash (wall),crash (wall),,0.2738,,0.2035,
+Spielberg,6,0.6000,200,wall_collision,False,False,,,0.2675,303.0660,0.0490,wall_collision,False,False,,,0.3101,303.0630,0.0687,neither,crash (wall),crash (wall),,0.2325,,0.1899,
+Spielberg,8,1.0000,0,qualifying,True,True,45.1200,1.0326,0.1545,,0.0339,wall_collision,False,False,,,0.1899,42.1498,0.0715,1.25M/α=1 only,qualifies,crash (wall),0.0174,0.3455,,0.3101,
+Spielberg,8,1.0000,200,qualifying,True,True,45.1100,1.0324,0.1527,,0.0363,wall_collision,False,False,,,0.1920,42.1664,0.0612,1.25M/α=1 only,qualifies,crash (wall),0.0176,0.3473,,0.3080,
+Spielberg,8,0.8000,0,wall_collision,False,False,,,0.2474,42.0495,0.0793,wall_collision,False,False,,,0.2952,42.0313,0.0715,neither,crash (wall),crash (wall),,0.2526,,0.2048,
+Spielberg,8,0.8000,200,wall_collision,False,False,,,0.2221,304.3850,0.0443,wall_collision,False,False,,,0.1862,303.4750,0.0854,neither,crash (wall),crash (wall),,0.2779,,0.3138,
+Spielberg,8,0.6000,0,wall_collision,False,False,,,0.7448,42.1735,0.0792,wall_collision,False,False,,,0.8646,43.0312,-0.6733,neither,crash (wall),crash (wall),,-0.2448,,-0.3646,
+Spielberg,8,0.6000,200,spin,False,False,,,0.3601,214.5540,0.1139,spin,False,False,,,0.3795,215.2900,0.1136,neither,crash (spin),crash (spin),,0.1399,,0.1205,
+Catalunya,4,1.0000,0,qualifying,True,True,63.1100,1.0382,0.0895,,0.2119,qualifying,True,True,63.3800,1.0427,0.0993,,0.2142,both qualify,qualifies,qualifies,0.0118,0.4105,0.0073,0.4007,0.2700
+Catalunya,4,1.0000,200,qualifying,True,True,63.1100,1.0382,0.0812,,0.2057,qualifying,True,True,63.3900,1.0429,0.0971,,0.2223,both qualify,qualifies,qualifies,0.0118,0.4188,0.0071,0.4029,0.2800
+Catalunya,4,0.8000,0,qualifying,True,True,63.1300,1.0386,0.0828,,0.1951,qualifying,True,True,63.4100,1.0432,0.1060,,0.2232,both qualify,qualifies,qualifies,0.0114,0.4172,0.0068,0.3940,0.2800
+Catalunya,4,0.8000,200,qualifying,True,True,63.1300,1.0386,0.0919,,0.2078,qualifying,True,True,63.4100,1.0432,0.1055,,0.2190,both qualify,qualifies,qualifies,0.0114,0.4081,0.0068,0.3945,0.2800
+Catalunya,4,0.6000,0,qualifying,True,True,63.1800,1.0394,0.0886,,0.1894,qualifying,True,True,63.4700,1.0442,0.1303,,0.1927,both qualify,qualifies,qualifies,0.0106,0.4114,0.0058,0.3697,0.2900
+Catalunya,4,0.6000,200,qualifying,True,True,63.1800,1.0394,0.0873,,0.1913,qualifying,True,True,63.4700,1.0442,0.1278,,0.2119,both qualify,qualifies,qualifies,0.0106,0.4127,0.0058,0.3722,0.2900
+Catalunya,6,1.0000,0,qualifying,True,True,57.3800,1.0355,0.1097,,0.1927,qualifying,True,True,57.7800,1.0427,0.1260,,0.2077,both qualify,qualifies,qualifies,0.0145,0.3903,0.0073,0.3740,0.4000
+Catalunya,6,1.0000,200,qualifying,True,True,57.3800,1.0355,0.1082,,0.1916,qualifying,True,True,57.7900,1.0429,0.1235,,0.2224,both qualify,qualifies,qualifies,0.0145,0.3918,0.0071,0.3765,0.4100
+Catalunya,6,0.8000,0,qualifying,True,True,57.4600,1.0369,0.1376,,0.1840,qualifying,True,True,57.8700,1.0443,0.1667,,0.2100,both qualify,qualifies,qualifies,0.0131,0.3624,0.0057,0.3333,0.4100
+Catalunya,6,0.8000,200,qualifying,True,True,57.4600,1.0369,0.1361,,0.1925,qualifying,True,True,57.8700,1.0443,0.1671,,0.2046,both qualify,qualifies,qualifies,0.0131,0.3639,0.0057,0.3329,0.4100
+Catalunya,6,0.6000,0,lateral_error,False,True,57.7300,1.0418,0.7023,,0.1217,lateral_error,False,True,58.1100,1.0486,0.6086,,0.1215,neither,0.5 m tracking limit,0.5 m tracking limit,0.0082,-0.2023,0.0014,-0.1086,0.3800
+Catalunya,6,0.6000,200,lateral_error,False,True,57.7300,1.0418,0.6966,,0.1174,lateral_error,False,True,58.1100,1.0486,0.6095,,0.1318,neither,0.5 m tracking limit,0.5 m tracking limit,0.0082,-0.1966,0.0014,-0.1095,0.3800
+Catalunya,8,1.0000,0,qualifying,True,True,54.8200,1.0355,0.3096,,0.2045,qualifying,True,True,55.2300,1.0433,0.2248,,0.2244,both qualify,qualifies,qualifies,0.0145,0.1904,0.0067,0.2752,0.4100
+Catalunya,8,1.0000,200,qualifying,True,True,54.8300,1.0357,0.3013,,0.1942,qualifying,True,True,55.2300,1.0433,0.2131,,0.2114,both qualify,qualifies,qualifies,0.0143,0.1987,0.0067,0.2869,0.4000
+Catalunya,8,0.8000,0,lateral_error,False,True,55.0300,1.0395,0.7314,,0.1662,lateral_error,False,True,55.4400,1.0473,0.5709,,0.1491,neither,0.5 m tracking limit,0.5 m tracking limit,0.0105,-0.2314,0.0027,-0.0709,0.4100
+Catalunya,8,0.8000,200,lateral_error,False,True,55.0400,1.0397,0.7343,,0.1716,lateral_error,False,True,55.4500,1.0475,0.5784,,0.1673,neither,0.5 m tracking limit,0.5 m tracking limit,0.0103,-0.2343,0.0025,-0.0784,0.4100
+Catalunya,8,0.6000,0,spin,False,False,,,0.9517,84.7007,0.2231,spin,False,False,,,1.9001,88.8947,-0.4807,neither,crash (spin),crash (spin),,-0.4517,,-1.4001,
+Catalunya,8,0.6000,200,spin,False,False,,,1.9185,319.7450,-0.5734,spin,False,False,,,0.5903,323.5650,0.2280,neither,crash (spin),crash (spin),,-1.4185,,-0.0903,
+Silverstone,4,1.0000,0,qualifying,True,True,67.2200,1.0349,0.1049,,0.0862,qualifying,True,True,67.4600,1.0386,0.1259,,0.0357,both qualify,qualifies,qualifies,0.0151,0.3951,0.0114,0.3741,0.2400
+Silverstone,4,1.0000,200,qualifying,True,True,67.2100,1.0347,0.1048,,0.0824,qualifying,True,True,67.4600,1.0386,0.1243,,0.0407,both qualify,qualifies,qualifies,0.0153,0.3952,0.0114,0.3757,0.2500
+Silverstone,4,0.8000,0,qualifying,True,True,67.2300,1.0350,0.1049,,0.0934,qualifying,True,True,67.4800,1.0389,0.1364,,0.0407,both qualify,qualifies,qualifies,0.0150,0.3951,0.0111,0.3636,0.2500
+Silverstone,4,0.8000,200,qualifying,True,True,67.2300,1.0350,0.1054,,0.0843,qualifying,True,True,67.4900,1.0390,0.1333,,0.0397,both qualify,qualifies,qualifies,0.0150,0.3946,0.0110,0.3667,0.2600
+Silverstone,4,0.6000,0,qualifying,True,True,67.2800,1.0358,0.1045,,0.0855,wall_collision,False,False,,,0.1113,176.2610,0.0328,1.25M/α=1 only,qualifies,crash (wall),0.0142,0.3955,,0.3887,
+Silverstone,4,0.6000,200,qualifying,True,True,67.2800,1.0358,0.1044,,0.0785,wall_collision,False,False,,,0.1589,244.9990,0.0522,1.25M/α=1 only,qualifies,crash (wall),0.0142,0.3956,,0.3411,
+Silverstone,6,1.0000,0,qualifying,True,True,62.6200,1.0325,0.1314,,0.0654,wall_collision,False,False,,,0.1114,176.2300,0.0393,1.25M/α=1 only,qualifies,crash (wall),0.0175,0.3686,,0.3886,
+Silverstone,6,1.0000,200,qualifying,True,True,62.6300,1.0327,0.1340,,0.0502,wall_collision,False,False,,,0.1505,176.1480,0.0511,1.25M/α=1 only,qualifies,crash (wall),0.0173,0.3660,,0.3495,
+Silverstone,6,0.8000,0,wall_collision,False,False,,,0.1501,176.5630,0.0364,wall_collision,False,False,,,0.1342,175.7570,0.0604,neither,crash (wall),crash (wall),,0.3499,,0.3658,
+Silverstone,6,0.8000,200,wall_collision,False,False,,,0.1469,176.4290,0.0582,wall_collision,False,False,,,0.1665,175.7550,0.0514,neither,crash (wall),crash (wall),,0.3531,,0.3335,
+Silverstone,6,0.6000,0,wall_collision,False,False,,,0.1854,175.7510,0.0581,wall_collision,False,False,,,0.2356,175.7160,0.0596,neither,crash (wall),crash (wall),,0.3146,,0.2644,
+Silverstone,6,0.6000,200,wall_collision,False,False,,,0.2094,394.6510,0.1013,wall_collision,False,False,,,0.2870,394.4130,0.0163,neither,crash (wall),crash (wall),,0.2906,,0.2130,
+Silverstone,8,1.0000,0,wall_collision,False,False,,,0.1954,176.0850,0.0594,wall_collision,False,False,,,0.1453,175.8410,0.0536,neither,crash (wall),crash (wall),,0.3046,,0.3547,
+Silverstone,8,1.0000,200,wall_collision,False,False,,,0.1944,176.0010,0.0594,wall_collision,False,False,,,0.1807,175.8420,0.0533,neither,crash (wall),crash (wall),,0.3056,,0.3193,
+Silverstone,8,0.8000,0,wall_collision,False,False,,,0.2271,175.7530,0.0562,wall_collision,False,False,,,0.1959,175.7040,0.0541,neither,crash (wall),crash (wall),,0.2729,,0.3041,
+Silverstone,8,0.8000,200,wall_collision,False,False,,,0.4620,175.7480,0.0466,wall_collision,False,False,,,0.4645,175.7100,0.0416,neither,crash (wall),crash (wall),,0.0380,,0.0355,
+Silverstone,8,0.6000,0,wall_collision,False,False,,,0.1139,61.2505,0.0464,spin,False,False,,,0.3774,69.0431,0.0535,neither,crash (wall),crash (spin),,0.3861,,0.1226,
+Silverstone,8,0.6000,200,spin,False,False,,,1.2138,315.9480,0.1239,spin,False,False,,,1.2577,317.0990,0.0163,neither,crash (spin),crash (spin),,-0.7138,,-0.7577,
