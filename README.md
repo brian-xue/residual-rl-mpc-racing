@@ -17,13 +17,25 @@ Outputs go to `results_st_pacejka/longitudinal/Austin/`: `sweep.csv`, `lap_time_
 
 Without Rust, use `uv sync --no-group rust`. A `kernel: rust` config then prints a warning and runs on the Python loop, with identical results (about 5× slower).
 
-**GIFs (Git LFS).** The result GIFs are stored with [Git LFS](https://git-lfs.com). Install it (`brew install git-lfs`, then `git lfs install`) before cloning to get them, or run `git lfs pull` afterwards. Code and CSV results do not need it.
-
 **Checks.** `.github/workflows/checks.yml` runs on every push and PR:
 - `python -m pilot.kernel_check` and `cargo test` on macOS arm64, the platform the Python/Rust bit-identity was verified on;
 - an install without Rust on Linux.
 
 **License:** MIT (`LICENSE`).
+
+**Lap GIFs (GitHub release, not in the repository).** The evaluation scripts write a GIF next to the other outputs (`*.gif` is git-ignored, so clones stay small). The published GIFs are assets of the release [`results-v1`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/tag/results-v1); each asset is named after its output path with `/` replaced by `-`:
+
+- [`results-ff_residual-lap_time.gif`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results-ff_residual-lap_time.gif): linear ST: MPC + K·v²·κ + RL residual (ckpt_1500000) vs baselines (μ/μ₀ 0.6)
+- [`results-lap.gif`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results-lap.gif): linear ST pilot: nominal MPC vs MPC + K·v²·κ, same speed level (a_lat 4, μ/μ₀ 0.8)
+- [`results-lap_time.gif`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results-lap_time.gif): linear ST pilot: both controllers at their own fastest qualifying level (μ/μ₀ 0.6)
+- [`results-reference-reference_lap.gif`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results-reference-reference_lap.gif): linear ST: nominal, K·v²·κ and the dynamic-model reference (μ/μ₀ 0.6)
+- [`results-residual-lap_time.gif`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results-residual-lap_time.gif): linear ST: MPC + RL residual vs baselines (μ/μ₀ 0.6)
+- [`results_st_pacejka-residual-lap_time.gif`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results_st_pacejka-residual-lap_time.gif): Pacejka plant: MPC + RL (δ) vs baselines (μ/μ₀ 0.6)
+- [`results_st_pacejka-residual_dual-grid_from3-Austin-lap_time.gif`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results_st_pacejka-residual_dual-grid_from3-Austin-lap_time.gif): Pacejka plant: MPC + RL (δ, a), search from a_lat 3 (μ/μ₀ 0.6)
+- [`results_st_pacejka-residual_dual_wall-grid_from3-Austin-lap_time.gif`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results_st_pacejka-residual_dual_wall-grid_from3-Austin-lap_time.gif): Pacejka plant: MPC + RL (δ, a) + wall obs, search from a_lat 3 (μ/μ₀ 0.6)
+- [`results_std-lap.gif`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results_std-lap.gif): STD plant (appendix): same speed level
+- [`results_std-lap_time.gif`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results_std-lap_time.gif): STD plant (appendix): fastest qualifying levels
+- [`results_std-reference-reference_lap.gif`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results_std-reference-reference_lap.gif): STD plant (appendix): with the dynamic-model reference
 
 ## Plant: ST with saturating tires (`pilot/tires.py`)
 

@@ -12,11 +12,11 @@ This is the minimal feasibility pilot for the proposal *Residual RL on MPC for V
 
 **Lap-time comparison.** Each controller can also run at the fastest speed level where it still produces a qualifying lap. Nominal MPC then needs a much slower plan. The correction gains 8.3 s per lap at μ₀ (12%), 12.3 s at 0.8 μ₀ (17%), and 24.0 s at 0.6 μ₀ (28%).
 
-![lap time](results/lap_time.gif)
+![lap time](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results-lap_time.gif)
 
 *Above: μ/μ₀ = 0.6. Nominal MPC at its fastest qualifying level (a_lat 1.5, 86.67 s) against MPC + K·v²·κ (a_lat 4.0, 62.67 s). Each panel shows a running timer that freezes at the lap time.*
 
-![lap](results/lap.gif)
+![lap](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results-lap.gif)
 
 *Above: the same speed level for both (a_lat 4, μ/μ₀ = 0.8). Nominal MPC hits the wall at the turn-1 exit.*
 
@@ -38,6 +38,8 @@ uv run python -m pilot.run_pilot --config configs/pilot_std.yaml
 The two configs differ only in `model`, `dt`, `out`, the MPC weights and the delay compensation. `workers` sets the number of parallel lap simulations. On first use, Gym-Khana downloads the Austin map from its own map release (`TeoIlie/F1TENTH_Racetracks` v1.4.0) into `~/.gymkhana/maps/`.
 
 ### Outputs (`results/` for ST; `results_std/` has the same layout for STD)
+
+> **GIFs** are not stored in the repository. The scripts write them next to the other outputs (`*.gif` is git-ignored), and the published copies are assets of the GitHub release [`results-v1`](https://github.com/brian-xue/residual-rl-mpc-racing/releases/tag/results-v1); the asset name is the output path with `/` replaced by `-`.
 
 | File | Contents |
 | --- | --- |
@@ -309,7 +311,7 @@ With margins of 0.15 or 0.20 m, a_lat = 4 is the cleanest case of **friction-ind
 
 ## 6. Dynamic-model reference lap (`pilot/reference_lap.py`)
 
-![reference](results/reference/reference_lap.gif)
+![reference](https://github.com/brian-xue/residual-rl-mpc-racing/releases/download/results-v1/results-reference-reference_lap.gif)
 
 This is the proposal's privileged **ground-truth-model reference**. It is an MPC whose prediction model is the simulator's own dynamic single-track equations (`vehicle_dynamics_st`, F1TENTH parameters) with the **true μ**. It measures the plant's sideslip and yaw rate. With speed and acceleration taken from the speed plan, those equations are linear in (β, r, δ), so the time-varying linear model matches the plant up to small-angle terms.
 
