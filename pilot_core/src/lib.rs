@@ -2,7 +2,8 @@
 //!
 //! * ``Geometry``  track-limit / wall checks (``pilot.geometry.TrackGeometry.check``)
 //! * ``RefLine``   Frenet projection (``pilot.reference.Reference.project``)
-//! * ``LapKernel`` the per-physics-step loop of ``pilot.closedloop.LapSim``
+//! * ``LapKernel`` the per-physics-step loop of ``pilot.closedloop.LapSim`` (+ the kinematic MPC step)
+//! * ``KinematicQP`` ``pilot.mpc.KinematicMPC``: closed-form ZOH, QP assembly, OSQP through its C API
 //! * ``st_dynamics``, ``rk4_step``  the ST plant (Gym-Khana linear tires, ``pilot.tires`` nonlinear tires)
 //!
 //! Python crosses into Rust once per control interval; all physics-rate work stays here.
@@ -10,6 +11,7 @@
 pub mod dynamics;
 pub mod geometry;
 pub mod kernel;
+pub mod mpc;
 pub mod numerics;
 pub mod params;
 pub mod track;
@@ -140,7 +142,7 @@ impl PyGeometry {
     }
 }
 
-/// ``RefLine(s, x, y, psi, length)``
+/// ``RefLine(s, x, y, psi, kappa, length)``
 #[pyclass(name = "RefLine", frozen, module = "pilot_core")]
 struct PyRefLine {
     inner: Arc<track::RefLine>,
@@ -154,19 +156,35 @@ impl PyRefLine {
         x: PyReadonlyArray1<'_, f64>,
         y: PyReadonlyArray1<'_, f64>,
         psi: PyReadonlyArray1<'_, f64>,
+        kappa: PyReadonlyArray1<'_, f64>,
         length: f64,
     ) -> PyResult<Self> {
-        let (s, x, y, psi) = (
+        let (s, x, y, psi, kappa) = (
             s.as_slice()?.to_vec(),
             x.as_slice()?.to_vec(),
             y.as_slice()?.to_vec(),
             psi.as_slice()?.to_vec(),
+            kappa.as_slice()?.to_vec(),
         );
-        if [x.len(), y.len(), psi.len()].iter().any(|&n| n != s.len()) || s.is_empty() {
+        if [x.len(), y.len(), psi.len(), kappa.len()]
+            .iter()
+            .any(|&n| n != s.len())
+            || s.is_empty()
+        {
             return Err(PyValueError::new_err(
-                "s, x, y, psi must have the same non-zero length",
+                "s, x, y, psi, kappa must have the same non-zero length",
             ));
         }
+        // Reference.kappa_at: np.interp(np.mod(s, L), np.r_[s, L], np.r_[kappa, kappa[0]])
+        let kappa_at = track::Periodic {
+            length,
+            xp: s.iter().copied().chain(std::iter::once(length)).collect(),
+            fp: kappa
+                .iter()
+                .copied()
+                .chain(std::iter::once(kappa[0]))
+                .collect(),
+        };
         Ok(Self {
             inner: Arc::new(track::RefLine {
                 s,
@@ -174,8 +192,15 @@ impl PyRefLine {
                 y,
                 psi,
                 length,
+                kappa,
+                kappa_at,
             }),
         })
+    }
+
+    /// ``Reference.kappa_at(s)`` for a scalar ``s``.
+    fn kappa_at(&self, s: f64) -> f64 {
+        self.inner.kappa_at.at(s)
     }
 
     /// ``Reference.project(x, y, i_guess)`` -> (s, e_y, i)
@@ -217,6 +242,175 @@ fn rk4_step<'py>(
         &dynamics::rk4(&state_from(&x)?, [u[0], u[1]], dt, &p),
     ))
 }
+
+fn usize_vec(a: &PyReadonlyArray1<'_, i64>) -> PyResult<Vec<usize>> {
+    a.as_slice()?
+        .iter()
+        .map(|&v| usize::try_from(v).map_err(|_| PyValueError::new_err("negative index")))
+        .collect()
+}
+
+fn csc(
+    m: usize,
+    n: usize,
+    indptr: &PyReadonlyArray1<'_, i64>,
+    indices: &PyReadonlyArray1<'_, i64>,
+    data: Vec<f64>,
+) -> PyResult<mpc::Csc> {
+    let indptr: Vec<osqp_sys::osqp_int> = indptr
+        .as_slice()?
+        .iter()
+        .map(|&v| v as osqp_sys::osqp_int)
+        .collect();
+    let indices: Vec<osqp_sys::osqp_int> = indices
+        .as_slice()?
+        .iter()
+        .map(|&v| v as osqp_sys::osqp_int)
+        .collect();
+    if indptr.len() != n + 1 || indices.len() != data.len() {
+        return Err(PyValueError::new_err("inconsistent CSC arrays"));
+    }
+    Ok(mpc::Csc {
+        m,
+        n,
+        indptr,
+        indices,
+        data,
+    })
+}
+
+/// ``KinematicQP(...)``: built by ``pilot.mpc.KinematicMPC.rust_qp`` (model, QP structure, OSQP settings).
+#[pyclass(name = "KinematicQP", module = "pilot_core")]
+struct PyKinematicQp {
+    inner: mpc::KinematicQp,
+}
+
+#[pymethods]
+impl PyKinematicQp {
+    #[new]
+    #[pyo3(signature = (lr, l, ts, n, nx, n_eq, n_slots, a_pos, a_src, b_pos, b_src, perm, q_idx, q_coef, q_ref,
+                        p_indptr, p_indices, p_data, a_m, a_indptr, a_indices, lo, hi, eps_abs, eps_rel, max_iter,
+                        polishing, warm_starting))]
+    #[allow(clippy::too_many_arguments)]
+    fn new(
+        lr: f64,
+        l: f64,
+        ts: f64,
+        n: usize,
+        nx: usize,
+        n_eq: usize,
+        n_slots: usize,
+        a_pos: PyReadonlyArray1<'_, i64>,
+        a_src: PyReadonlyArray1<'_, i64>,
+        b_pos: PyReadonlyArray1<'_, i64>,
+        b_src: PyReadonlyArray1<'_, i64>,
+        perm: PyReadonlyArray1<'_, i64>,
+        q_idx: PyReadonlyArray1<'_, i64>,
+        q_coef: PyReadonlyArray1<'_, f64>,
+        q_ref: PyReadonlyArray1<'_, i64>,
+        p_indptr: PyReadonlyArray1<'_, i64>,
+        p_indices: PyReadonlyArray1<'_, i64>,
+        p_data: PyReadonlyArray1<'_, f64>,
+        a_m: usize,
+        a_indptr: PyReadonlyArray1<'_, i64>,
+        a_indices: PyReadonlyArray1<'_, i64>,
+        lo: PyReadonlyArray1<'_, f64>,
+        hi: PyReadonlyArray1<'_, f64>,
+        eps_abs: f64,
+        eps_rel: f64,
+        max_iter: i64,
+        polishing: bool,
+        warm_starting: bool,
+    ) -> PyResult<Self> {
+        let nnz_a = a_indices.as_slice()?.len();
+        let p = csc(nx, nx, &p_indptr, &p_indices, p_data.as_slice()?.to_vec())?;
+        let a = csc(a_m, nx, &a_indptr, &a_indices, vec![0.0; nnz_a])?;
+        let (lo, hi) = (lo.as_slice()?.to_vec(), hi.as_slice()?.to_vec());
+        if lo.len() != a_m || hi.len() != a_m || n_slots != nnz_a {
+            return Err(PyValueError::new_err("inconsistent QP dimensions"));
+        }
+        Ok(Self {
+            inner: mpc::KinematicQp::new(
+                lr,
+                l,
+                ts,
+                n,
+                nx,
+                n_eq,
+                n_slots,
+                usize_vec(&a_pos)?,
+                usize_vec(&a_src)?,
+                usize_vec(&b_pos)?,
+                usize_vec(&b_src)?,
+                usize_vec(&perm)?,
+                usize_vec(&q_idx)?,
+                q_coef.as_slice()?.to_vec(),
+                usize_vec(&q_ref)?,
+                p,
+                a,
+                lo,
+                hi,
+                mpc::OsqpSettings {
+                    eps_abs,
+                    eps_rel,
+                    max_iter,
+                    polishing,
+                    warm_starting,
+                },
+            ),
+        })
+    }
+
+    /// ``KinematicMPC.assemble`` -> (q, b_eq, A values)
+    fn assemble<'py>(
+        &self,
+        py: Python<'py>,
+        e_y: f64,
+        e_psi: f64,
+        delta_prev: f64,
+        v_seq: PyReadonlyArray1<'py, f64>,
+        kappa_seq: PyReadonlyArray1<'py, f64>,
+    ) -> PyResult<Arrays3<'py>> {
+        let a = self.inner.assemble(
+            e_y,
+            e_psi,
+            delta_prev,
+            v_seq.as_slice()?,
+            kappa_seq.as_slice()?,
+        );
+        Ok((
+            PyArray1::from_vec(py, a.q),
+            PyArray1::from_vec(py, a.beq),
+            PyArray1::from_vec(py, a.ax),
+        ))
+    }
+
+    /// ``KinematicMPC.solve`` -> (delta_cmd, ok, solve_time_s)
+    fn solve(
+        &mut self,
+        e_y: f64,
+        e_psi: f64,
+        delta_prev: f64,
+        v_seq: PyReadonlyArray1<'_, f64>,
+        kappa_seq: PyReadonlyArray1<'_, f64>,
+    ) -> PyResult<(f64, bool, f64)> {
+        Ok(self.inner.solve(
+            e_y,
+            e_psi,
+            delta_prev,
+            v_seq.as_slice()?,
+            kappa_seq.as_slice()?,
+        ))
+    }
+}
+
+/// OSQP C library version linked into ``pilot_core``.
+#[pyfunction]
+fn osqp_version() -> String {
+    mpc::osqp_version()
+}
+
+type Arrays3<'py> = (Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>);
 
 type Sync<'py> = (
     bool,
@@ -340,6 +534,20 @@ impl PyLapKernel {
         )
     }
 
+    /// Kinematic-MPC step of ``LapSim.plan`` (delay compensation, previews, MPC, feedforward) on the kernel's
+    /// current state. Returns (d_mpc, ok, solve_time_s, s_p, d_ff).
+    fn plan_kinematic(
+        &self,
+        qp: &Bound<'_, PyKinematicQp>,
+        delta_mpc_prev: f64,
+        tau: f64,
+        k_ff: f64,
+    ) -> (f64, bool, f64, f64, f64) {
+        let mut qp = qp.borrow_mut();
+        self.lap
+            .plan_kinematic(&mut qp.inner, delta_mpc_prev, tau, k_ff)
+    }
+
     /// Lap metrics accumulated so far (``LapSim`` attribute names).
     fn metrics<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
         let m = &self.lap.metrics;
@@ -365,6 +573,8 @@ fn pilot_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyGeometry>()?;
     m.add_class::<PyRefLine>()?;
     m.add_class::<PyLapKernel>()?;
+    m.add_class::<PyKinematicQp>()?;
+    m.add_function(wrap_pyfunction!(osqp_version, m)?)?;
     m.add_function(wrap_pyfunction!(st_dynamics, m)?)?;
     m.add_function(wrap_pyfunction!(rk4_step, m)?)?;
     Ok(())

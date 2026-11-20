@@ -145,6 +145,12 @@ def make_env(track: str, mu_scale: float, steer_mode: str, dt: float = 0.01, max
     return env
 
 
+def set_env_params(env, params: dict):
+    """Give an existing env the params ``make_env`` would have built it with (agents and env-level copy)."""
+    env.sim.update_params(params)
+    env.params = env.config["params"] = params
+
+
 def agent(env):
     return env.sim.agents[0]
 

@@ -9,6 +9,9 @@ pub struct RefLine {
     pub y: Vec<f64>,
     pub psi: Vec<f64>,
     pub length: f64,
+    /// ``Reference.kappa`` and its periodic lookup ``Reference.kappa_at``
+    pub kappa: Vec<f64>,
+    pub kappa_at: Periodic,
 }
 
 pub const PROJECT_WINDOW: i64 = 60;

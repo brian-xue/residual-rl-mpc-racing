@@ -22,6 +22,8 @@ from scipy.linalg import expm
 
 
 class KinematicMPC:
+    OSQP_SETTINGS = dict(eps_abs=1e-5, eps_rel=1e-5, max_iter=4000, polishing=True, warm_starting=True)
+
     def __init__(self, lf, lr, Ts, N, q_y, q_psi, r_du, q_terminal, s_max, du_max):
         self.lf, self.lr, self.L = lf, lr, lf + lr
         self.Ts, self.N = Ts, N
@@ -40,10 +42,13 @@ class KinematicMPC:
     def _discretize_many(self, v, kappa):
         """Exact ZOH of the Jacobian linearisation at (0, -beta_r, delta_r) for every stage at once.
 
-        v, kappa: (n,) arrays. Returns Ad (n, 3, 3), Bd (n, 3), cd (n, 3), e_psi_ref (n,). Forward differences
-        (h = 1e-6) and one stacked expm; bit-identical to evaluating the stages one by one."""
+        v, kappa: (n,) arrays. Returns Ad (n, 3, 3), Bd (n, 3), cd (n, 3), e_psi_ref (n,). The Jacobian comes from
+        forward differences (h = 1e-6). The error model does not depend on e_y, and e_psi' does not depend on
+        e_psi, so the augmented matrix M = [[0, a, b0, c0], [0, 0, b1, c1], 0, 0] is nilpotent (M^3 = 0) and
+        expm(M Ts) = I + M Ts + (M Ts)^2 / 2 exactly. That closed form is used (it agrees with scipy's Pade expm
+        to ~6e-16 relative); ``pilot_core.KinematicQP`` mirrors it bit for bit."""
         v, kappa = np.asarray(v, dtype=float), np.asarray(kappa, dtype=float)
-        n, L, h = len(v), self.L, 1e-6
+        n, L, h, T = len(v), self.L, 1e-6, self.Ts
 
         def f(epsi, d):
             b = self._beta(d)
@@ -52,19 +57,19 @@ class KinematicMPC:
         d_r = np.arctan(L * kappa)
         e1 = -self._beta(d_r)  # e0 = (0, e1)
         f0, fp, fd = f(e1, d_r), f(e1 + h, d_r), f(e1, d_r + h)
-        M = np.zeros((n, 4, 4))
-        for i in range(2):
-            # column 0 (d/d e_y) stays 0: the error model does not depend on e_y
-            M[:, i, 1] = (fp[i] - f0[i]) / h
-            M[:, i, 2] = (fd[i] - f0[i]) / h
-            M[:, i, 3] = f0[i] - (M[:, i, 0] * 0.0 + M[:, i, 1] * e1) - M[:, i, 2] * d_r  # f0 - Ac e0 - Bc d_r
-        E = expm(M * self.Ts)
+        a = (fp[0] - f0[0]) / h  # d e_y' / d e_psi (d e_psi' / d e_psi = (fp[1] - f0[1]) / h is exactly 0)
+        b0, b1 = (fd[0] - f0[0]) / h, (fd[1] - f0[1]) / h  # d / d delta
+        c0, c1 = f0[0] - a * e1 - b0 * d_r, f0[1] - b1 * d_r  # f0 - Ac e0 - Bc d_r
+        aT, b0T, b1T, c0T, c1T = a * T, b0 * T, b1 * T, c0 * T, c1 * T
+        g0 = b0T + aT * b1T / 2  # (I + M T + (M T)^2 / 2)[0, 2]
+        w0 = c0T + aT * c1T / 2  # (I + M T + (M T)^2 / 2)[0, 3]
         Ad = np.zeros((n, 3, 3))
-        Ad[:, :2, :2], Ad[:, :2, 2], Ad[:, 2, 2] = E[:, :2, :2], E[:, :2, 2], 1.0
-        Bd = np.zeros((n, 3))
-        Bd[:, :2], Bd[:, 2] = E[:, :2, 2], 1.0
+        Ad[:, 0, 0] = Ad[:, 1, 1] = Ad[:, 2, 2] = 1.0
+        Ad[:, 0, 1], Ad[:, 0, 2], Ad[:, 1, 2] = aT, g0, b1T
+        Bd = np.empty((n, 3))
+        Bd[:, 0], Bd[:, 1], Bd[:, 2] = g0, b1T, 1.0
         cd = np.zeros((n, 3))
-        cd[:, :2] = E[:, :2, 3]
+        cd[:, 0], cd[:, 1] = w0, c1T
         return Ad, Bd, cd, e1
 
     def _discretize(self, v, kappa):
@@ -135,27 +140,46 @@ class KinematicMPC:
         vals[self._B_pos] = -Bd.ravel()[self._B_src]
         return vals[self._perm]
 
-    def solve(self, e_y, e_psi, delta_prev, v_seq, kappa_seq):
-        """v_seq, kappa_seq: length-N previews. Returns (delta_cmd, status_ok, solve_time_s, pred)."""
+    def assemble(self, e_y, e_psi, delta_prev, v_seq, kappa_seq):
+        """QP data for one solve: (q, b_eq, A values in CSC order). ``pilot_core.KinematicQP.assemble`` is the
+        same computation in Rust (bit-identical)."""
         N = self.N
         Ad, Bd, cd, epr = self._discretize_many(np.maximum(np.asarray(v_seq[:N], dtype=float), 0.5), kappa_seq[:N])
-        z0 = np.array([e_y, e_psi, delta_prev])
         beq = cd.ravel()  # view of cd, which is not used after this
-        beq[:3] = cd[0] + Ad[0] @ z0
-        self.l[: self.n_eq] = beq
-        self.u[: self.n_eq] = beq
+        # z_0 term of the first stage, Ad_0 z_0 written out (no BLAS, so the summation order is fixed)
+        beq[:3] = cd[0] + (Ad[0, :, 0] * e_y + Ad[0, :, 1] * e_psi + Ad[0, :, 2] * delta_prev)
         q = np.zeros(self.nx)
         q[self._q_idx] = self._q_coef * epr[self._q_ref]
-        Ax = self._A_values(Ad, Bd)
+        return q, beq, self._A_values(Ad, Bd)
+
+    def rust_qp(self):
+        """``pilot_core.KinematicQP`` with this MPC's model and QP structure (for the Rust lap kernel)."""
+        import pilot_core
+
+        P, A, i64 = sp.diags(self._Pdiag).tocsc(), self._A_struct, np.int64  # exactly what solve_assembled passes
+        return pilot_core.KinematicQP(
+            self.lr, self.L, self.Ts, self.N, self.nx, self.n_eq, len(self._slots),
+            self._A_pos.astype(i64), self._A_src.astype(i64), self._B_pos.astype(i64), self._B_src.astype(i64),
+            self._perm.astype(i64), self._q_idx.astype(i64), self._q_coef, self._q_ref.astype(i64),
+            P.indptr.astype(i64), P.indices.astype(i64), P.data.astype(float),
+            A.shape[0], A.indptr.astype(i64), A.indices.astype(i64), self.l.copy(), self.u.copy(),
+            **self.OSQP_SETTINGS)
+
+    def solve(self, e_y, e_psi, delta_prev, v_seq, kappa_seq):
+        """v_seq, kappa_seq: length-N previews. Returns (delta_cmd, status_ok, solve_time_s, pred)."""
+        return self.solve_assembled(*self.assemble(e_y, e_psi, delta_prev, v_seq, kappa_seq), delta_prev)
+
+    def solve_assembled(self, q, beq, Ax, delta_prev):
+        """OSQP on assembled QP data (``assemble``). Returns (delta_cmd, status_ok, solve_time_s, pred)."""
+        N = self.N
+        self.l[: self.n_eq] = beq
+        self.u[: self.n_eq] = beq
         t0 = time.perf_counter()
         if self.solver is None:
             A = self._A_struct.copy()
             A.data = Ax
             self.solver = osqp.OSQP()
-            self.solver.setup(
-                sp.diags(self._Pdiag).tocsc(), q, A, self.l, self.u,
-                verbose=False, eps_abs=1e-5, eps_rel=1e-5, polishing=True, warm_starting=True, max_iter=4000,
-            )
+            self.solver.setup(sp.diags(self._Pdiag).tocsc(), q, A, self.l, self.u, verbose=False, **self.OSQP_SETTINGS)
         else:
             self.solver.update(q=q, l=self.l, u=self.u, Ax=Ax)
         res = self.solver.solve()

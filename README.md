@@ -13,6 +13,8 @@ uv run python -m pilot.longitudinal --config configs/pilot_st_pacejka.yaml --fro
 
 Outputs go to `results_st_pacejka/longitudinal/Austin/`: `sweep.csv`, `lap_time_grid.csv`, `lap_time_comparison.csv/.png` and `report.json`. On first use, Gym-Khana downloads the Austin map into `~/.gymkhana/maps/`.
 
+`uv sync` also builds the Rust core `pilot_core/` (PyO3 extension, a path dependency), so it needs a Rust toolchain and `cmake` on `PATH` (with Homebrew's keg-only rustup: `export PATH="/opt/homebrew/opt/rustup/bin:$PATH"`). Set `kernel: rust` in a config to run laps on it; see [Speed](#speed-rust-core-kernel-rust).
+
 ## Plant: ST with saturating tires (`pilot/tires.py`)
 
 - **Equations:** the ST equations rewritten in axle-force form. The ST state, inputs, steering and acceleration limits and longitudinal load transfer `Fz = m(g·l ∓ a·h)/L` are all unchanged.
@@ -113,6 +115,36 @@ Rows without ff for P-E, C and C-E are in `lap_time_comparison.csv`. They are sl
 - **Solve time:** S/S-E solves (OSQP, Python) take about 1 ms typically, but p99 reaches 18 / 39 ms and the maximum 82 ms (one S-E lap). That exceeds the 50 ms period. The simulation does not model computation time, so results are unaffected, but a real-time implementation needs a faster solver or warm-started real-time iterations.
 - **The ellipse metric is noisy:** `ellipse_max` (measured at 100 Hz) includes transients.
 
+## Speed: Rust core (`kernel: rust`)
+
+With `kernel: rust` in a config, the per-physics-step loop of `LapSim` and the kinematic steering MPC run in Rust (`pilot_core/`). That covers:
+- the ST plant with linear, Pacejka or Fiala tires, RK4 and Gym-Khana's step;
+- servo and speed controller;
+- track-limit and wall checks, the Frenet projection and the lap metrics;
+- the MPC's delay compensation, previews, discretisation, QP assembly and OSQP.
+
+The coupled, slip-aware and reference MPCs, the residual policy, logging and summaries stay in Python. Only the ST plant with `steer_mode: steering_speed` is supported (other settings raise); the configs default to `kernel: python`.
+
+**Results are bit-identical to the Python loop.** `uv run python -m pilot.kernel_check` compares both kernels on laps (linear and Pacejka; kinematic and coupled MPC; completed, crash and spin outcomes) and on a residual-RL rollout. [pilot_core/README.md](pilot_core/README.md) lists what exact equality needs: libm `pow` for scalar `x**2`, FMA for `np.interp`, no fused sin/cos, and the same OSQP C version and calls.
+
+**Measured** on an Apple M4, Austin, linear ST, a_lat 3, a 68.6 s lap:
+
+| | Before optimisation | Python loop (now) | `kernel: rust` |
+| --- | --- | --- | --- |
+| Full lap (`run_lap`) | 3.04 s | 0.74 s | **0.13 s** |
+| Residual-RL env step | 2.11 ms | 0.64 ms | **0.19 ms** |
+| PPO rollout, 8 workers | 1,235 steps/s | 3,899 steps/s | **10,160 steps/s** |
+
+The Python-loop gains apply to both kernels:
+- the loop steps Gym-Khana's `Simulator` directly instead of calling `env.step`, skipping a Frenet-progress reward and an observation it never read;
+- the geometry polygons and speed-plan lookups are vectorised;
+- the MPC discretisation is the exact closed form (below);
+- laps reuse an idle simulator env from the same process (`Track.acquire_env`; `make_env` cost about 0.3 s per lap).
+
+A 3M-step residual training run is estimated to take about 6 min with the Rust kernel, against 43–55 min before; this was not timed end to end.
+
+**MPC discretisation.** `KinematicMPC` now uses `I + M·Ts + (M·Ts)²/2` instead of scipy's `expm`. This is exact: the error model's augmented matrix M is nilpotent. The two agree to 6e-16 relative. Rerunning the results above therefore matches to rounding, not bit for bit: on the checked laps, outcomes and lap times are identical and traces differ by ≤ 1e-11. `SlipMPC` is unchanged.
+
 ## Code
 
 | File | Purpose |
@@ -120,7 +152,9 @@ Rows without ff for P-E, C and C-E are in `lap_time_comparison.csv`. They are sl
 | `pilot/tires.py` | Saturating tires for the ST plant (Pacejka, Fiala, friction circle, axle-force ST) |
 | `pilot/sim.py` | Env construction, plant and tire switch, friction scaling, steering servo |
 | `pilot/mpc.py` | `KinematicMPC` (steering), `CoupledMPC` (steering + speed), `SlipMPC` (slip-aware, steering + speed) |
-| `pilot/closedloop.py` | One lap (`LapSim`): controllers, validity checks (incl. spin), metrics, qualifying rule |
+| `pilot/closedloop.py` | One lap (`LapSim`): controllers, validity checks (incl. spin), metrics, qualifying rule; per-process env pool on `Track` |
+| `pilot/kernel.py`, `pilot/kernel_check.py` | `kernel: rust` wiring (`pilot_core.LapKernel` from a `LapSim`) and the Python-vs-Rust equivalence check |
+| `pilot_core/` | Rust core (PyO3 + maturin): plant, geometry, projection, lap loop, kinematic MPC with OSQP; see its README |
 | `pilot/reference.py` | Reference line, standard and friction-ellipse speed plans, Frenet projection |
 | `pilot/longitudinal.py` | Controller comparison: sweep, fastest-lap search, chart |
 | `configs/pilot_st_pacejka.yaml` | This plant's config; `longitudinal.slip_mpc` holds the slip-aware MPC settings |

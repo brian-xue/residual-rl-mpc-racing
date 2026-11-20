@@ -26,7 +26,8 @@ from .geometry import TrackGeometry
 from .kernel import KERNELS, make_kernel
 from .mpc import CoupledMPC, KinematicMPC, SlipMPC
 from .reference import Reference, speed_plan, wall_safe_raceline
-from .sim import NOMINAL_PARAMS, SteeringServo, agent, make_env, reset_to_state, set_plant, vehicle_params
+from .sim import (NOMINAL_PARAMS, SteeringServo, agent, make_env, plant_model, reset_to_state, set_env_params,
+                  set_plant, vehicle_params)
 
 
 @dataclass
@@ -82,8 +83,32 @@ class Track:
         self.info.update(source=rc["source"], length_m=self.ref.length, kappa_abs_max=float(np.abs(self.ref.kappa).max()),
                          perfect_tracking_wall_contacts=int(n_wall), perfect_tracking_off_track=int(n_off),
                          perfect_tracking_min_wall_clearance_m=float(np.min(clear)))
-        env.close()
         self._plans = {}
+        self._env_pool = {}  # idle simulator envs per (track, steer_mode, dt, plant): see acquire_env
+        self.release_env(env, self._env_key(cfg))
+
+    @staticmethod
+    def _env_key(cfg):
+        return cfg["track"], cfg["steer_mode"], cfg["dt"], plant_model()
+
+    def acquire_env(self, cfg, mu_scale, max_steps):
+        """Simulator env for one lap: an idle env from an earlier lap of this process, re-parameterised, or a new one.
+
+        ``make_env`` costs ~0.3 s (map, distance transform, raceline spline), more than stepping a whole lap with
+        the Rust kernel. A reused env is reset by ``reset_to_state`` exactly like a new one and gets the lap's
+        params and episode limit, so laps are bit-identical either way. Returns (env, pool key)."""
+        key = self._env_key(cfg)
+        idle = self._env_pool.get(key)
+        if idle:
+            env = idle.pop()
+            set_env_params(env, vehicle_params(mu_scale))
+            env.max_episode_steps = max_steps
+        else:
+            env = make_env(cfg["track"], mu_scale, cfg["steer_mode"], cfg["dt"], max_steps=max_steps)
+        return env, key
+
+    def release_env(self, env, key):
+        self._env_pool.setdefault(key, []).append(env)
 
     def plan(self, a_lat, v_cap=None, friction_ellipse=False):
         sp_ = self.cfg["speed_plan"]
@@ -134,9 +159,9 @@ class LapSim:
 
         set_plant(cfg.get("model", "st"), cfg.get("tire"))
         self.a_max = vehicle_params(scn.mu_scale)["a_max"]
-        self._own_env = env is None
+        self._own_env = env is None  # own env: taken from the Track's pool, truncates at max_episode_steps
         if env is None:
-            env = make_env(cfg["track"], scn.mu_scale, cfg["steer_mode"], dt, max_steps=int(self.t_max / dt) + 10)
+            env, self._env_key = track.acquire_env(cfg, scn.mu_scale, int(self.t_max / dt) + 10)
         else:
             env.sim.update_params(vehicle_params(scn.mu_scale))
         env._check_boundary_frenet = lambda idx: False  # replaced by the four-tire / body checks below
@@ -205,6 +230,8 @@ class LapSim:
         if kernel not in KERNELS:
             raise ValueError(f"kernel must be one of {KERNELS}, got {kernel!r}")
         self.kernel = make_kernel(self) if kernel == "rust" else None
+        # with the Rust kernel the kinematic MPC step (previews, QP, OSQP) also runs in Rust (bit-identical)
+        self.rqp = self.mpc.rust_qp() if self.kernel is not None else None
 
     # ------------------------------------------------------------------ per physics step
     def _pre(self):
@@ -289,6 +316,7 @@ class LapSim:
         ref, mc, st = self.ref, self.mc, self.st
         delta, v, e_y, e_psi, s = st[2], self.v, self.e_y, self.e_psi, self.s
         tau, L, Ts = self.tau, self.L, self.Ts
+        d_ff = None  # K v^2 kappa(s_p), computed below unless the Rust MPC step returned it
         if self.planner is not None:  # alternative steering planner (20 Hz)
             d_mpc, ok, tsol = self.planner.solve(st, e_y, e_psi, s, self.delta_mpc_prev, self.vplan_at, ref)
             s_p = s + tau * v
@@ -306,6 +334,8 @@ class LapSim:
             d_mpc, a_mpc, ok, tsol, _ = self.cmpc.solve(e_y_p, e_psi_p, self.delta_mpc_prev, v_p, self.a_prev, s_p,
                                                        self.vplan_at, self.aplan_at, ref.kappa_at)
             self.a_mpc = self.a_prev = a_mpc
+        elif self.rqp is not None:  # MPC update (20 Hz) in Rust: same steps as the branch below
+            d_mpc, ok, tsol, s_p, d_ff = self.kernel.plan_kinematic(self.rqp, self.delta_mpc_prev, tau, self.K)
         else:  # MPC update (20 Hz)
             # delay compensation: propagate the kinematic error state by tau with current steering
             b = np.arctan(NOMINAL_PARAMS["lr"] / L * np.tan(delta))
@@ -324,7 +354,7 @@ class LapSim:
         self.solver_ok = ok
         self.delta_mpc_prev = d_mpc
         self.d_mpc, self.s_p = d_mpc, s_p
-        self.d_ff = self.K * v**2 * ref.kappa_at(s_p)
+        self.d_ff = d_ff if d_ff is not None else self.K * v**2 * ref.kappa_at(s_p)
 
     def apply(self, d_res=0.0):
         """Add the residual, clip to the steering limit, log. The servo enforces the rate limit."""
@@ -378,8 +408,10 @@ class LapSim:
             setattr(self, k, val)
 
     def close(self):
+        """Return an own env to the Track's pool (a reused env passed in by the caller stays with the caller)."""
         if self._own_env:
-            self.env.close()
+            self.track.release_env(self.env, self._env_key)
+            self._own_env = False
 
     def summary(self):
         if self.kernel is not None:

@@ -8,7 +8,8 @@ use std::sync::Arc;
 
 use crate::dynamics::{Plant, State};
 use crate::geometry::Geometry;
-use crate::numerics::{np_clip, pow2, py_max, py_min, py_mod};
+use crate::mpc::KinematicQp;
+use crate::numerics::{np_clip, pow2, py_max, py_min, py_mod, sin};
 use crate::track::{Periodic, RefLine};
 
 const PI: f64 = std::f64::consts::PI;
@@ -199,6 +200,48 @@ impl Lap {
             return true;
         }
         false
+    }
+
+    /// Kinematic-MPC branch of ``LapSim.plan``: delay compensation (kinematic error model over ``tau`` with the
+    /// current steering), speed / curvature previews along the plan, the MPC solve and the ``K v^2 kappa``
+    /// feedforward. Returns (d_mpc, ok, solve_time_s, s_p, d_ff).
+    pub fn plan_kinematic(
+        &self,
+        qp: &mut KinematicQp,
+        delta_mpc_prev: f64,
+        tau: f64,
+        k_ff: f64,
+    ) -> (f64, bool, f64, f64, f64) {
+        let (lr, l, ts, n) = (qp.lr, qp.l, qp.ts, qp.n);
+        let (delta, v, e_y, e_psi, s) = (self.st[2], self.v, self.e_y, self.e_psi, self.s);
+        let refl = &self.refl;
+        let b = (lr / l * delta.tan()).atan();
+        let e_y_p = e_y + tau * v * sin(e_psi + b);
+        let e_psi_p = e_psi + tau * (v * b.cos() * delta.tan() / l - v * refl.kappa[self.i_g]);
+        let s_p = s + tau * v;
+        // s_k = s_p + cumsum([0, c, ..., c]),  c = Ts * max(v_plan(s_p), 0.5)
+        let c = ts * py_max(self.vplan.at(s_p), 0.5);
+        let mut s1 = vec![0.0; n];
+        let mut acc = 0.0;
+        for (j, sj) in s1.iter_mut().enumerate() {
+            acc = if j == 0 { 0.0 } else { acc + c };
+            *sj = s_p + acc;
+        }
+        // s_k = s_p + [0, cumsum(Ts * v_plan(s_k[:-1]))]
+        let mut s_k = vec![0.0; n];
+        s_k[0] = s_p + 0.0;
+        let mut acc = 0.0;
+        for j in 0..n - 1 {
+            let w = ts * self.vplan.at(s1[j]);
+            acc = if j == 0 { w } else { acc + w };
+            s_k[j + 1] = s_p + acc;
+        }
+        let mut v_seq: Vec<f64> = s_k.iter().map(|&x| self.vplan.at(x)).collect();
+        v_seq[0] = v;
+        let kap: Vec<f64> = s_k.iter().map(|&x| refl.kappa_at.at(x)).collect();
+        let (d_mpc, ok, dt) = qp.solve(e_y_p, e_psi_p, delta_mpc_prev, &v_seq, &kap);
+        let d_ff = k_ff * pow2(v) * refl.kappa_at.at(s_p);
+        (d_mpc, ok, dt, s_p, d_ff)
     }
 
     /// ``LapSim.apply``'s interval reset + ``LapSim.advance_interval``. Returns ``done``.

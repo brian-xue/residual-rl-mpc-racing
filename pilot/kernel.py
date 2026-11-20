@@ -2,9 +2,10 @@
 
 With ``kernel: rust`` in the config, every physics step of a lap (servo, longitudinal controller, ST plant with
 the configured tires, acceleration metrics, track-limit / wall / spin checks, Frenet projection, progress and
-lap metrics) runs in Rust; Python crosses once per control interval (20 Hz) and keeps the MPC, the residual
-policy, logging and the summary. The kernel mirrors the Python loop operation by operation and gives
-bit-identical laps (checked against ``kernel: python``).
+lap metrics) and the kinematic-MPC step (delay compensation, previews, closed-form discretisation, QP assembly,
+OSQP through its C API) run in Rust; Python makes two calls per control interval (20 Hz) and keeps the coupled /
+slip / reference MPCs, the residual policy, logging and the summary. The kernel mirrors the Python loop
+operation by operation and gives bit-identical laps (checked against ``kernel: python``).
 
 Supported: the ST plant (linear, Pacejka or Fiala tires), ``steer_mode: steering_speed``. The STD plant and the
 simulator's own bang-bang servo (``steering_angle``) stay on the Python loop.
@@ -48,7 +49,7 @@ def track_objects(track):
         rings = [shapely.get_coordinates(r) for p in shapely.get_parts(g.legal) for r in shapely.get_rings(p)]
         geo = pilot_core.Geometry(rings, shapely.bounds(g.wall_boxes), g.tire_offsets, g.patch_len, g.patch_w,
                                   g.length, g.width)
-        refl = pilot_core.RefLine(ref.s, ref.x, ref.y, ref.psi, ref.length)
+        refl = pilot_core.RefLine(ref.s, ref.x, ref.y, ref.psi, ref.kappa, ref.length)
         cached = track._pilot_core = (geo, refl)
     return cached
 
