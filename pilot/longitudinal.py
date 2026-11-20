@@ -5,6 +5,8 @@ Longitudinal controllers (each with steering K = 0 and K = K_frozen):
     P-E   same controller on the friction-ellipse speed plan
     C     coupled MPC (pilot.mpc.CoupledMPC), standard plan, no ellipse constraint
     C-E   coupled MPC with the friction-ellipse constraint, on the friction-ellipse plan
+    S     slip-aware coupled MPC (pilot.mpc.SlipMPC: dynamic model, nominal mu0, slip-angle limits), standard plan
+    S-E   slip-aware MPC on the friction-ellipse plan (slip limits only, no ellipse constraint)
 The steering MPC weights, horizon, rate, limits, servo, validity checks and qualifying rule are the pilot's.
 The lap-time ratio in the qualifying rule is taken against each controller's own speed plan.
 
@@ -36,8 +38,10 @@ LONG = {  # name: (longitudinal mode, friction-ellipse plan, friction-ellipse MP
     "P-E": ("pfb", True, False),
     "C": ("mpc", False, False),
     "C-E": ("mpc", True, True),
+    "S": ("slip", False, False),
+    "S-E": ("slip", True, False),
 }
-COLORS = {"P": "#c0392b", "P-E": "#e67e22", "C": "#1f6fb4", "C-E": "#27ae60"}
+COLORS = {"P": "#c0392b", "P-E": "#e67e22", "C": "#1f6fb4", "C-E": "#27ae60", "S": "#8e44ad", "S-E": "#d35ec5"}
 
 
 def variant_cfg(cfg, name):
@@ -46,6 +50,8 @@ def variant_cfg(cfg, name):
     c["longitudinal"]["mode"] = mode
     c["speed_plan"]["friction_ellipse"] = plan_e
     c["longitudinal"]["mpc"]["friction_ellipse"] = mpc_e
+    if "slip_mpc" in c["longitudinal"]:
+        c["longitudinal"]["slip_mpc"]["friction_ellipse"] = mpc_e
     return c
 
 
@@ -147,12 +153,12 @@ def summarize(cfg, ctrls, label, starts, grid, sdf, gdf, out, K_ff, t0):
     print(bdf.to_string(index=False), flush=True)
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.4), sharey=True)
-    w = 0.2
+    w = 0.8 / len(LONG)
     for ax, K in zip(axes, (0.0, K_ff)):
         for j, n in enumerate(LONG):
             for i, mu in enumerate(lc["mu_scales"]):
                 r = bdf[(bdf.controller == label(n, K)) & (bdf.mu_scale == mu)].iloc[0]
-                x = i + (j - 1.5) * w
+                x = i + (j - (len(LONG) - 1) / 2) * w
                 if r.lap_time is None or pd.isna(r.lap_time):
                     ax.text(x, 1, "none", ha="center", va="bottom", fontsize=6, rotation=90)
                     continue
@@ -165,8 +171,8 @@ def summarize(cfg, ctrls, label, starts, grid, sdf, gdf, out, K_ff, t0):
     axes[0].set_ylim(lo - 6 if pd.notna(lo) else 0, None)
     axes[0].set_ylabel("best qualifying lap time [s] (start s = 0), label: time / a_lat")
     axes[0].legend(fontsize=8, title="longitudinal", title_fontsize=8, loc="upper left")
-    fig.suptitle(f"{cfg['track']}: P = plan + P speed control, -E = friction-ellipse plan, "
-                 "C = coupled MPC, C-E = coupled MPC + ellipse constraint", fontsize=9)
+    fig.suptitle(f"{cfg['track']}: P = plan + P speed control, C = coupled kinematic MPC, S = slip-aware MPC, "
+                 "-E = friction-ellipse plan (C-E: + ellipse constraint)", fontsize=9)
     fig.tight_layout()
     fig.savefig(out / "lap_time_comparison.png", dpi=130)
     plt.close(fig)

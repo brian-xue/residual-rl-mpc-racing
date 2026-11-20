@@ -21,6 +21,16 @@
       "mode": "mpc",
       "plan_ellipse": true,
       "mpc_ellipse": true
+    },
+    "S": {
+      "mode": "slip",
+      "plan_ellipse": false,
+      "mpc_ellipse": false
+    },
+    "S-E": {
+      "mode": "slip",
+      "plan_ellipse": true,
+      "mpc_ellipse": false
     }
   },
   "longitudinal_mpc": {
@@ -42,7 +52,11 @@
     "P": 0,
     "P+ff": 0,
     "P-E": 0,
-    "P-E+ff": 4
+    "P-E+ff": 4,
+    "S": 4,
+    "S+ff": 2,
+    "S-E": 8,
+    "S-E+ff": 4
   },
   "lap_time_comparison": [
     {
@@ -178,6 +192,72 @@
       "max_abs_ay": 4.591336821197646
     },
     {
+      "controller": "S",
+      "long": "S",
+      "K": 0.0,
+      "mu_scale": 1.0,
+      "best_a_lat": 5.5,
+      "lap_time": 57.99999999999703,
+      "max_ey": 0.11729907734610506,
+      "ellipse_max": 1.4584376046020222,
+      "max_abs_ay": 6.543697015755631
+    },
+    {
+      "controller": "S",
+      "long": "S",
+      "K": 0.0,
+      "mu_scale": 0.8,
+      "best_a_lat": 5.0,
+      "lap_time": 59.26999999999678,
+      "max_ey": 0.10692667935700342,
+      "ellipse_max": 1.408764315550486,
+      "max_abs_ay": 5.977369000417444
+    },
+    {
+      "controller": "S",
+      "long": "S",
+      "K": 0.0,
+      "mu_scale": 0.6,
+      "best_a_lat": 3.5,
+      "lap_time": 65.12999999999641,
+      "max_ey": 0.06827408048519755,
+      "ellipse_max": 1.5884542523673233,
+      "max_abs_ay": 5.115660727759869
+    },
+    {
+      "controller": "S-E",
+      "long": "S-E",
+      "K": 0.0,
+      "mu_scale": 1.0,
+      "best_a_lat": 6.0,
+      "lap_time": 58.70999999999689,
+      "max_ey": 0.06407564897174747,
+      "ellipse_max": 1.1766700971723438,
+      "max_abs_ay": 6.516021168924624
+    },
+    {
+      "controller": "S-E",
+      "long": "S-E",
+      "K": 0.0,
+      "mu_scale": 0.8,
+      "best_a_lat": 5.5,
+      "lap_time": 59.879999999996656,
+      "max_ey": 0.06627529895128917,
+      "ellipse_max": 1.1918938158101513,
+      "max_abs_ay": 6.145923044763014
+    },
+    {
+      "controller": "S-E",
+      "long": "S-E",
+      "K": 0.0,
+      "mu_scale": 0.6,
+      "best_a_lat": 4.5,
+      "lap_time": 62.93999999999605,
+      "max_ey": 0.05895646785107728,
+      "ellipse_max": 1.2777122556932776,
+      "max_abs_ay": 5.3689043433781976
+    },
+    {
       "controller": "P+ff",
       "long": "P",
       "K": 0.03,
@@ -308,7 +388,73 @@
       "max_ey": 0.08279400673579725,
       "ellipse_max": 1.688901142464589,
       "max_abs_ay": 4.060874555559707
+    },
+    {
+      "controller": "S+ff",
+      "long": "S",
+      "K": 0.03,
+      "mu_scale": 1.0,
+      "best_a_lat": 4.0,
+      "lap_time": 61.71999999999629,
+      "max_ey": 0.37770559035899154,
+      "ellipse_max": 2.1664299874818145,
+      "max_abs_ay": 8.129611889140971
+    },
+    {
+      "controller": "S+ff",
+      "long": "S",
+      "K": 0.03,
+      "mu_scale": 0.8,
+      "best_a_lat": 3.5,
+      "lap_time": 64.21999999999595,
+      "max_ey": 0.46782798034219025,
+      "ellipse_max": 2.0600863291719667,
+      "max_abs_ay": 6.8009503060382945
+    },
+    {
+      "controller": "S+ff",
+      "long": "S",
+      "K": 0.03,
+      "mu_scale": 0.6,
+      "best_a_lat": 2.5,
+      "lap_time": 71.52999999999969,
+      "max_ey": 0.17445124627338304,
+      "ellipse_max": 1.9750453146374396,
+      "max_abs_ay": 4.73697201743719
+    },
+    {
+      "controller": "S-E+ff",
+      "long": "S-E",
+      "K": 0.03,
+      "mu_scale": 1.0,
+      "best_a_lat": 5.5,
+      "lap_time": 58.68999999999689,
+      "max_ey": 0.39706787206666294,
+      "ellipse_max": 1.6306678868567726,
+      "max_abs_ay": 8.685420765714474
+    },
+    {
+      "controller": "S-E+ff",
+      "long": "S-E",
+      "K": 0.03,
+      "mu_scale": 0.8,
+      "best_a_lat": 4.5,
+      "lap_time": 61.899999999996254,
+      "max_ey": 0.4003889704896416,
+      "ellipse_max": 1.647503968011431,
+      "max_abs_ay": 7.19231168128601
+    },
+    {
+      "controller": "S-E+ff",
+      "long": "S-E",
+      "K": 0.03,
+      "mu_scale": 0.6,
+      "best_a_lat": 3.5,
+      "lap_time": 66.55999999999715,
+      "max_ey": 0.23419787124437325,
+      "ellipse_max": 1.5939301853928804,
+      "max_abs_ay": 5.448209604705064
     }
   ],
-  "runtime_s": 448.40394711494446
+  "runtime_s": 859.7071568965912
 }
