@@ -82,19 +82,32 @@ class Reference:
         return self.x[i], self.y[i], self.psi[i]
 
 
-def speed_plan(ref: Reference, a_lat: float, v_cap: float, a_acc: float, a_dec: float, v_min: float = 1.0):
-    """Curvature-limited speed profile v(s) = min(v_cap, sqrt(a_lat/|kappa|)) with accel/decel passes."""
+def speed_plan(ref: Reference, a_lat: float, v_cap: float, a_acc: float, a_dec: float, v_min: float = 1.0,
+               friction_ellipse: bool = False):
+    """Curvature-limited speed profile v(s) = min(v_cap, sqrt(a_lat/|kappa|)) with accel/decel passes.
+
+    ``friction_ellipse=False`` (pilot default): the passes use the full a_acc / a_dec everywhere, so braking
+    and cornering demands add up (combined acceleration up to sqrt(a_dec^2 + a_lat^2)).
+    ``friction_ellipse=True``: the passes only use what the ellipse (a_x/a_x,max)^2 + (v^2 kappa/a_lat)^2 <= 1
+    leaves, a_x,avail = a_x,max sqrt(1 - (v^2 kappa / a_lat)^2), with a small floor so the passes can leave
+    the curvature limit."""
     k = np.abs(ref.kappa)
     v = np.minimum(v_cap, np.sqrt(a_lat / np.maximum(k, 1e-6)))
     v = np.maximum(v, v_min)
     ds = ref.ds
+
+    def avail(a_max, vi, ki):
+        if not friction_ellipse:
+            return a_max
+        return a_max * np.sqrt(max(1.0 - (vi**2 * ki / a_lat) ** 2, 0.05**2))
+
     for _ in range(2):  # two sweeps handle the wrap-around
         for i in range(1, 2 * ref.n):  # forward (acceleration limit)
             a, b = (i - 1) % ref.n, i % ref.n
-            v[b] = min(v[b], np.sqrt(v[a] ** 2 + 2 * a_acc * ds))
+            v[b] = min(v[b], np.sqrt(v[a] ** 2 + 2 * avail(a_acc, v[a], k[a]) * ds))
         for i in range(2 * ref.n, 0, -1):  # backward (braking limit)
             a, b = i % ref.n, (i - 1) % ref.n
-            v[b] = min(v[b], np.sqrt(v[a] ** 2 + 2 * a_dec * ds))
+            v[b] = min(v[b], np.sqrt(v[a] ** 2 + 2 * avail(a_dec, v[a], k[a]) * ds))
     return v
 
 

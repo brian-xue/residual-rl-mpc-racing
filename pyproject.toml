@@ -2,7 +2,7 @@
 name = "residual-rl-mpc-racing"
 version = "0.1.0"
 description = "Residual RL on MPC for vehicle racing under model mismatch: kinematic MPC, MPC + K v^2 kappa feedforward, and MPC + learned (PPO) steering residual on Gym-Khana 1.2.0"
-readme = "README.md"
+readme = "README-simple-st-tire.md"
 requires-python = ">=3.11"
 dependencies = [
     "gymkhana==1.2.0",

@@ -1,5 +1,7 @@
 # Residual RL on MPC for Vehicle Racing under Model Mismatch
 
+> **Tire model: simple ST (linear tires).** Every result in this document uses Gym-Khana 1.2.0's single-track (ST) plant. Its tire forces are linear in slip angle and never saturate, so μ only scales cornering stiffness and there is no grip limit (sections 1 and 6). The exploratory Pacejka (STD) runs in the appendix are the only exception.
+
 This is the minimal feasibility pilot for the proposal *Residual RL on MPC for Vehicle Control under Model Mismatch* (v2). It answers one question:
 
 > On a single development track, is there a speed and friction setting where nominal kinematic MPC loses tracking performance, while the same MPC with a one-parameter steering correction `K·v²·κ_ref` completes a qualifying lap at comparable realized speed?
@@ -71,6 +73,7 @@ The two configs differ only in `model`, `dt`, `out`, the MPC weights and the del
 | `pilot/residual_env.py` | Residual-RL Gymnasium env (one step = one MPC interval), observation, evaluation-time policy wrapper |
 | `pilot/train_residual.py` | PPO training (Stable-Baselines3), checkpoints, training log |
 | `pilot/eval_residual.py` | Checkpoint selection, three-controller sweep, fastest-lap search, plots, GIF |
+| `pilot/longitudinal.py` | MPC speed control stage 1: P / ellipse plan / coupled MPC comparison (sweep, fastest-lap search, chart) |
 | `pilot/cli.py` | Shared `--config` / `--out` handling |
 | `configs/pilot.yaml` | Scenario config (ST, default). Every shared setting, rule and tolerance is defined here |
 | `configs/pilot_std.yaml` | Optional STD plant config |
@@ -171,6 +174,48 @@ uv run python -m pilot.eval_residual  --config configs/pilot_ff_residual.yaml --
 - **Friction barely costs lap time.** From μ₀ to 0.6 μ₀ it loses 0.2–1.0 s per lap, against 1.7–18 s for MPC + Kv²κ. At a_lat 10 it reaches the top of the grid in 11 of 12 combinations; on Austin at 0.6 it stops at a_lat 9.
 - **Caveat: checkpoint selection decides the result.** Only `ckpt_1250000` passed all 4 validation laps. Later checkpoints passed 1–2 of 4 and `final.zip` 1 of 4, even though the training crash rate kept falling to 0% with policy std 0.026. Training on half-lap episodes keeps improving the training objective while getting worse on full validation laps. Without the validation step, this run would have looked much worse. The selected checkpoint was chosen on Austin validation laps only, before any benchmark or held-out run.
 - **Other caveats:** one seed; the ST plant has no grip limit (section 6), so this is stiffness mismatch; a_lat 10 is above the training range.
+
+### MPC speed control, stage 1: coupled steering + speed MPC (`pilot/longitudinal.py`, `results/longitudinal/`)
+
+So far every controller shared the same longitudinal law: plan feedforward plus P speed control on a speed plan that caps cornering and braking separately. That plan never checks combined acceleration. On Austin it asks for up to 1.41× the friction ellipse (a_x/4)² + (v²κ/a_lat)² ≤ 1, and brakes while turning on 12–21% of the lap. Stage 1 lets an MPC command the acceleration too.
+
+- **Coupled MPC** (`pilot.mpc.CoupledMPC`, `longitudinal.mode: mpc`):
+  - The steering half is the pilot's kinematic MPC unchanged (model, cost, delay compensation, indexing).
+  - Speed and acceleration are added as states, with acceleration change as a second input. Speed tracks the plan (q_v = 2, q_a = 0.1, r_da = 1, chosen on the a_lat 5 development setting with the pilot's selection rule).
+  - Hard limits: the simulator's −9.51 … 9.51·min(1, 7.3/v) m/s² and 40 m/s³ jerk.
+  - Optional soft friction ellipse, as an 8-facet polygon linearised in v.
+  - OSQP; solve time p99 ≤ 3.4 ms without the ellipse and ≤ 14 ms with it.
+- **Friction-ellipse speed plan** (`speed_plan.friction_ellipse: true`): the accel/brake passes only use what the ellipse leaves. Peak ellipse use drops from 1.41 to 1.01, at a cost of 1.3–2.2 s of plan lap time.
+- Defaults are unchanged (`mode: pfb`, `friction_ellipse: false`). The published results are reproduced exactly.
+
+```bash
+uv run python -m pilot.longitudinal                    # Austin: 8 controllers, sweep + fastest-lap search, about 12 min
+uv run python -m pilot.longitudinal --from-grid        # rebuild tables and chart from the saved CSVs
+```
+
+Four longitudinal controllers, each with steering MPC and with MPC + K·v²·κ: **P** (pilot), **P-E** (pilot speed control on the ellipse plan), **C** (coupled MPC, standard plan) and **C-E** (coupled MPC with the ellipse constraint, on the ellipse plan). The qualifying rule is unchanged, with the lap-time ratio taken against each controller's own plan.
+
+![longitudinal](results/longitudinal/Austin/lap_time_comparison.png)
+
+**Austin, steering MPC + K·v²·κ** (sweep: qualifying laps of 18; best lap in seconds with its a_lat level):
+
+| Longitudinal | Sweep | μ/μ₀ = 1.0 | μ/μ₀ = 0.8 | μ/μ₀ = 0.6 |
+| --- | --- | --- | --- | --- |
+| P (pilot) | 6 | 60.33 (4.5) | 60.47 (4.5) | 62.67 (4.0) |
+| P-E | **18** | **53.43 (10)** | **53.63 (10)** | **54.65 (9)** |
+| C | 16 | 53.67 (8) | 53.86 (8) | 60.70 (4.5) |
+| C-E | **18** | 53.53 (10) | 53.73 (10) | 54.75 (9) |
+| *for reference: MPC + RL residual / MPC + Kv²κ + RL* | *16 / 18* | *53.27 / 52.60* | *53.45 / 52.74* | *55.86 / 53.55* |
+
+- **The friction-ellipse speed plan is the main lever.** With only the pilot's P speed control, it turns 6 qualifying sweep laps into 18 and cuts 6.8–8.0 s per lap. On Austin that matches the RL-only residual (better at μ/μ₀ 0.6) without any learning. MPC + Kv²κ + RL is still fastest.
+- **MPC speed control helps on an infeasible plan, and adds little on a feasible one.** On the standard plan, C reaches a_lat 8 where P stops at 4.5. On the ellipse plan, C-E is within 0.1 s of P-E, with slightly lower max |e_y| (0.22–0.35 vs 0.24–0.38 m) and ellipse use.
+- **Mechanism: load transfer.** In the ST plant, braking moves load to the front axle (×1.42 front, ×0.55 rear at full braking), so braking while turning makes the car oversteer, and the kinematic steering MPC cannot anticipate that. Diagnostic (scratch run, plant CG height h set to 0, no code change): P + Kv²κ on the standard plan then qualifies at a_lat 6 for μ/μ₀ 1.0 and 0.6, where with the real h it hits a wall. At a_lat 8, μ/μ₀ 0.8 it still fails with h = 0, so load transfer is not the only factor at the highest level. The RL residuals were trained on the standard plan, so part of what they learned is probably compensation for this oversteer.
+- **With steering MPC alone (K = 0)** no longitudinal variant fixes the steering lag: best levels stay at a_lat 1.5–3 for all four.
+- **Caveats:**
+  - Austin only.
+  - The ST plant has no grip limit, so the ellipse is a design limit, not the tires'.
+  - Measured ellipse use (`ellipse_max`, from dv/dt and v(r + β̇) at 100 Hz) includes transients and stays above 1 for every controller, so read it comparatively.
+  - a_lat 10 is the top of the search grid.
 
 ## 1. Simulator verification (Gym-Khana 1.2.0, ST model)
 

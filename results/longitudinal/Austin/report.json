@@ -1,0 +1,314 @@
+{
+  "track": "Austin",
+  "K_ff": 0.03,
+  "controllers": {
+    "P": {
+      "mode": "pfb",
+      "plan_ellipse": false,
+      "mpc_ellipse": false
+    },
+    "P-E": {
+      "mode": "pfb",
+      "plan_ellipse": true,
+      "mpc_ellipse": false
+    },
+    "C": {
+      "mode": "mpc",
+      "plan_ellipse": false,
+      "mpc_ellipse": false
+    },
+    "C-E": {
+      "mode": "mpc",
+      "plan_ellipse": true,
+      "mpc_ellipse": true
+    }
+  },
+  "longitudinal_mpc": {
+    "q_v": 2.0,
+    "q_a": 0.1,
+    "r_da": 1.0,
+    "da_max": 2.0,
+    "friction_ellipse": false,
+    "ax_max": 4.0,
+    "n_facets": 8,
+    "slack_l1": 100.0,
+    "slack_l2": 1000.0
+  },
+  "sweep_qualifying": {
+    "C": 0,
+    "C+ff": 16,
+    "C-E": 0,
+    "C-E+ff": 18,
+    "P": 0,
+    "P+ff": 6,
+    "P-E": 0,
+    "P-E+ff": 18
+  },
+  "lap_time_comparison": [
+    {
+      "controller": "P",
+      "long": "P",
+      "K": 0.0,
+      "mu_scale": 1.0,
+      "best_a_lat": 3.0,
+      "lap_time": 68.62,
+      "max_ey": 0.1647,
+      "ellipse_max": 3.043,
+      "max_abs_ay": 8.6216
+    },
+    {
+      "controller": "P",
+      "long": "P",
+      "K": 0.0,
+      "mu_scale": 0.8,
+      "best_a_lat": 2.5,
+      "lap_time": 72.72,
+      "max_ey": 0.1764,
+      "ellipse_max": 3.7348,
+      "max_abs_ay": 8.9981
+    },
+    {
+      "controller": "P",
+      "long": "P",
+      "K": 0.0,
+      "mu_scale": 0.6,
+      "best_a_lat": 1.5,
+      "lap_time": 86.67,
+      "max_ey": 0.1458,
+      "ellipse_max": 3.3486,
+      "max_abs_ay": 4.8311
+    },
+    {
+      "controller": "P-E",
+      "long": "P-E",
+      "K": 0.0,
+      "mu_scale": 1.0,
+      "best_a_lat": 3.0,
+      "lap_time": 70.92,
+      "max_ey": 0.1452,
+      "ellipse_max": 2.3612,
+      "max_abs_ay": 6.803
+    },
+    {
+      "controller": "P-E",
+      "long": "P-E",
+      "K": 0.0,
+      "mu_scale": 0.8,
+      "best_a_lat": 2.5,
+      "lap_time": 75.13,
+      "max_ey": 0.1675,
+      "ellipse_max": 2.72,
+      "max_abs_ay": 6.6359
+    },
+    {
+      "controller": "P-E",
+      "long": "P-E",
+      "K": 0.0,
+      "mu_scale": 0.6,
+      "best_a_lat": 2.0,
+      "lap_time": 80.92,
+      "max_ey": 0.1755,
+      "ellipse_max": 2.7147,
+      "max_abs_ay": 5.3296
+    },
+    {
+      "controller": "C",
+      "long": "C",
+      "K": 0.0,
+      "mu_scale": 1.0,
+      "best_a_lat": 2.5,
+      "lap_time": 72.57,
+      "max_ey": 0.1415,
+      "ellipse_max": 2.5837,
+      "max_abs_ay": 6.1124
+    },
+    {
+      "controller": "C",
+      "long": "C",
+      "K": 0.0,
+      "mu_scale": 0.8,
+      "best_a_lat": 2.0,
+      "lap_time": 78.2,
+      "max_ey": 0.1474,
+      "ellipse_max": 2.7755,
+      "max_abs_ay": 5.2986
+    },
+    {
+      "controller": "C",
+      "long": "C",
+      "K": 0.0,
+      "mu_scale": 0.6,
+      "best_a_lat": 1.5,
+      "lap_time": 86.61,
+      "max_ey": 0.1487,
+      "ellipse_max": 2.8781,
+      "max_abs_ay": 4.1434
+    },
+    {
+      "controller": "C-E",
+      "long": "C-E",
+      "K": 0.0,
+      "mu_scale": 1.0,
+      "best_a_lat": 3.0,
+      "lap_time": 71.04,
+      "max_ey": 0.1436,
+      "ellipse_max": 2.0606,
+      "max_abs_ay": 5.8815
+    },
+    {
+      "controller": "C-E",
+      "long": "C-E",
+      "K": 0.0,
+      "mu_scale": 0.8,
+      "best_a_lat": 2.5,
+      "lap_time": 75.26,
+      "max_ey": 0.156,
+      "ellipse_max": 2.1086,
+      "max_abs_ay": 5.0874
+    },
+    {
+      "controller": "C-E",
+      "long": "C-E",
+      "K": 0.0,
+      "mu_scale": 0.6,
+      "best_a_lat": 1.5,
+      "lap_time": 89.49,
+      "max_ey": 0.0985,
+      "ellipse_max": 2.1293,
+      "max_abs_ay": 3.1624
+    },
+    {
+      "controller": "P+ff",
+      "long": "P",
+      "K": 0.03,
+      "mu_scale": 1.0,
+      "best_a_lat": 4.5,
+      "lap_time": 60.33,
+      "max_ey": 0.2446,
+      "ellipse_max": 2.6834,
+      "max_abs_ay": 11.8173
+    },
+    {
+      "controller": "P+ff",
+      "long": "P",
+      "K": 0.03,
+      "mu_scale": 0.8,
+      "best_a_lat": 4.5,
+      "lap_time": 60.47,
+      "max_ey": 0.2411,
+      "ellipse_max": 2.5214,
+      "max_abs_ay": 11.0092
+    },
+    {
+      "controller": "P+ff",
+      "long": "P",
+      "K": 0.03,
+      "mu_scale": 0.6,
+      "best_a_lat": 4.0,
+      "lap_time": 62.67,
+      "max_ey": 0.2154,
+      "ellipse_max": 2.4884,
+      "max_abs_ay": 9.1009
+    },
+    {
+      "controller": "P-E+ff",
+      "long": "P-E",
+      "K": 0.03,
+      "mu_scale": 1.0,
+      "best_a_lat": 10.0,
+      "lap_time": 53.43,
+      "max_ey": 0.3846,
+      "ellipse_max": 1.9381,
+      "max_abs_ay": 17.7822
+    },
+    {
+      "controller": "P-E+ff",
+      "long": "P-E",
+      "K": 0.03,
+      "mu_scale": 0.8,
+      "best_a_lat": 10.0,
+      "lap_time": 53.63,
+      "max_ey": 0.3468,
+      "ellipse_max": 1.7845,
+      "max_abs_ay": 16.1066
+    },
+    {
+      "controller": "P-E+ff",
+      "long": "P-E",
+      "K": 0.03,
+      "mu_scale": 0.6,
+      "best_a_lat": 9.0,
+      "lap_time": 54.65,
+      "max_ey": 0.242,
+      "ellipse_max": 1.6468,
+      "max_abs_ay": 13.3713
+    },
+    {
+      "controller": "C+ff",
+      "long": "C",
+      "K": 0.03,
+      "mu_scale": 1.0,
+      "best_a_lat": 8.0,
+      "lap_time": 53.67,
+      "max_ey": 0.4794,
+      "ellipse_max": 2.5695,
+      "max_abs_ay": 19.1489
+    },
+    {
+      "controller": "C+ff",
+      "long": "C",
+      "K": 0.03,
+      "mu_scale": 0.8,
+      "best_a_lat": 8.0,
+      "lap_time": 53.86,
+      "max_ey": 0.4517,
+      "ellipse_max": 2.3791,
+      "max_abs_ay": 17.4334
+    },
+    {
+      "controller": "C+ff",
+      "long": "C",
+      "K": 0.03,
+      "mu_scale": 0.6,
+      "best_a_lat": 4.5,
+      "lap_time": 60.7,
+      "max_ey": 0.2094,
+      "ellipse_max": 2.5068,
+      "max_abs_ay": 10.4919
+    },
+    {
+      "controller": "C-E+ff",
+      "long": "C-E",
+      "K": 0.03,
+      "mu_scale": 1.0,
+      "best_a_lat": 10.0,
+      "lap_time": 53.53,
+      "max_ey": 0.3532,
+      "ellipse_max": 1.8087,
+      "max_abs_ay": 16.5394
+    },
+    {
+      "controller": "C-E+ff",
+      "long": "C-E",
+      "K": 0.03,
+      "mu_scale": 0.8,
+      "best_a_lat": 10.0,
+      "lap_time": 53.73,
+      "max_ey": 0.3183,
+      "ellipse_max": 1.662,
+      "max_abs_ay": 14.9511
+    },
+    {
+      "controller": "C-E+ff",
+      "long": "C-E",
+      "K": 0.03,
+      "mu_scale": 0.6,
+      "best_a_lat": 9.0,
+      "lap_time": 54.75,
+      "max_ey": 0.2196,
+      "ellipse_max": 1.5436,
+      "max_abs_ay": 12.463
+    }
+  ],
+  "runtime_s": 0.27939295768737793
+}

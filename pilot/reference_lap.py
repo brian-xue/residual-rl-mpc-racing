@@ -45,7 +45,7 @@ from scipy.optimize import fsolve
 
 from . import animate, cli
 from .closedloop import Scenario, Track, qualifies, run_chains, run_lap
-from .sim import plant_model, vehicle_params
+from .sim import plant_model, plant_tire, vehicle_params
 
 G = 9.81
 
@@ -215,8 +215,16 @@ class STDMPC(DynamicMPC):
         return A, B, cc
 
 
+def _check_plant():
+    if plant_model() == "st" and plant_tire()["model"] != "linear":
+        # DynamicMPC predicts with the linear ST equations, which are no longer the plant's model
+        raise NotImplementedError(f"reference_lap has no true-model MPC for the ST plant with "
+                                  f"tire '{plant_tire()['model']}' (only linear ST and STD)")
+
+
 def make_planner(cfg, mu_scale):
     mc, lim = cfg["mpc"], cfg["limits"]
+    _check_plant()
     cls = STDMPC if plant_model() == "std" else DynamicMPC
     return cls(vehicle_params(mu_scale), mc["Ts"], mc["N"], mc["q_y"], mc["q_psi"], mc["r_du"],
                mc["q_terminal"], lim["s_max"], lim["sv_max"] * mc["Ts"], mc["delay_comp_s"])
@@ -228,6 +236,7 @@ def main():
     rout.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
     track = Track(cfg)
+    _check_plant()  # fail before any worker starts
     lc, sw = cfg["lap_time"], cfg["sweep"]
     starts = (sw["start_s"], sw["recheck_start_s"])
     rc = cfg.get("reference_lap", {})

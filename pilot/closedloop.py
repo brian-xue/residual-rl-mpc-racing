@@ -3,6 +3,8 @@
 Controllers differ only in the steering correction added after the MPC:
 Lap validity is decided by pilot.geometry at every physics step: ``off_track`` (no tire patch on the
 legal region) or ``wall_collision`` (body touches a wall) invalidate the lap; a wall collision also ends it.
+Optional ``spin`` (``geometry.spin_beta_max_rad``): |sideslip| above the threshold ends the lap. Without it a
+spinning car on the ST plant keeps its speed (V' = a) and runs until the timeout.
 
     nominal  : delta = clip(delta_mpc)
     ff       : delta = clip(delta_mpc + K v^2 kappa_ref(s))
@@ -21,7 +23,7 @@ import numpy as np
 import pandas as pd
 
 from .geometry import TrackGeometry
-from .mpc import KinematicMPC
+from .mpc import CoupledMPC, KinematicMPC
 from .reference import Reference, speed_plan, wall_safe_raceline
 from .sim import NOMINAL_PARAMS, SteeringServo, agent, make_env, reset_to_state, set_plant, vehicle_params
 
@@ -39,7 +41,7 @@ class Track:
 
     def __init__(self, cfg):
         self.cfg = cfg
-        set_plant(cfg.get("model", "st"))
+        set_plant(cfg.get("model", "st"), cfg.get("tire"))
         rc = cfg["reference"]
         env = make_env(cfg["track"], 1.0, cfg["steer_mode"], cfg["dt"])
         self.geo = TrackGeometry(env.track, NOMINAL_PARAMS, {**cfg["geometry"], "track": cfg["track"]})
@@ -82,12 +84,14 @@ class Track:
         env.close()
         self._plans = {}
 
-    def plan(self, a_lat, v_cap=None):
+    def plan(self, a_lat, v_cap=None, friction_ellipse=False):
         sp_ = self.cfg["speed_plan"]
         v_cap = sp_["v_cap"] if v_cap is None else v_cap
-        if (a_lat, v_cap) not in self._plans:
-            self._plans[(a_lat, v_cap)] = speed_plan(self.ref, a_lat, v_cap, sp_["a_acc"], sp_["a_dec"])
-        return self._plans[(a_lat, v_cap)]
+        fe = bool(friction_ellipse)
+        if (a_lat, v_cap, fe) not in self._plans:
+            self._plans[(a_lat, v_cap, fe)] = speed_plan(self.ref, a_lat, v_cap, sp_["a_acc"], sp_["a_dec"],
+                                                         friction_ellipse=fe)
+        return self._plans[(a_lat, v_cap, fe)]
 
 
 class LapSim:
@@ -115,12 +119,14 @@ class LapSim:
         self.s_max, self.sv_max = lim["s_max"], lim["sv_max"]
         self.Ts = mc["Ts"]
         self.n_sub = int(round(self.Ts / dt))
-        vplan = track.plan(scn.a_lat, scn.v_cap)
+        vplan = track.plan(scn.a_lat, scn.v_cap, cfg["speed_plan"].get("friction_ellipse", False))
         self.vplan_at = lambda s: np.interp(np.mod(s, ref.length), np.r_[ref.s, ref.length], np.r_[vplan, vplan[0]])  # noqa: E731
+        aplan = vplan * np.gradient(vplan, ref.ds)  # plan acceleration v dv/ds (feedforward for the coupled MPC)
+        self.aplan_at = lambda s: np.interp(np.mod(s, ref.length), np.r_[ref.s, ref.length], np.r_[aplan, aplan[0]])  # noqa: E731
         self.plan_lap_time = float(np.sum(ref.ds / vplan))
         self.t_max = cfg["qualifying"]["timeout_factor"] * self.plan_lap_time
 
-        set_plant(cfg.get("model", "st"))
+        set_plant(cfg.get("model", "st"), cfg.get("tire"))
         self.a_max = vehicle_params(scn.mu_scale)["a_max"]
         self._own_env = env is None
         if env is None:
@@ -143,8 +149,25 @@ class LapSim:
                                 mc["r_du"], mc["q_terminal"], self.s_max, self.sv_max * self.Ts)
         self.planner = steer_planner(cfg, scn.mu_scale) if steer_planner is not None else None
         self.servo = SteeringServo(cfg["steer_mode"], dt, self.sv_max)
-        self.kv = cfg["longitudinal"]["kv"]
+        lc = cfg["longitudinal"]
+        self.kv = lc["kv"]
+        # longitudinal mode: "pfb" = plan feedforward + P (pilot default), "mpc" = coupled steering + speed MPC
+        self.cmpc, self.a_mpc, self.a_prev = None, None, 0.0
+        if lc.get("mode", "pfb") == "mpc" and self.planner is None:
+            lm = lc["mpc"]
+            vp_ = vehicle_params(scn.mu_scale)
+            ell = None
+            if lm.get("friction_ellipse", False):
+                ell = dict(ax_max=lm.get("ax_max", cfg["speed_plan"]["a_dec"]), ay_max=scn.a_lat,
+                           n_facets=lm["n_facets"], slack_l1=lm["slack_l1"], slack_l2=lm["slack_l2"])
+            self.cmpc = CoupledMPC(NOMINAL_PARAMS["lf"], NOMINAL_PARAMS["lr"], self.Ts, mc["N"],
+                                   {k: mc[k] for k in ("q_y", "q_psi", "r_du", "q_terminal")}, lm,
+                                   self.s_max, self.sv_max * self.Ts, vp_["a_max"], vp_["v_switch"], ellipse=ell)
+        # measured acceleration usage, same ellipse for every controller: a_x,max = speed_plan.a_dec, a_y,max = a_lat
+        self.ell_ax, self.ell_ay = cfg["speed_plan"]["a_dec"], scn.a_lat
+        self.ell_max, self.n_ell_over, self.max_ay, self.min_ax = 0.0, 0, 0.0, 0.0
         self.tau = mc["delay_comp_s"]
+        self.spin_beta_max = cfg["geometry"].get("spin_beta_max_rad")  # None: no spin check
         self.residual_logged = residual_logged
 
         s0, _, self.i_g = ref.project(x0, y0)
@@ -194,13 +217,21 @@ class LapSim:
             self.n_sat_rate += abs(u_steer) >= self.sv_max - 1e-9
         # shared longitudinal controller: speed-plan feed-forward + P feedback
         s, v = self.s, self.v
-        dvds = (self.vplan_at(s + 0.2) - self.vplan_at(s - 0.2)) / 0.4
-        a_cmd = float(np.clip(v * dvds + self.kv * (self.vp - v), -self.a_max, self.a_max))
+        if self.a_mpc is not None:
+            a_cmd = float(np.clip(self.a_mpc, -self.a_max, self.a_max))
+        else:
+            dvds = (self.vplan_at(s + 0.2) - self.vplan_at(s - 0.2)) / 0.4
+            a_cmd = float(np.clip(v * dvds + self.kv * (self.vp - v), -self.a_max, self.a_max))
         _, _, _, trunc, _ = self.env.step(np.array([[u_steer, a_cmd]]))
         self.t += self.dt
         self.step += 1
         # track-limit and wall checks at every physics step (same for every controller)
         st = agent(self.env).state
+        # measured CG accelerations: longitudinal dv/dt, lateral v (yaw rate + d slip/dt)
+        ax, ay = (st[3] - v) / self.dt, st[3] * (st[5] + (st[6] - self.st[6]) / self.dt)
+        e = np.hypot(ax / self.ell_ax, ay / self.ell_ay)
+        self.ell_max, self.n_ell_over = max(self.ell_max, e), self.n_ell_over + (e > 1.02)
+        self.max_ay, self.min_ax = max(self.max_ay, abs(ay)), min(self.min_ax, ax)
         off, wall, self.tires_in = self.geo.check(st[0], st[1], st[4], st[2])
         if off:
             self.n_off += 1
@@ -210,6 +241,10 @@ class LapSim:
                 self.first_off_progress = float(self.progress)
         if wall:
             self.outcome = "wall_collision"
+            self.s, self.e_y, self.i_g = ref.project(st[0], st[1], self.i_g)
+            return True
+        if self.spin_beta_max is not None and abs(st[6]) > self.spin_beta_max:
+            self.outcome = "spin"
             self.s, self.e_y, self.i_g = ref.project(st[0], st[1], self.i_g)
             return True
         if trunc and self._own_env:
@@ -226,6 +261,15 @@ class LapSim:
         if self.planner is not None:  # alternative steering planner (20 Hz)
             d_mpc, ok, tsol = self.planner.solve(st, e_y, e_psi, s, self.delta_mpc_prev, self.vplan_at, ref)
             s_p = s + tau * v
+        elif self.cmpc is not None:  # coupled steering + speed MPC (20 Hz), same delay compensation
+            b = np.arctan(NOMINAL_PARAMS["lr"] / L * np.tan(delta))
+            e_y_p = e_y + tau * v * np.sin(e_psi + b)
+            e_psi_p = e_psi + tau * (v * np.cos(b) * np.tan(delta) / L - v * ref.kappa[self.i_g])
+            s_p = s + tau * v
+            v_p = v + tau * self.a_prev
+            d_mpc, a_mpc, ok, tsol, _ = self.cmpc.solve(e_y_p, e_psi_p, self.delta_mpc_prev, v_p, self.a_prev, s_p,
+                                                       self.vplan_at, self.aplan_at, ref.kappa_at)
+            self.a_mpc = self.a_prev = a_mpc
         else:  # MPC update (20 Hz)
             # delay compensation: propagate the kinematic error state by tau with current steering
             b = np.arctan(NOMINAL_PARAMS["lr"] / L * np.tan(delta))
@@ -261,6 +305,8 @@ class LapSim:
                        delta_mpc=self.d_mpc, delta_ff=self.d_ff, delta_cmd=self.delta_cmd, delta=delta,
                        yaw_rate=r, slip=beta, kappa=self.ref.kappa[self.i_g], solve_ms=self.solve_times[-1] * 1e3,
                        solver_ok=self.solver_ok, x=x, y=y, yaw=yaw, n_tires_in=int(self.tires_in.sum()))
+            if self.cmpc is not None:
+                row["a_mpc"] = self.a_mpc
             if self.residual_logged:
                 row["delta_res"] = self.d_res
             self.rows.append(row)
@@ -294,6 +340,8 @@ class LapSim:
             solver_failures=self.n_fail, solve_ms_median=float(np.median(st)) if len(st) else None,
             solve_ms_p99=float(np.percentile(st, 99)) if len(st) else None,
             solve_ms_max=float(st.max()) if len(st) else None,
+            ellipse_max=self.ell_max, ellipse_over_frac=self.n_ell_over / max(self.step, 1),
+            max_abs_ay=self.max_ay, max_brake=-self.min_ax,
         )
         if self.residual_logged:
             summ["mean_abs_res"] = self.sum_abs_res / max(self.n_ctrl, 1)

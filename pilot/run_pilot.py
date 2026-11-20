@@ -118,7 +118,8 @@ def main():
 
     # 1. simulator verification
     print("[1/6] simulator checks", flush=True)
-    report["sim_checks"] = sim_checks.run(cfg["track"], cfg["dt"], out / "sim_checks", model=cfg.get("model", "st"))
+    report["sim_checks"] = sim_checks.run(cfg["track"], cfg["dt"], out / "sim_checks", model=cfg.get("model", "st"),
+                                           tire=cfg.get("tire"))
 
     track = Track(cfg)
     report["reference_and_geometry"] = track.info

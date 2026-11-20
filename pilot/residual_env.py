@@ -108,7 +108,7 @@ class ResidualRacingEnv(gym.Env):
         self.prev_res = res
         terminated = truncated = False
         info = {}
-        if sim.outcome == "wall_collision":
+        if sim.outcome in ("wall_collision", "spin"):
             rew -= w["crash"]
             terminated = True
         elif abs(sim.e_y) > self.cfg["qualifying"]["max_abs_ey_m"]:

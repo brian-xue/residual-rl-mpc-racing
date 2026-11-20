@@ -36,9 +36,21 @@ speed_plan:                  # v(s) = min(v_cap, sqrt(a_lat / |kappa|)) with acc
   v_cap: 8.0
   a_acc: 4.0
   a_dec: 4.0
+  friction_ellipse: false    # true: passes only use the acceleration the friction ellipse leaves (pilot.reference.speed_plan)
 
 longitudinal:                # a = v dv_plan/ds + kv (v_plan - v), direct acceleration command
   kv: 3.0
+  mode: pfb                  # "pfb": the above (pilot default); "mpc": coupled steering + speed MPC (pilot.mpc.CoupledMPC)
+  mpc:                       # coupled MPC only (steering weights, horizon, rate and limits shared with mpc: below)
+    q_v: 2.0                 # x (v - v_plan)^2
+    q_a: 0.1                 # x (a - a_plan)^2, a_plan = v dv_plan/ds
+    r_da: 1.0                # x (change of acceleration per MPC step)^2
+    da_max: 2.0              # [m/s^2] max acceleration change per MPC step (40 m/s^3)
+    friction_ellipse: false  # (a/ax_max)^2 + (v^2 kappa/a_lat)^2 <= 1 (soft, n-facet polygon)
+    ax_max: 4.0              # [m/s^2] longitudinal semi-axis (= speed_plan.a_dec)
+    n_facets: 8               # outer polygon (8 facets: <= 8% looser than the ellipse)
+    slack_l1: 100.0
+    slack_l2: 1000.0
 
 limits:                      # final steering limits, applied after the correction
   s_max: 0.4189              # [rad] (simulator s_max)
