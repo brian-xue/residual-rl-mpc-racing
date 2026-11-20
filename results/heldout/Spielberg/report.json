@@ -1,0 +1,91 @@
+{
+  "track": "Spielberg",
+  "K_ff": 0.03,
+  "r_max": 0.2,
+  "base_K": 0.0,
+  "model": "results/residual/ckpt_1750000.zip",
+  "sweep_qualifying": {
+    "ff": 16,
+    "nominal": 0,
+    "residual": 14
+  },
+  "trace_cell": [
+    8.0,
+    0.6
+  ],
+  "lap_time_comparison": [
+    {
+      "mu_scale": 1.0,
+      "controller": "nominal",
+      "best_a_lat": 2.0,
+      "lap_time": 55.23999999999758,
+      "max_ey": 0.09024638271248274,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "ff",
+      "best_a_lat": 8.0,
+      "lap_time": 42.940000000000026,
+      "max_ey": 0.40732427992378195,
+      "gap_s_vs_nominal": 12.299999999997553
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "residual",
+      "best_a_lat": 10.0,
+      "lap_time": 42.87000000000004,
+      "max_ey": 0.23968069515243906,
+      "gap_s_vs_nominal": 12.369999999997539
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "nominal",
+      "best_a_lat": 1.5,
+      "lap_time": 60.029999999996626,
+      "max_ey": 0.0885366851089776,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "ff",
+      "best_a_lat": 8.0,
+      "lap_time": 43.03000000000001,
+      "max_ey": 0.41816032443734596,
+      "gap_s_vs_nominal": 16.999999999996618
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "residual",
+      "best_a_lat": 10.0,
+      "lap_time": 42.96000000000002,
+      "max_ey": 0.3536189835858006,
+      "gap_s_vs_nominal": 17.069999999996604
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "nominal",
+      "best_a_lat": 1.0,
+      "lap_time": 68.47999999999813,
+      "max_ey": 0.08299125658727857,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "ff",
+      "best_a_lat": 4.0,
+      "lap_time": 46.87999999999924,
+      "max_ey": 0.18029690307948743,
+      "gap_s_vs_nominal": 21.599999999998886
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "residual",
+      "best_a_lat": 3.0,
+      "lap_time": 49.80999999999866,
+      "max_ey": 0.09057559337001585,
+      "gap_s_vs_nominal": 18.66999999999947
+    }
+  ],
+  "runtime_s": 162.58525276184082
+}

@@ -1,0 +1,19 @@
+[project]
+name = "residual-rl-mpc-racing"
+version = "0.1.0"
+description = "Residual RL on MPC for vehicle racing under model mismatch: kinematic MPC, MPC + K v^2 kappa feedforward, and MPC + learned (PPO) steering residual on Gym-Khana 1.2.0"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "gymkhana==1.2.0",
+    "gymnasium>=0.29",
+    "matplotlib>=3.11.2",
+    "numpy>=2.0",
+    "osqp>=1.1.3",
+    "pandas>=3.1.1",
+    "pyyaml>=6.0.3",
+    "scipy>=1.17.1",
+    "shapely>=2.2.0",
+    "stable-baselines3>=2.4",
+    "torch>=2.5",
+]

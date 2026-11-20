@@ -1,0 +1,150 @@
+[1/6] simulator checks
+[2/6] conservative nominal lap
+[3/6] tuning K
+   K=0.000  {'K': 0.0, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.13572404286746523, 'mean_rms_ey': 0.08176847164336262, 'mean_max_ey': 0.22085095244237068}
+   K=0.002  {'K': 0.002, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.1357664410834049, 'mean_rms_ey': 0.07569288497321185, 'mean_max_ey': 0.2007349452509041}
+   K=0.004  {'K': 0.004, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.13573550801706658, 'mean_rms_ey': 0.0689390655260279, 'mean_max_ey': 0.18678129759653667}
+   K=0.006  {'K': 0.006, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.1361697972343362, 'mean_rms_ey': 0.0628077037853823, 'mean_max_ey': 0.16881689389595914}
+   K=0.008  {'K': 0.008, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.5609535600639062, 'mean_rms_ey': 0.0687864704338063, 'mean_max_ey': 0.19785504406668236}
+   K=0.012  {'K': 0.012, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.5679405587794759, 'mean_rms_ey': 0.05500753358174887, 'mean_max_ey': 0.17303680409004552}
+   K=0.016  {'K': 0.016, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.5679037819574552, 'mean_rms_ey': 0.04488442516415824, 'mean_max_ey': 0.14151350257969092}
+   K=0.020  {'K': 0.02, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.567950518908487, 'mean_rms_ey': 0.0427987994609053, 'mean_max_ey': 0.14554540188961104}
+   K=0.025  {'K': 0.025, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.6856952077146927, 'mean_rms_ey': 0.08218107529651988, 'mean_max_ey': 0.2610136858652292}
+   K=0.030  {'K': 0.03, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.9668492986776461, 'mean_rms_ey': 0.08286495305468432, 'mean_max_ey': 0.28296489050977447}
+   frozen K = 0.03
+[4/6] paired sweep
+   a_lat=4.0 mu=1.0: nominal wall_collision prog=0.14 max|ey|=0.140 | ff qualifying prog=1.00 max|ey|=0.225
+   a_lat=4.0 mu=0.8: nominal wall_collision prog=0.14 max|ey|=0.170 | ff qualifying prog=1.00 max|ey|=0.217
+   a_lat=4.0 mu=0.6: nominal wall_collision prog=0.14 max|ey|=0.217 | ff qualifying prog=1.00 max|ey|=0.215
+   a_lat=6.0 mu=1.0: nominal wall_collision prog=0.14 max|ey|=0.209 | ff wall_collision prog=0.95 max|ey|=0.364
+   a_lat=6.0 mu=0.8: nominal wall_collision prog=0.14 max|ey|=0.249 | ff wall_collision prog=0.95 max|ey|=0.354
+   a_lat=6.0 mu=0.6: nominal wall_collision prog=0.14 max|ey|=0.329 | ff wall_collision prog=0.37 max|ey|=0.374
+   a_lat=8.0 mu=1.0: nominal wall_collision prog=0.14 max|ey|=0.295 | ff lateral_error prog=1.00 max|ey|=0.547
+   a_lat=8.0 mu=0.8: nominal wall_collision prog=0.14 max|ey|=0.359 | ff lateral_error prog=1.00 max|ey|=0.517
+   a_lat=8.0 mu=0.6: nominal wall_collision prog=0.14 max|ey|=0.515 | ff wall_collision prog=0.70 max|ey|=0.472
+[5/6] recheck promising cells
+   a_lat=4.0 mu=1.0 start=200.0: nominal wall_collision | ff qualifying
+   a_lat=4.0 mu=0.8 start=200.0: nominal wall_collision | ff qualifying
+   a_lat=4.0 mu=0.6 start=200.0: nominal wall_collision | ff qualifying
+[gif] rendering
+[6/6] fastest qualifying lap per controller
+   mu=1.0 nominal: levels run = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5], last = wall_collision
+   mu=1.0 ff: levels run = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0], last = wall_collision
+   mu=0.8 nominal: levels run = [1.0, 1.5, 2.0, 2.5, 3.0], last = wall_collision
+   mu=0.8 ff: levels run = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0], last = wall_collision
+   mu=0.6 nominal: levels run = [1.0, 1.5, 2.0], last = wall_collision
+   mu=0.6 ff: levels run = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5], last = wall_collision
+done in 173 s -> results/summary.csv, results/comparison.png
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.161, 'rms_ey': 0.0617}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.21245522684892, 'max_ey': 0.165, 'rms_ey': 0.0622}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.39784006207193, 'max_ey': 0.14, 'rms_ey': 0.0498}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.22404320890481, 'max_ey': 0.217, 'rms_ey': 0.0821}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.22081605997989, 'max_ey': 0.209, 'rms_ey': 0.0757}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.171423902288794, 'max_ey': 0.329, 'rms_ey': 0.1223}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.145690179103646, 'max_ey': 0.295, 'rms_ey': 0.0978}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.14462770008266, 'max_ey': 0.515, 'rms_ey': 0.1708}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.095, 'rms_ey': 0.0203}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.142, 'rms_ey': 0.0457}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.129, 'rms_ey': 0.029}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.241, 'rms_ey': 0.0663}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.214, 'rms_ey': 0.0528}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.22310551174617, 'max_ey': 0.155, 'rms_ey': 0.0537}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.268, 'rms_ey': 0.0609}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.21271730201412, 'max_ey': 0.267, 'rms_ey': 0.0887}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.162, 'rms_ey': 0.0453}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.191, 'rms_ey': 0.0347}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.225, 'rms_ey': 0.0646}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.215, 'rms_ey': 0.0543}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.948, 'fail_s': 385.15425077957667, 'max_ey': 0.364, 'rms_ey': 0.1036}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.372, 'fail_s': 151.01605363391212, 'max_ey': 0.374, 'rms_ey': 0.1167}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'lateral_error', 'qualifying': False, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.547, 'rms_ey': 0.1307}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.705, 'fail_s': 286.44012857341784, 'max_ey': 0.472, 'rms_ey': 0.0985}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.154, 'rms_ey': 0.0619}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.42, 'fail_s': 170.68039971228134, 'max_ey': 0.289, 'rms_ey': 0.1189}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.203, 'rms_ey': 0.0814}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.19954704042537, 'max_ey': 0.251, 'rms_ey': 0.0852}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.137, 'fail_s': 55.532245843996506, 'max_ey': 0.235, 'rms_ey': 0.0778}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.21001519456153, 'max_ey': 0.344, 'rms_ey': 0.1233}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.17775970459759, 'max_ey': 0.291, 'rms_ey': 0.1007}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.15578516782166, 'max_ey': 0.504, 'rms_ey': 0.1753}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.095, 'rms_ey': 0.0204}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.143, 'rms_ey': 0.0458}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.131, 'rms_ey': 0.0288}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.242, 'rms_ey': 0.0662}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.212, 'rms_ey': 0.0517}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.371, 'fail_s': 150.72080254153823, 'max_ey': 0.42, 'rms_ey': 0.1279}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.305, 'rms_ey': 0.0628}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.38396045652815, 'max_ey': 0.282, 'rms_ey': 0.0967}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.161, 'rms_ey': 0.0451}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.195, 'rms_ey': 0.0346}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.237, 'rms_ey': 0.064}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.216, 'rms_ey': 0.0541}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.338, 'rms_ey': 0.1017}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.372, 'rms_ey': 0.0921}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'lateral_error', 'qualifying': False, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.706, 'rms_ey': 0.1366}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.704, 'fail_s': 286.22586539904825, 'max_ey': 0.682, 'rms_ey': 0.1233}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.162, 'rms_ey': 0.062}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.285, 'rms_ey': 0.1064}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.214, 'rms_ey': 0.0815}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.417, 'fail_s': 169.58431693020378, 'max_ey': 0.473, 'rms_ey': 0.1717}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.36, 'rms_ey': 0.123}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.24948347500271, 'max_ey': 0.393, 'rms_ey': 0.1264}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.137, 'fail_s': 55.695979463856894, 'max_ey': 0.337, 'rms_ey': 0.1044}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.16987525605757, 'max_ey': 0.475, 'rms_ey': 0.1746}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.096, 'rms_ey': 0.0207}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.144, 'rms_ey': 0.0452}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.135, 'rms_ey': 0.0292}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.24, 'rms_ey': 0.0658}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.212, 'rms_ey': 0.0521}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.934, 'fail_s': 379.28815421174426, 'max_ey': 0.429, 'rms_ey': 0.1112}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.306, 'rms_ey': 0.0607}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.371, 'fail_s': 150.66046555747292, 'max_ey': 0.346, 'rms_ey': 0.1159}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.163, 'rms_ey': 0.0447}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.193, 'rms_ey': 0.034}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.253, 'rms_ey': 0.0642}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.22, 'rms_ey': 0.0543}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.342, 'rms_ey': 0.1012}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.373, 'rms_ey': 0.0956}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'lateral_error', 'qualifying': False, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.608, 'rms_ey': 0.1313}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.162690692800865, 'max_ey': 1.032, 'rms_ey': 0.2853}
+K                                       0.00            0.02            0.03
+wall_margin_m a_lat mu_scale                                                
+0.10          3.0   0.6       wall_collision      qualifying      qualifying
+                    1.0           qualifying      qualifying      qualifying
+              4.0   0.6       wall_collision      qualifying      qualifying
+                    1.0       wall_collision      qualifying      qualifying
+              6.0   0.6       wall_collision  wall_collision  wall_collision
+                    1.0       wall_collision      qualifying  wall_collision
+              8.0   0.6       wall_collision  wall_collision  wall_collision
+                    1.0       wall_collision      qualifying   lateral_error
+0.15          3.0   0.6       wall_collision      qualifying      qualifying
+                    1.0           qualifying      qualifying      qualifying
+              4.0   0.6       wall_collision      qualifying      qualifying
+                    1.0           qualifying      qualifying      qualifying
+              6.0   0.6       wall_collision  wall_collision      qualifying
+                    1.0       wall_collision      qualifying      qualifying
+              8.0   0.6       wall_collision  wall_collision  wall_collision
+                    1.0       wall_collision      qualifying   lateral_error
+0.20          3.0   0.6           qualifying      qualifying      qualifying
+                    1.0           qualifying      qualifying      qualifying
+              4.0   0.6       wall_collision      qualifying      qualifying
+                    1.0           qualifying      qualifying      qualifying
+              6.0   0.6       wall_collision  wall_collision      qualifying
+                    1.0           qualifying      qualifying      qualifying
+              8.0   0.6       wall_collision  wall_collision  wall_collision
+                    1.0       wall_collision      qualifying   lateral_error
+   mu=1.0: qualifying levels [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0, 25.0, 30.0]; first failure: none
+   mu=0.8: qualifying levels [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0, 25.0, 30.0]; first failure: none
+   mu=0.6: qualifying levels [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0, 25.0, 30.0]; first failure: none
+   mu_scale controller  best_a_lat  lap_time_s0  lap_time_s1  plan_lap_time    max_ey  gap_to_reference_s
+0       1.0    nominal         3.0        68.62        68.62      68.148000  0.165000               17.83
+1       1.0         ff         4.5        60.33        60.33      60.715000  0.245000                9.54
+2       0.8    nominal         2.5        72.72        72.72      72.199000  0.176000               21.93
+3       0.8         ff         4.5        60.47        60.47      60.715000  0.241000                9.68
+4       0.6    nominal         1.5        86.67        86.67      86.174000  0.146000               35.86
+5       0.6         ff         4.0        62.67        62.67      62.662000  0.215000               11.86
+6       1.0  reference        30.0        50.79        50.80      50.785792  0.079525                0.00
+7       0.8  reference        30.0        50.79        50.80      50.785792  0.080202                0.00
+8       0.6  reference        30.0        50.81        50.81      50.785792  0.089492                0.00
+done in 189 s -> results/reference/
+EXIT 0

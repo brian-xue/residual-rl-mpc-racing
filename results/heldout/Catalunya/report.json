@@ -1,0 +1,91 @@
+{
+  "track": "Catalunya",
+  "K_ff": 0.03,
+  "r_max": 0.2,
+  "base_K": 0.0,
+  "model": "results/residual/ckpt_1750000.zip",
+  "sweep_qualifying": {
+    "ff": 16,
+    "nominal": 6,
+    "residual": 18
+  },
+  "trace_cell": [
+    8.0,
+    0.8
+  ],
+  "lap_time_comparison": [
+    {
+      "mu_scale": 1.0,
+      "controller": "nominal",
+      "best_a_lat": 7.0,
+      "lap_time": 53.56999999999791,
+      "max_ey": 0.49023145870674406,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "ff",
+      "best_a_lat": 7.0,
+      "lap_time": 52.46999999999813,
+      "max_ey": 0.43965063005367755,
+      "gap_s_vs_nominal": 1.0999999999997812
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "residual",
+      "best_a_lat": 10.0,
+      "lap_time": 51.389999999998345,
+      "max_ey": 0.2223953282410921,
+      "gap_s_vs_nominal": 2.1799999999995663
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "nominal",
+      "best_a_lat": 4.5,
+      "lap_time": 57.929999999997044,
+      "max_ey": 0.2968013270767189,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "ff",
+      "best_a_lat": 6.0,
+      "lap_time": 53.859999999997854,
+      "max_ey": 0.3767745646160186,
+      "gap_s_vs_nominal": 4.06999999999919
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "residual",
+      "best_a_lat": 10.0,
+      "lap_time": 51.54999999999831,
+      "max_ey": 0.2884782458258013,
+      "gap_s_vs_nominal": 6.379999999998731
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "nominal",
+      "best_a_lat": 3.0,
+      "lap_time": 64.40999999999605,
+      "max_ey": 0.2835771798690814,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "ff",
+      "best_a_lat": 6.0,
+      "lap_time": 54.1199999999978,
+      "max_ey": 0.4109656134958156,
+      "gap_s_vs_nominal": 10.289999999998244
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "residual",
+      "best_a_lat": 10.0,
+      "lap_time": 51.84999999999825,
+      "max_ey": 0.44523706844518063,
+      "gap_s_vs_nominal": 12.559999999997792
+    }
+  ],
+  "runtime_s": 303.2143568992615
+}

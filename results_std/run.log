@@ -1,0 +1,147 @@
+[1/6] simulator checks
+[2/6] conservative nominal lap
+[3/6] tuning K
+   K=0.000  {'K': 0.0, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.5612161262090173, 'mean_rms_ey': 36.996841650428145, 'mean_max_ey': 46.89608639577031}
+   K=0.002  {'K': 0.002, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.5624140308649566, 'mean_rms_ey': 20.834539760044102, 'mean_max_ey': 24.720244705413048}
+   K=0.004  {'K': 0.004, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.5607433306198696, 'mean_rms_ey': 36.39492953041115, 'mean_max_ey': 46.84205593297012}
+   K=0.006  {'K': 0.006, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.5621548457074806, 'mean_rms_ey': 23.121192397601497, 'mean_max_ey': 29.036276270793266}
+   K=0.008  {'K': 0.008, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.5624311526442023, 'mean_rms_ey': 22.7053665603101, 'mean_max_ey': 27.7107701965733}
+   K=0.012  {'K': 0.012, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.13027796508425804, 'mean_rms_ey': 18.323512778453125, 'mean_max_ey': 23.145782645291995}
+   K=0.016  {'K': 0.016, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.12515710114455403, 'mean_rms_ey': 77.30899767895528, 'mean_max_ey': 91.56431024413794}
+   K=0.020  {'K': 0.02, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.12369176067104055, 'mean_rms_ey': 60.85909396012366, 'mean_max_ey': 70.894329479801}
+   K=0.025  {'K': 0.025, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.1257857492551057, 'mean_rms_ey': 115.53051733035792, 'mean_max_ey': 155.33073970126256}
+   K=0.030  {'K': 0.03, 'all_completed': False, 'all_valid': False, 'mean_progress_frac': 0.13124910530088899, 'mean_rms_ey': 109.38315187803111, 'mean_max_ey': 160.20576044254554}
+   frozen K = 0.008
+[4/6] paired sweep
+   a_lat=4.0 mu=1.0: nominal qualifying prog=1.00 max|ey|=0.028 | ff qualifying prog=1.00 max|ey|=0.103
+   a_lat=4.0 mu=0.8: nominal qualifying prog=1.00 max|ey|=0.028 | ff qualifying prog=1.00 max|ey|=0.105
+   a_lat=4.0 mu=0.6: nominal qualifying prog=1.00 max|ey|=0.030 | ff timeout prog=0.13 max|ey|=50.397
+   a_lat=6.0 mu=1.0: nominal qualifying prog=1.00 max|ey|=0.052 | ff timeout prog=0.13 max|ey|=4.571
+   a_lat=6.0 mu=0.8: nominal timeout prog=0.12 max|ey|=22.779 | ff timeout prog=0.13 max|ey|=43.985
+   a_lat=6.0 mu=0.6: nominal timeout prog=0.12 max|ey|=57.959 | ff timeout prog=0.13 max|ey|=50.619
+   a_lat=8.0 mu=1.0: nominal wall_collision prog=0.37 max|ey|=6.083 | ff wall_collision prog=0.14 max|ey|=10.338
+   a_lat=8.0 mu=0.8: nominal timeout prog=0.12 max|ey|=303.380 | ff timeout prog=0.12 max|ey|=33.903
+   a_lat=8.0 mu=0.6: nominal timeout prog=0.12 max|ey|=43.273 | ff timeout prog=0.47 max|ey|=179.873
+[5/6] recheck promising cells
+[gif] rendering
+[6/6] fastest qualifying lap per controller
+   mu=1.0 nominal: levels run = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0], last = wall_collision
+   mu=1.0 ff: levels run = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5], last = off_track
+   mu=0.8 nominal: levels run = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5], last = wall_collision
+   mu=0.8 ff: levels run = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0], last = off_track
+   mu=0.6 nominal: levels run = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5], last = wall_collision
+   mu=0.6 ff: levels run = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0], last = timeout
+done in 1422 s -> results/summary.csv, results/comparison.png
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.024, 'rms_ey': 0.0069}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.026, 'rms_ey': 0.007}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.028, 'rms_ey': 0.0082}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.03, 'rms_ey': 0.0091}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.052, 'rms_ey': 0.0117}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.125, 'fail_s': 50.6280533289778, 'max_ey': 57.959, 'rms_ey': 48.2803}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.37, 'fail_s': 150.44695599039568, 'max_ey': 6.083, 'rms_ey': 1.81}
+{'wall_margin_m': 0.1, 'K': 0.0, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.123, 'fail_s': 50.03707388233022, 'max_ey': 43.273, 'rms_ey': 25.5851}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.209, 'rms_ey': 0.1116}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.126, 'fail_s': 51.121200772933484, 'max_ey': 35.879, 'rms_ey': 30.7207}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.408960728265754, 'max_ey': 3.749, 'rms_ey': 1.4634}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.125, 'fail_s': 50.71877374348382, 'max_ey': 39.612, 'rms_ey': 32.5879}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.128, 'fail_s': 51.84576647387779, 'max_ey': 142.045, 'rms_ey': 120.3083}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.123, 'fail_s': 50.13591984894867, 'max_ey': 58.491, 'rms_ey': 50.8648}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.129, 'fail_s': 52.31719441122824, 'max_ey': 126.554, 'rms_ey': 106.2427}
+{'wall_margin_m': 0.1, 'K': 0.02, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.124, 'fail_s': 50.338048769579814, 'max_ey': 46.724, 'rms_ey': 38.7617}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.187, 'fail_s': 75.85238907890836, 'max_ey': 2.746, 'rms_ey': 0.9014}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.126, 'fail_s': 51.12760461890412, 'max_ey': 41.377, 'rms_ey': 35.8748}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.14367460640666, 'max_ey': 3.69, 'rms_ey': 1.4348}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.126, 'fail_s': 51.342714427486314, 'max_ey': 31.637, 'rms_ey': 26.578}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.124, 'fail_s': 50.53534270406085, 'max_ey': 53.204, 'rms_ey': 47.6923}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.131, 'fail_s': 53.06464112673502, 'max_ey': 233.7, 'rms_ey': 180.1994}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.985, 'fail_s': 400.06526413463257, 'max_ey': 11.861, 'rms_ey': 3.2306}
+{'wall_margin_m': 0.1, 'K': 0.03, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.122, 'fail_s': 49.57358868962996, 'max_ey': 37.728, 'rms_ey': 21.3217}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.037, 'rms_ey': 0.0073}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.037, 'rms_ey': 0.0074}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.038, 'rms_ey': 0.0089}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.374, 'fail_s': 151.80349376398127, 'max_ey': 11.876, 'rms_ey': 4.6282}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.138, 'fail_s': 56.24603037840724, 'max_ey': 5.256, 'rms_ey': 2.1548}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.599, 'fail_s': 243.50978877755648, 'max_ey': 136.01, 'rms_ey': 67.4464}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.14, 'fail_s': 56.817757769625025, 'max_ey': 6.707, 'rms_ey': 2.8443}
+{'wall_margin_m': 0.15, 'K': 0.0, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.125, 'fail_s': 50.75012403545469, 'max_ey': 57.686, 'rms_ey': 42.5544}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'off_track', 'qualifying': False, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 2.742, 'rms_ey': 0.4141}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.753, 'fail_s': 306.0522601614902, 'max_ey': 9.889, 'rms_ey': 2.3285}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.14, 'fail_s': 56.76967661158328, 'max_ey': 3.16, 'rms_ey': 1.2353}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.129, 'fail_s': 52.543019166623736, 'max_ey': 21.528, 'rms_ey': 17.4835}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.143, 'fail_s': 58.07292881101246, 'max_ey': 5.083, 'rms_ey': 2.0753}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.121, 'fail_s': 49.136992939234084, 'max_ey': 258.774, 'rms_ey': 191.647}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.431, 'fail_s': 174.89600195224781, 'max_ey': 23.171, 'rms_ey': 14.6529}
+{'wall_margin_m': 0.15, 'K': 0.02, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.307987374124316, 'max_ey': 28.667, 'rms_ey': 13.946}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.873, 'fail_s': 354.7575618908754, 'max_ey': 214.087, 'rms_ey': 106.0116}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.27, 'fail_s': 109.7439993089033, 'max_ey': 50.793, 'rms_ey': 39.3867}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.192, 'fail_s': 77.8951163591218, 'max_ey': 5.188, 'rms_ey': 1.8826}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.13, 'fail_s': 52.89308085834585, 'max_ey': 164.448, 'rms_ey': 132.8021}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.126, 'fail_s': 51.257114947522474, 'max_ey': 85.657, 'rms_ey': 75.168}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.113, 'fail_s': 46.06949311096052, 'max_ey': 283.211, 'rms_ey': 201.6418}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.683, 'fail_s': 277.46142005856467, 'max_ey': 20.49, 'rms_ey': 8.6759}
+{'wall_margin_m': 0.15, 'K': 0.03, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.377, 'fail_s': 152.94907521111193, 'max_ey': 10.317, 'rms_ey': 4.2831}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.044, 'rms_ey': 0.008}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.045, 'rms_ey': 0.0081}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'qualifying', 'qualifying': True, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 0.05, 'rms_ey': 0.0095}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.336, 'fail_s': 136.5609305678925, 'max_ey': 15.405, 'rms_ey': 3.6349}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.14, 'fail_s': 56.96476311647499, 'max_ey': 4.622, 'rms_ey': 1.8384}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.684, 'fail_s': 277.857305938514, 'max_ey': 126.65, 'rms_ey': 53.1922}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.392347821319206, 'max_ey': 7.608, 'rms_ey': 3.1974}
+{'wall_margin_m': 0.2, 'K': 0.0, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.125, 'fail_s': 50.62517087674985, 'max_ey': 51.092, 'rms_ey': 30.4216}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'off_track', 'qualifying': False, 'progress_frac': 1.0, 'fail_s': None, 'max_ey': 3.312, 'rms_ey': 0.4982}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.27, 'fail_s': 109.63061043986953, 'max_ey': 45.785, 'rms_ey': 36.2135}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.187, 'fail_s': 75.98228067216135, 'max_ey': 3.708, 'rms_ey': 1.2746}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.17, 'fail_s': 69.12625857471905, 'max_ey': 218.313, 'rms_ey': 156.8465}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.136, 'fail_s': 55.13402261496547, 'max_ey': 1.24, 'rms_ey': 0.3599}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.114, 'fail_s': 46.168159581822046, 'max_ey': 205.103, 'rms_ey': 152.5725}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.118, 'fail_s': 47.774746881071536, 'max_ey': 152.461, 'rms_ey': 119.4554}
+{'wall_margin_m': 0.2, 'K': 0.02, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.109, 'fail_s': 44.27599069587783, 'max_ey': 369.395, 'rms_ey': 248.9548}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 3.0, 'mu_scale': 1.0, 'status': 'wall_collision', 'qualifying': False, 'progress_frac': 0.19, 'fail_s': 77.05529423787864, 'max_ey': 2.449, 'rms_ey': 0.7851}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 3.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.27, 'fail_s': 109.49399576896845, 'max_ey': 51.094, 'rms_ey': 39.5737}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 4.0, 'mu_scale': 1.0, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.741, 'fail_s': 301.1312926302479, 'max_ey': 143.402, 'rms_ey': 84.9432}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 4.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.131, 'fail_s': 53.280246535100716, 'max_ey': 157.68, 'rms_ey': 121.5887}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 6.0, 'mu_scale': 1.0, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.122, 'fail_s': 49.710812963740395, 'max_ey': 67.894, 'rms_ey': 60.5845}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 6.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.131, 'fail_s': 53.11575532274008, 'max_ey': 233.28, 'rms_ey': 171.5815}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 8.0, 'mu_scale': 1.0, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.121, 'fail_s': 49.342247727729635, 'max_ey': 86.124, 'rms_ey': 76.3441}
+{'wall_margin_m': 0.2, 'K': 0.03, 'a_lat': 8.0, 'mu_scale': 0.6, 'status': 'timeout', 'qualifying': False, 'progress_frac': 0.145, 'fail_s': 58.92187886510549, 'max_ey': 392.373, 'rms_ey': 254.2904}
+K                                       0.00            0.02            0.03
+wall_margin_m a_lat mu_scale                                                
+0.10          3.0   0.6           qualifying         timeout         timeout
+                    1.0           qualifying      qualifying  wall_collision
+              4.0   0.6           qualifying         timeout         timeout
+                    1.0           qualifying  wall_collision  wall_collision
+              6.0   0.6              timeout         timeout         timeout
+                    1.0           qualifying         timeout         timeout
+              8.0   0.6              timeout         timeout         timeout
+                    1.0       wall_collision         timeout  wall_collision
+0.15          3.0   0.6           qualifying  wall_collision         timeout
+                    1.0           qualifying       off_track         timeout
+              4.0   0.6       wall_collision         timeout         timeout
+                    1.0           qualifying  wall_collision  wall_collision
+              6.0   0.6              timeout         timeout         timeout
+                    1.0       wall_collision  wall_collision         timeout
+              8.0   0.6              timeout  wall_collision  wall_collision
+                    1.0       wall_collision         timeout         timeout
+0.20          3.0   0.6           qualifying         timeout         timeout
+                    1.0           qualifying       off_track  wall_collision
+              4.0   0.6       wall_collision         timeout         timeout
+                    1.0           qualifying  wall_collision         timeout
+              6.0   0.6              timeout         timeout         timeout
+                    1.0       wall_collision  wall_collision         timeout
+              8.0   0.6              timeout         timeout         timeout
+                    1.0       wall_collision         timeout         timeout
+   mu=1.0: qualifying levels [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0]; first failure: a_lat 7.0 wall_collision @ s=75.78680554686625
+   mu=0.8: qualifying levels [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]; first failure: a_lat 5.5 wall_collision @ s=55.852253991020675
+   mu=0.6: qualifying levels [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]; first failure: a_lat 4.5 timeout @ s=51.16422083558327
+   mu_scale controller  best_a_lat  lap_time_s0  lap_time_s1  plan_lap_time    max_ey  gap_to_reference_s
+0       1.0    nominal         6.0       56.966       56.965      56.826000  0.052000               0.060
+1       1.0         ff         5.0       58.737       58.743      59.138000  0.138000               1.831
+2       0.8    nominal         5.0       59.263       59.256      59.138000  0.040000               0.059
+3       0.8         ff         4.5       60.351       60.349      60.715000  0.147000               1.147
+4       0.6    nominal         4.0       62.764       62.759      62.662000  0.030000               0.051
+5       0.6         ff         3.5       64.762       64.759      65.076000  0.093000               2.049
+6       1.0  reference         6.0       56.906       56.908      56.825959  0.026658               0.000
+7       0.8  reference         5.0       59.204       59.206      59.138428  0.024574               0.000
+8       0.6  reference         4.0       62.713       62.713      62.661656  0.024998               0.000
+done in 772 s -> results/reference/
+EXIT 0

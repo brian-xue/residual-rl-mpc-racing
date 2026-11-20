@@ -1,0 +1,95 @@
+{
+  "K_ff": 0.03,
+  "r_max": 0.2,
+  "base_K": 0.0,
+  "model": "results/residual/ckpt_1750000.zip",
+  "sweep_qualifying": {
+    "ff": 6,
+    "nominal": 0,
+    "residual": 16
+  },
+  "trace_cell": [
+    8.0,
+    0.8
+  ],
+  "lap_time_comparison": [
+    {
+      "mu_scale": 1.0,
+      "controller": "nominal",
+      "best_a_lat": 3.0,
+      "lap_time": 68.6199999999982,
+      "max_ey": 0.1647221029543051,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "ff",
+      "best_a_lat": 4.5,
+      "lap_time": 60.329999999996566,
+      "max_ey": 0.2445536474761881,
+      "gap_s_vs_nominal": 8.290000000001633
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "residual",
+      "best_a_lat": 10.0,
+      "lap_time": 53.26999999999797,
+      "max_ey": 0.23546250808357974,
+      "gap_s_vs_nominal": 15.350000000000229
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "nominal",
+      "best_a_lat": 2.5,
+      "lap_time": 72.7200000000003,
+      "max_ey": 0.176366330204133,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "ff",
+      "best_a_lat": 4.5,
+      "lap_time": 60.46999999999654,
+      "max_ey": 0.2411463823659987,
+      "gap_s_vs_nominal": 12.250000000003759
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "residual",
+      "best_a_lat": 10.0,
+      "lap_time": 53.449999999997935,
+      "max_ey": 0.3320347586033532,
+      "gap_s_vs_nominal": 19.270000000002362
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "nominal",
+      "best_a_lat": 1.5,
+      "lap_time": 86.67000000000743,
+      "max_ey": 0.14583539275764212,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "ff",
+      "best_a_lat": 4.0,
+      "lap_time": 62.6699999999961,
+      "max_ey": 0.21537648845446028,
+      "gap_s_vs_nominal": 24.000000000011333
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "residual",
+      "best_a_lat": 7.0,
+      "lap_time": 55.859999999997456,
+      "max_ey": 0.2607416875316143,
+      "gap_s_vs_nominal": 30.81000000000998
+    }
+  ],
+  "lap_time_gif": {
+    "path": "results/residual/lap_time.gif",
+    "frames": 475,
+    "size_mb": 12.45
+  },
+  "runtime_s": 559.366693019867
+}

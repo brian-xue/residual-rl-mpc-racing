@@ -1,0 +1,50 @@
+{
+  "steer_steering_angle": {
+    "first_motion_t": 0.13,
+    "rate_rad_s": 3.1999999999999993,
+    "final_delta": 0.20799999999999996,
+    "chatter_pp_rad": 0.032
+  },
+  "steer_steering_speed": {
+    "first_motion_t": 0.13,
+    "rate_rad_s": 3.1999999999999993,
+    "final_delta": 0.2,
+    "chatter_pp_rad": 0.0
+  },
+  "long_accl": {
+    "measured_accel_up": 2.9999999999999813,
+    "measured_accel_down": -2.9999999999999822
+  },
+  "mu_0.6": {
+    "yaw_rate_ss": 0.9648981540347022,
+    "slip_ss": -0.14431681603949648,
+    "kinematic_yaw_rate": 1.4567735561733361,
+    "yaw_rate_ratio_to_kinematic": 0.6623528756036072,
+    "lat_acc_ss": 5.789388924208215
+  },
+  "mu_1.0": {
+    "yaw_rate_ss": 1.1149080246221597,
+    "slip_ss": -0.08729232230396414,
+    "kinematic_yaw_rate": 1.4567735561733361,
+    "yaw_rate_ratio_to_kinematic": 0.765326923939235,
+    "lat_acc_ss": 6.689448147732955
+  },
+  "mu_effect": {
+    "max_abs_yaw_rate_diff": 0.2443503513906915,
+    "max_abs_slip_diff": 0.05744743219183457,
+    "max_abs_delta_diff": 0.0
+  },
+  "plant_model": "st",
+  "grip_mu_0.6": {
+    "max_abs_a_y": 22.097543642960996,
+    "max_abs_a_y_g": 2.2525528688033636,
+    "delta_at_max_a_y": 0.397,
+    "max_abs_slip": 0.4828291960955379
+  },
+  "grip_mu_1.0": {
+    "max_abs_a_y": 24.651219659718212,
+    "max_abs_a_y_g": 2.512866428105832,
+    "delta_at_max_a_y": 0.397,
+    "max_abs_slip": 0.26215678264236847
+  }
+}

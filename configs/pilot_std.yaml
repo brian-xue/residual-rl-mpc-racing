@@ -1,0 +1,94 @@
+# OPTIONAL plant: Gym-Khana STD (PAC2002 tires, saturating). Use with --config configs/pilot_std.yaml.
+# Identical to configs/pilot.yaml (the default ST plant) except: model, dt, out, mpc weights, delay_comp_s.
+track: Austin                # Gym-Khana 1.2.0 map (downloaded by the package from TeoIlie/F1TENTH_Racetracks v1.4.0)
+model: std                   # plant: "std" (PAC2002 tires, saturating) or "st" (linear tires)
+out: results_std             # default output folder for this config
+dt: 0.001                    # simulator step [s], RK4. STD needs 1 ms: at 10 ms its wheel-spin states are
+                             # numerically unstable (front slip chatters -0.29..+0.04 vs +0.003 converged)
+workers: 8                   # parallel lap simulations
+steer_mode: steering_speed   # sim mode; steering-angle targets are realised by a delay-aware rate-limited servo
+
+reference:                   # fixed reference line
+  source: raceline           # Austin_raceline.csv (shipped with the map); "centerline" = previous pilot
+  # wall_margin_m = smallest of {0.10, 0.15, 0.20} for which the nominal conservative lap is valid;
+  # pilot.sensitivity reports the sweep outcome for all three
+  wall_margin_m: 0.10        # where a wall is within wall_search_m of the centerline, the raceline offset
+                             # is clipped to |n| <= d_wall - width/2 - margin; elsewhere it is unchanged
+  wall_search_m: 1.5
+  wall_lookaround_m: 2.0     # the clip at s uses the tightest wall limit within +/- this distance
+  offset_smooth_sigma_m: 0.5 # smoothing applied only around clipped stretches
+  ds: 0.1
+  smooth_sigma_m: 0.2
+  kappa_sigma_m: 0.6
+
+geometry:                    # validity checks at every physics step (replace Gym-Khana's CG Frenet check)
+  white_line_width_m: 0.05   # legal region = centerline +/- w_tr (CSV); the CSV width is taken as the
+                             # outer edge of the white line, so the line is legal (informational only)
+  tire_half_track_m: 0.12    # lateral offset of tire centres from the body axis (assumed, F1TENTH-like)
+  tire_patch_length_m: 0.04  # contact patch rectangle (assumed)
+  tire_patch_width_m: 0.045
+  walls:                     # physical walls = simulator occupancy map, minus the walls on curves
+    remove_on_curves: true   # open run-off in corners, walls kept along straights
+    curve_kappa_threshold: 0.05  # |kappa| [1/m] of the smoothed centerline above which a section is a curve
+    curve_extend_m: 3.0      # curve section extended this far before and after
+
+speed_plan:                  # v(s) = min(v_cap, sqrt(a_lat / |kappa|)) with accel/brake passes
+  v_cap: 8.0
+  a_acc: 4.0
+  a_dec: 4.0
+
+longitudinal:                # a = v dv_plan/ds + kv (v_plan - v), direct acceleration command
+  kv: 3.0
+
+limits:                      # final steering limits, applied after the correction
+  s_max: 0.4189              # [rad] (simulator s_max)
+  sv_max: 3.2                # [rad/s] (simulator sv_max)
+
+mpc:
+  Ts: 0.05                   # 20 Hz replanning
+  N: 20                      # 1.0 s horizon
+  # weights re-selected for the STD plant by `python -m pilot.tune_weights` (nominal MPC, mu_scale = 1.0 only,
+  # a_lat 4 and 6, both start poses; 16 of 24 grid points valid; lowest mean RMS e_y). ST pilot used 10 / 3 / 10,
+  # which spins the STD car on corner entry.
+  q_y: 10.0
+  q_psi: 1.0
+  r_du: 100.0
+  q_terminal: 5.0
+  delay_comp_s: 0.003        # actuator delay = simulator's 2-step steering FIFO + 1 step (3 ms at dt = 1 ms)
+
+qualifying:                  # fixed before the reported sweep
+  max_abs_ey_m: 0.5          # max |lateral error| of the CG to the reference line
+  max_lap_time_ratio: 1.05   # lap time <= 1.05 x speed-plan lap time
+  max_solver_failures: 0
+  timeout_factor: 1.5        # episode ends at 1.5 x plan lap time
+
+feedforward:
+  # K [rad s^2 / m]; chosen on the development rollouts by: all laps valid, then most mean lap
+  # progress, then lowest mean RMS lateral error; then frozen. dev_a_lat is NOT a sweep level.
+  K_grid: [0.0, 0.002, 0.004, 0.006, 0.008, 0.012, 0.016, 0.020, 0.025, 0.030]
+  dev_a_lat: 5.0
+  dev_mu_scales: [1.0, 0.6]
+  dev_start_s: 0.0
+
+sweep:
+  conservative_a_lat: 3.0
+  a_lat_levels: [4.0, 6.0, 8.0]
+  mu_scales: [1.0, 0.8, 0.6]
+  start_s: 0.0               # primary start pose
+  recheck_start_s: 200.0     # second predetermined start pose (raceline arc length)     # second predetermined start pose, used for promising cells
+                             # (promising = nominal not qualifying, feedforward qualifying)
+
+lap_time:                    # fastest qualifying lap per controller (same K, same friction, own speed level)
+  mu_scales: [1.0, 0.8, 0.6]
+  a_lat_grid: [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0]
+                             # raised until the lap stops qualifying from both start poses
+                             # (sweep.start_s, sweep.recheck_start_s); v_cap stays speed_plan.v_cap
+
+reference_lap:               # pilot.reference_lap: privileged dynamic-model MPC with the true mu
+  extra_a_lat: [10.0, 12.0, 15.0, 20.0, 25.0, 30.0]  # searched after lap_time.a_lat_grid (same v_cap)
+  gif_mu_scale: 0.6          # GIF: nominal / feedforward / reference at their own fastest levels
+
+gif:                         # results/lap.gif: both controllers in the plotted cell, follow camera
+  frame_dt_s: 0.2            # simulated time per frame
+  fps: 20                    # -> 4x real time
+  window_m: 9.0
