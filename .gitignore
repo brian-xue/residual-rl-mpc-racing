@@ -26,3 +26,6 @@ results*/**/final.zip
 results*/**/*_stdout.log
 
 # Track maps are downloaded by Gym-Khana into ~/.gymkhana/maps/ (outside the repo)
+
+# Local notes (not published)
+snapshot1.md
