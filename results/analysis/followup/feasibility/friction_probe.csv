@@ -1,0 +1,49 @@
+history_k,model,split,excitation,n,n_episodes,rmse,rmse_const,r2
+0,ridge,Austin CV (episode-grouped),all,96548,200,0.1047,0.1045,-0.0045
+0,ridge,Austin CV (episode-grouped),low (|v·r| < 2),36429,193,0.1048,0.1043,-0.0099
+0,ridge,Austin CV (episode-grouped),mid,33052,195,0.1055,0.1048,-0.0133
+0,ridge,Austin CV (episode-grouped),high (|v·r| > 4),27067,199,0.1036,0.1043,0.0132
+0,ridge,held-out track (Spielberg),all,29717,80,0.0870,0.0851,-0.0472
+0,ridge,held-out track (Spielberg),low (|v·r| < 2),13418,78,0.0873,0.0849,-0.0653
+0,ridge,held-out track (Spielberg),mid,9419,80,0.0857,0.0831,-0.0644
+0,ridge,held-out track (Spielberg),high (|v·r| > 4),6880,79,0.0883,0.0883,-0.0005
+0,mlp,Austin CV (episode-grouped),all,96548,200,0.1038,0.1045,0.0125
+0,mlp,Austin CV (episode-grouped),low (|v·r| < 2),36429,193,0.1053,0.1043,-0.0199
+0,mlp,Austin CV (episode-grouped),mid,33052,195,0.1057,0.1048,-0.0169
+0,mlp,Austin CV (episode-grouped),high (|v·r| > 4),27067,199,0.0993,0.1043,0.0923
+0,mlp,held-out track (Spielberg),all,29717,80,0.1053,0.0851,-0.5333
+0,mlp,held-out track (Spielberg),low (|v·r| < 2),13418,78,0.1146,0.0849,-0.8354
+0,mlp,held-out track (Spielberg),mid,9419,80,0.1003,0.0831,-0.4581
+0,mlp,held-out track (Spielberg),high (|v·r| > 4),6880,79,0.0923,0.0883,-0.0934
+5,ridge,Austin CV (episode-grouped),all,95551,199,0.1053,0.1044,-0.0171
+5,ridge,Austin CV (episode-grouped),low (|v·r| < 2),36114,190,0.1055,0.1042,-0.0258
+5,ridge,Austin CV (episode-grouped),mid,32834,192,0.1060,0.1048,-0.0237
+5,ridge,Austin CV (episode-grouped),high (|v·r| > 4),26603,199,0.1040,0.1042,0.0028
+5,ridge,held-out track (Spielberg),all,29317,79,0.0870,0.0849,-0.0531
+5,ridge,held-out track (Spielberg),low (|v·r| < 2),13262,77,0.0870,0.0846,-0.0653
+5,ridge,held-out track (Spielberg),mid,9317,78,0.0859,0.0829,-0.0755
+5,ridge,held-out track (Spielberg),high (|v·r| > 4),6738,78,0.0885,0.0880,-0.0115
+5,mlp,Austin CV (episode-grouped),all,95551,199,0.0957,0.1044,0.1601
+5,mlp,Austin CV (episode-grouped),low (|v·r| < 2),36114,190,0.1052,0.1042,-0.0190
+5,mlp,Austin CV (episode-grouped),mid,32834,192,0.0996,0.1048,0.0974
+5,mlp,Austin CV (episode-grouped),high (|v·r| > 4),26603,199,0.0750,0.1042,0.4814
+5,mlp,held-out track (Spielberg),all,29317,79,0.0956,0.0849,-0.2700
+5,mlp,held-out track (Spielberg),low (|v·r| < 2),13262,77,0.0991,0.0846,-0.3835
+5,mlp,held-out track (Spielberg),mid,9317,78,0.0962,0.0829,-0.3478
+5,mlp,held-out track (Spielberg),high (|v·r| > 4),6738,78,0.0871,0.0880,0.0204
+10,ridge,Austin CV (episode-grouped),all,94556,199,0.1056,0.1043,-0.0257
+10,ridge,Austin CV (episode-grouped),low (|v·r| < 2),35790,189,0.1056,0.1041,-0.0289
+10,ridge,Austin CV (episode-grouped),mid,32553,190,0.1066,0.1047,-0.0369
+10,ridge,Austin CV (episode-grouped),high (|v·r| > 4),26213,199,0.1044,0.1041,-0.0075
+10,ridge,held-out track (Spielberg),all,28922,79,0.0872,0.0846,-0.0629
+10,ridge,held-out track (Spielberg),low (|v·r| < 2),13070,77,0.0870,0.0844,-0.0734
+10,ridge,held-out track (Spielberg),mid,9196,78,0.0863,0.0826,-0.0906
+10,ridge,held-out track (Spielberg),high (|v·r| > 4),6656,78,0.0886,0.0877,-0.0193
+10,mlp,Austin CV (episode-grouped),all,94556,199,0.0931,0.1043,0.2037
+10,mlp,Austin CV (episode-grouped),low (|v·r| < 2),35790,189,0.1029,0.1041,0.0221
+10,mlp,Austin CV (episode-grouped),mid,32553,190,0.0965,0.1047,0.1511
+10,mlp,Austin CV (episode-grouped),high (|v·r| > 4),26213,199,0.0723,0.1041,0.5178
+10,mlp,held-out track (Spielberg),all,28922,79,0.0975,0.0846,-0.3286
+10,mlp,held-out track (Spielberg),low (|v·r| < 2),13070,77,0.0985,0.0844,-0.3745
+10,mlp,held-out track (Spielberg),mid,9196,78,0.1020,0.0826,-0.5231
+10,mlp,held-out track (Spielberg),high (|v·r| > 4),6656,78,0.0886,0.0877,-0.0191

@@ -1,0 +1,53 @@
+{
+ "cells": 72,
+ "both": 31,
+ "se_recovers": 8,
+ "se_loses": 9,
+ "recovers_by_class": {
+  "corner: insufficient correction (grip left)": 8
+ },
+ "recovers_by_track": {
+  "Spielberg": 6,
+  "Silverstone": 2
+ },
+ "recovers_by_mu": {
+  "0.8": 4,
+  "0.6": 2,
+  "1.0": 2
+ },
+ "env_step_cost": [
+  {
+   "mode": "pfb",
+   "n": 3000,
+   "step_us_median": 164.79101032018661,
+   "step_us_p95": 179.34137722477314,
+   "step_us_p99": 206.46187476813785,
+   "step_us_mean": 151.47084315928322,
+   "reset_us_median": 20378.49952466786,
+   "n_resets": 14,
+   "wall_per_step_us": 215.0725833295534,
+   "cpu_per_step_us": 214.73733333333348
+  },
+  {
+   "mode": "slip",
+   "n": 3000,
+   "step_us_median": 1544.3125739693642,
+   "step_us_p95": 1729.67073158361,
+   "step_us_p99": 4515.826392453164,
+   "step_us_mean": 1574.1652185097337,
+   "reset_us_median": 22975.958476308733,
+   "n_resets": 8,
+   "wall_per_step_us": 1616.4145276804145,
+   "cpu_per_step_us": 1613.0313333333334
+  }
+ ],
+ "cpu_s_per_1M_steps": {
+  "pfb": 214.73733333333348,
+  "slip": 1613.0313333333334
+ },
+ "ratio_slip_over_kin": 7.515669838789261,
+ "measured_rollout_steps_per_s": {
+  "4": 6039.4,
+  "8": 8592.3
+ }
+}

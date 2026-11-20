@@ -1,0 +1,9 @@
+track,a_lat,mu_scale,start_s,status,lap_id,fail_s,lap_time_ratio,status_SE,fail_s_SE,lap_time_ratio_SE,cls
+Spielberg,4.0,0.6,0.0,wall_collision,178,304.66229868940275,,qualifying,,1.0006864030528497,corner: insufficient correction (grip left)
+Spielberg,4.0,0.6,200.0,wall_collision,186,304.4760270725018,,qualifying,,1.0006864030528497,corner: insufficient correction (grip left)
+Spielberg,6.0,1.0,0.0,wall_collision,194,304.4245963175144,,qualifying,,1.0007081720431334,corner: insufficient correction (grip left)
+Spielberg,6.0,1.0,200.0,wall_collision,202,304.4267085442451,,qualifying,,1.0009302062503762,corner: insufficient correction (grip left)
+Spielberg,6.0,0.8,0.0,wall_collision,210,303.6422270356343,,qualifying,,1.0015963088721045,corner: insufficient correction (grip left)
+Spielberg,6.0,0.8,200.0,wall_collision,218,303.6261558697903,,qualifying,,1.0015963088721045,corner: insufficient correction (grip left)
+Silverstone,6.0,0.8,0.0,wall_collision,498,176.562824736812,,qualifying,,1.0021490000304738,corner: insufficient correction (grip left)
+Silverstone,6.0,0.8,200.0,wall_collision,506,176.42863391043903,,qualifying,,1.0021490000304738,corner: insufficient correction (grip left)
