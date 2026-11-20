@@ -31,7 +31,7 @@ results*/**/*_stdout.log
 # Track maps are downloaded by Gym-Khana into ~/.gymkhana/maps/ (outside the repo)
 
 # Local notes (not published)
-snapshot1.md
+snapshot*.md
 
 # Lap GIFs: written by the evaluation scripts, published as GitHub release assets (results-v1), not committed
 *.gif
