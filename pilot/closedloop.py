@@ -120,9 +120,13 @@ class LapSim:
         self.Ts = mc["Ts"]
         self.n_sub = int(round(self.Ts / dt))
         vplan = track.plan(scn.a_lat, scn.v_cap, cfg["speed_plan"].get("friction_ellipse", False))
-        self.vplan_at = lambda s: np.interp(np.mod(s, ref.length), np.r_[ref.s, ref.length], np.r_[vplan, vplan[0]])  # noqa: E731
+        # periodic lookups on arrays built once (called several times per physics step)
+        s_ext, L_ref = np.r_[ref.s, ref.length], ref.length
+        v_ext = np.r_[vplan, vplan[0]]
+        self.vplan_at = lambda s: np.interp(np.mod(s, L_ref), s_ext, v_ext)  # noqa: E731
         aplan = vplan * np.gradient(vplan, ref.ds)  # plan acceleration v dv/ds (feedforward for the coupled MPC)
-        self.aplan_at = lambda s: np.interp(np.mod(s, ref.length), np.r_[ref.s, ref.length], np.r_[aplan, aplan[0]])  # noqa: E731
+        a_ext = np.r_[aplan, aplan[0]]
+        self.aplan_at = lambda s: np.interp(np.mod(s, L_ref), s_ext, a_ext)  # noqa: E731
         self.plan_lap_time = float(np.sum(ref.ds / vplan))
         self.t_max = cfg["qualifying"]["timeout_factor"] * self.plan_lap_time
 
@@ -135,6 +139,7 @@ class LapSim:
             env.sim.update_params(vehicle_params(scn.mu_scale))
         env._check_boundary_frenet = lambda idx: False  # replaced by the four-tire / body checks below
         self.env = env
+        self._sim = env.sim  # stepped directly, see _physics
         L = NOMINAL_PARAMS["lf"] + NOMINAL_PARAMS["lr"]
         self.L = L
         x0, y0, psi0 = ref.pose_at(scn.start_s)
@@ -232,7 +237,13 @@ class LapSim:
         else:
             dvds = (self.vplan_at(s + 0.2) - self.vplan_at(s - 0.2)) / 0.4
             a_cmd = float(np.clip(v * dvds + self.kv * (self.vp - v), -self.a_max, self.a_max))
-        _, _, _, trunc, _ = self.env.step(np.array([[u_steer, a_cmd]]))
+        # Simulator.step is the physics of GKEnv.step; the env's reward (a Frenet nearest-point search), observation,
+        # render and done bookkeeping are not used here and cost ~4x the physics. Only its step counter is kept,
+        # for the same max_episode_steps truncation.
+        self._sim.step(np.array([[u_steer, a_cmd]]))
+        env = self.env
+        env.current_time, env.current_step = env.current_time + env.timestep, env.current_step + 1
+        trunc = env.current_step > env.max_episode_steps
         self.t += self.dt
         self.step += 1
         # track-limit and wall checks at every physics step (same for every controller)

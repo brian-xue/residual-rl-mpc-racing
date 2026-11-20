@@ -37,29 +37,40 @@ class KinematicMPC:
         b = self._beta(d)
         return np.array([v * np.sin(epsi + b), v * np.cos(b) * np.tan(d) / self.L - v * kappa])
 
-    def _discretize(self, v, kappa):
-        """Exact ZOH of the Jacobian linearisation at (0, -beta_r, delta_r)."""
-        d_r = np.arctan(self.L * kappa)
-        e0 = np.array([0.0, -self._beta(d_r)])
-        f0 = self._f(e0[0], e0[1], d_r, v, kappa)
-        h = 1e-6
-        Ac = np.array(
-            [
-                (self._f(h, e0[1], d_r, v, kappa) - f0) / h,
-                (self._f(0.0, e0[1] + h, d_r, v, kappa) - f0) / h,
-            ]
-        ).T
-        Bc = (self._f(0.0, e0[1], d_r + h, v, kappa) - f0) / h
-        cc = f0 - Ac @ e0 - Bc * d_r
-        M = np.zeros((4, 4))
-        M[:2, :2], M[:2, 2], M[:2, 3] = Ac, Bc, cc
+    def _discretize_many(self, v, kappa):
+        """Exact ZOH of the Jacobian linearisation at (0, -beta_r, delta_r) for every stage at once.
+
+        v, kappa: (n,) arrays. Returns Ad (n, 3, 3), Bd (n, 3), cd (n, 3), e_psi_ref (n,). Forward differences
+        (h = 1e-6) and one stacked expm; bit-identical to evaluating the stages one by one."""
+        v, kappa = np.asarray(v, dtype=float), np.asarray(kappa, dtype=float)
+        n, L, h = len(v), self.L, 1e-6
+
+        def f(epsi, d):
+            b = self._beta(d)
+            return v * np.sin(epsi + b), v * np.cos(b) * np.tan(d) / L - v * kappa
+
+        d_r = np.arctan(L * kappa)
+        e1 = -self._beta(d_r)  # e0 = (0, e1)
+        f0, fp, fd = f(e1, d_r), f(e1 + h, d_r), f(e1, d_r + h)
+        M = np.zeros((n, 4, 4))
+        for i in range(2):
+            # column 0 (d/d e_y) stays 0: the error model does not depend on e_y
+            M[:, i, 1] = (fp[i] - f0[i]) / h
+            M[:, i, 2] = (fd[i] - f0[i]) / h
+            M[:, i, 3] = f0[i] - (M[:, i, 0] * 0.0 + M[:, i, 1] * e1) - M[:, i, 2] * d_r  # f0 - Ac e0 - Bc d_r
         E = expm(M * self.Ts)
-        Phi, Gam, w = E[:2, :2], E[:2, 2], E[:2, 3]
-        Ad = np.zeros((3, 3))
-        Ad[:2, :2], Ad[:2, 2], Ad[2, 2] = Phi, Gam, 1.0
-        Bd = np.r_[Gam, 1.0]
-        cd = np.r_[w, 0.0]
-        return Ad, Bd, cd, e0[1]
+        Ad = np.zeros((n, 3, 3))
+        Ad[:, :2, :2], Ad[:, :2, 2], Ad[:, 2, 2] = E[:, :2, :2], E[:, :2, 2], 1.0
+        Bd = np.zeros((n, 3))
+        Bd[:, :2], Bd[:, 2] = E[:, :2, 2], 1.0
+        cd = np.zeros((n, 3))
+        cd[:, :2] = E[:, :2, 3]
+        return Ad, Bd, cd, e1
+
+    def _discretize(self, v, kappa):
+        """Single stage of ``_discretize_many``: (Ad, Bd, cd, e_psi_ref)."""
+        Ad, Bd, cd, e1 = self._discretize_many([v], [kappa])
+        return Ad[0], Bd[0], cd[0], e1[0]
 
     # ---------------------------------------------------------------- QP
     def _build(self):
@@ -92,6 +103,16 @@ class KinematicMPC:
         Am = sp.csc_matrix((marker, (rows, cols)), shape=(self.m, self.nx))
         self._perm = (Am.data - 1).astype(int)  # csc data position -> slot index
         self._A_struct = Am
+        # gather indices for _A_values: slot position <- flat index into the stacked Ad (N, 3, 3) / Bd (N, 3)
+        self._A_pos = np.array([n for n, s in enumerate(self._slots) if s[0] == "A"], dtype=int)
+        self._A_src = np.array([k * 9 + i * 3 + j for kind, k, i, j in self._slots if kind == "A"], dtype=int)
+        self._B_pos = np.array([n for n, s in enumerate(self._slots) if s[0] == "B"], dtype=int)
+        self._B_src = np.array([k * 3 + i for kind, k, i, j in self._slots if kind == "B"], dtype=int)
+        # linear cost on e_psi: q[z_k + 1] = -q_psi w_k e_psi_ref[min(k, N-1)], k = 1..N
+        ks = np.arange(1, N + 1)
+        self._q_idx = nz * (ks - 1) + 1
+        self._q_coef = -self.q_psi * np.where(ks == N, self.qT, 1.0)
+        self._q_ref = np.minimum(ks, N - 1)
         # cost: diagonal P
         P = np.zeros(self.nx)
         for k in range(1, N + 1):
@@ -107,34 +128,25 @@ class KinematicMPC:
         self.l[n_eq + N :], self.u[n_eq + N :] = -self.du_max, self.du_max
         self.solver = None
 
-    def _A_values(self, Ads, Bds):
-        vals = np.empty(len(self._slots))
-        for n, (kind, k, i, j) in enumerate(self._slots):
-            if kind == "I" or kind == "one":
-                vals[n] = 1.0
-            elif kind == "A":
-                vals[n] = -Ads[k][i, j]
-            else:
-                vals[n] = -Bds[k][i]
+    def _A_values(self, Ad, Bd):
+        """CSC data of the constraint matrix for stacked Ad (N, 3, 3), Bd (N, 3)."""
+        vals = np.ones(len(self._slots))
+        vals[self._A_pos] = -Ad.ravel()[self._A_src]
+        vals[self._B_pos] = -Bd.ravel()[self._B_src]
         return vals[self._perm]
 
     def solve(self, e_y, e_psi, delta_prev, v_seq, kappa_seq):
         """v_seq, kappa_seq: length-N previews. Returns (delta_cmd, status_ok, solve_time_s, pred)."""
         N = self.N
-        Ads, Bds, cds, epr = [], [], [], []
-        for k in range(N):
-            Ad, Bd, cd, er = self._discretize(max(v_seq[k], 0.5), kappa_seq[k])
-            Ads.append(Ad), Bds.append(Bd), cds.append(cd), epr.append(er)
+        Ad, Bd, cd, epr = self._discretize_many(np.maximum(np.asarray(v_seq[:N], dtype=float), 0.5), kappa_seq[:N])
         z0 = np.array([e_y, e_psi, delta_prev])
-        beq = np.concatenate([cds[k] + (Ads[0] @ z0 if k == 0 else 0.0) for k in range(N)])
+        beq = cd.ravel()  # view of cd, which is not used after this
+        beq[:3] = cd[0] + Ad[0] @ z0
         self.l[: self.n_eq] = beq
         self.u[: self.n_eq] = beq
         q = np.zeros(self.nx)
-        for k in range(1, N + 1):
-            w = self.qT if k == N else 1.0
-            ref = epr[min(k, N - 1)]
-            q[self._zi(k) + 1] = -self.q_psi * w * ref
-        Ax = self._A_values(Ads, Bds)
+        q[self._q_idx] = self._q_coef * epr[self._q_ref]
+        Ax = self._A_values(Ad, Bd)
         t0 = time.perf_counter()
         if self.solver is None:
             A = self._A_struct.copy()
@@ -253,13 +265,19 @@ class CoupledMPC:
                 r += 1
         return A
 
-    def _discretize(self, v, kappa):
-        Ad3, Bd3, cd3, e_psi_ref = self.lat._discretize(max(v, 0.5), kappa)  # z3 = [e_y, e_psi, delta]
-        Ad, Bd, cd = np.zeros((5, 5)), np.zeros((5, 2)), np.zeros(5)
-        Ad[:3, :3], Bd[:3, 0], cd[:3] = Ad3, Bd3, cd3
-        Ad[3, 3], Ad[3, 4], Bd[3, 1] = 1.0, self.Ts, self.Ts
-        Ad[4, 4], Bd[4, 1] = 1.0, 1.0
+    def _discretize_many(self, v, kappa):
+        """All stages at once: Ad (n, 5, 5), Bd (n, 5, 2), cd (n, 5), e_psi_ref (n,)."""
+        Ad3, Bd3, cd3, e_psi_ref = self.lat._discretize_many(np.maximum(v, 0.5), kappa)  # z3 = [e_y, e_psi, delta]
+        n = len(e_psi_ref)
+        Ad, Bd, cd = np.zeros((n, 5, 5)), np.zeros((n, 5, 2)), np.zeros((n, 5))
+        Ad[:, :3, :3], Bd[:, :3, 0], cd[:, :3] = Ad3, Bd3, cd3
+        Ad[:, 3, 3], Ad[:, 3, 4], Bd[:, 3, 1] = 1.0, self.Ts, self.Ts
+        Ad[:, 4, 4], Bd[:, 4, 1] = 1.0, 1.0
         return Ad, Bd, cd, e_psi_ref
+
+    def _discretize(self, v, kappa):
+        Ad, Bd, cd, e_psi_ref = self._discretize_many(np.array([v], dtype=float), [kappa])
+        return Ad[0], Bd[0], cd[0], e_psi_ref[0]
 
     def solve(self, e_y, e_psi, delta_prev, v, a_prev, s0, v_ref_at, a_ref_at, kappa_at, v_min=0.5):
         """One MPC step from the (delay-compensated) state at arc length s0.
@@ -282,12 +300,10 @@ class CoupledMPC:
         kap_p = kappa_at(p)
         kap = kap_p[1:]  # at z_1..z_N (friction ellipse)
         v_ref, a_ref = v_ref_at(p[1:]), a_ref_at(p[1:])
-        Ads, Bds, cds, epr = [], [], [], []
-        for k in range(N):
-            Ad, Bd, cd, er = self._discretize(v_start[k], kap_p[k])
-            Ads.append(Ad), Bds.append(Bd), cds.append(cd), epr.append(er)
+        Ads, Bds, cds, epr = self._discretize_many(v_start, kap_p[:N])
         z0 = np.array([e_y, e_psi, delta_prev, v, a_prev])
-        beq = np.concatenate([cds[k] + (Ads[0] @ z0 if k == 0 else 0.0) for k in range(N)])
+        beq = cds.ravel()  # view of cds, which is not used after this
+        beq[:5] = cds[0] + Ads[0] @ z0
         lo, hi = [beq], [beq]
         lo.append(np.ravel([[-self.s_max, -self.a_max, v_min] for _ in range(N)]))
         hi.append(np.ravel([[self.s_max, self._a_upper(v_lin[k]), 1e9] for k in range(N)]))
