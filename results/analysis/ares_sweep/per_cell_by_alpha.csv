@@ -1,0 +1,145 @@
+ck,track,a_lat,mu_scale,start_s,status_by_alpha,qual_alphas,done_alphas,min_alpha_finish,max_alpha_qualify,min_alpha_qualify,category
+1.25M,Austin,4,0.6,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Austin,4,0.6,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Austin,4,0.8,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Austin,4,0.8,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Austin,4,1.0,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Austin,4,1.0,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Austin,6,0.6,0,spin / spin / wall / wall / wall,,,,,,never qualifies
+1.25M,Austin,6,0.6,200,wall / spin / spin / wall / wall,,,,,,never qualifies
+1.25M,Austin,6,0.8,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Austin,6,0.8,200,wall / Q / Q / Q / Q,"0.25,0.5,0.75,1","0.25,0.5,0.75,1",0.25,1.0,0.25,qualifies only for alpha >= 0.25
+1.25M,Austin,6,1.0,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Austin,6,1.0,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Austin,8,0.6,0,spin / spin / spin / spin / spin,,,,,,never qualifies
+1.25M,Austin,8,0.6,200,spin / spin / spin / spin / wall,,,,,,never qualifies
+1.25M,Austin,8,0.8,0,wall / wall / wall / lat / Q,1,"0.75,1",0.75,1.0,1.0,qualifies only for alpha >= 1
+1.25M,Austin,8,0.8,200,wall / wall / wall / lat / Q,1,"0.75,1",0.75,1.0,1.0,qualifies only for alpha >= 1
+1.25M,Austin,8,1.0,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Austin,8,1.0,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Catalunya,4,0.6,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Catalunya,4,0.6,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Catalunya,4,0.8,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Catalunya,4,0.8,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Catalunya,4,1.0,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Catalunya,4,1.0,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Catalunya,6,0.6,0,spin / spin / spin / lat / lat,,"0.75,1",0.75,,,never qualifies
+1.25M,Catalunya,6,0.6,200,wall / spin / wall / spin / lat,,1,1.0,,,never qualifies
+1.25M,Catalunya,6,0.8,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Catalunya,6,0.8,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Catalunya,6,1.0,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Catalunya,6,1.0,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Catalunya,8,0.6,0,spin / spin / spin / spin / spin,,,,,,never qualifies
+1.25M,Catalunya,8,0.6,200,spin / spin / spin / spin / spin,,,,,,never qualifies
+1.25M,Catalunya,8,0.8,0,wall / spin / spin / lat / lat,,"0.75,1",0.75,,,never qualifies
+1.25M,Catalunya,8,0.8,200,wall / spin / spin / lat / lat,,"0.75,1",0.75,,,never qualifies
+1.25M,Catalunya,8,1.0,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Catalunya,8,1.0,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Silverstone,4,0.6,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Silverstone,4,0.6,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Silverstone,4,0.8,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Silverstone,4,0.8,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Silverstone,4,1.0,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Silverstone,4,1.0,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Silverstone,6,0.6,0,spin / spin / wall / wall / wall,,,,,,never qualifies
+1.25M,Silverstone,6,0.6,200,spin / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Silverstone,6,0.8,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Silverstone,6,0.8,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Silverstone,6,1.0,0,wall / Q / Q / Q / Q,"0.25,0.5,0.75,1","0.25,0.5,0.75,1",0.25,1.0,0.25,qualifies only for alpha >= 0.25
+1.25M,Silverstone,6,1.0,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Silverstone,8,0.6,0,spin / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Silverstone,8,0.6,200,spin / spin / spin / spin / spin,,,,,,never qualifies
+1.25M,Silverstone,8,0.8,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Silverstone,8,0.8,200,spin / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Silverstone,8,1.0,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Silverstone,8,1.0,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Spielberg,4,0.6,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Spielberg,4,0.6,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Spielberg,4,0.8,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Spielberg,4,0.8,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Spielberg,4,1.0,0,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Spielberg,4,1.0,200,Q / Q / Q / Q / Q,"0,0.25,0.5,0.75,1","0,0.25,0.5,0.75,1",0.0,1.0,0.0,qualifies at every alpha
+1.25M,Spielberg,6,0.6,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Spielberg,6,0.6,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Spielberg,6,0.8,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Spielberg,6,0.8,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Spielberg,6,1.0,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Spielberg,6,1.0,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Spielberg,8,0.6,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Spielberg,8,0.6,200,spin / spin / spin / spin / spin,,,,,,never qualifies
+1.25M,Spielberg,8,0.8,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Spielberg,8,0.8,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+1.25M,Spielberg,8,1.0,0,wall / wall / Q / Q / Q,"0.5,0.75,1","0.5,0.75,1",0.5,1.0,0.5,qualifies only for alpha >= 0.5
+1.25M,Spielberg,8,1.0,200,wall / wall / Q / Q / Q,"0.5,0.75,1","0.5,0.75,1",0.5,1.0,0.5,qualifies only for alpha >= 0.5
+2.5M,Austin,4,0.6,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Austin,4,0.6,200,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Austin,4,0.8,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Austin,4,0.8,200,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Austin,4,1.0,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Austin,4,1.0,200,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Austin,6,0.6,0,wall / wall / spin / wall / wall,,,,,,never qualifies
+2.5M,Austin,6,0.6,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Austin,6,0.8,0,wall / wall / Q / Q / slow,"0.5,0.75","0.5,0.75,1",0.5,0.75,0.5,qualifies only for 0.5 <= alpha <= 0.75
+2.5M,Austin,6,0.8,200,wall / wall / Q / Q / slow,"0.5,0.75","0.5,0.75,1",0.5,0.75,0.5,qualifies only for 0.5 <= alpha <= 0.75
+2.5M,Austin,6,1.0,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Austin,6,1.0,200,wall / Q / Q / Q / slow,"0.25,0.5,0.75","0.25,0.5,0.75,1",0.25,0.75,0.25,qualifies only for 0.25 <= alpha <= 0.75
+2.5M,Austin,8,0.6,0,spin / spin / spin / spin / wall,,,,,,never qualifies
+2.5M,Austin,8,0.6,200,spin / spin / wall / wall / wall,,,,,,never qualifies
+2.5M,Austin,8,0.8,0,wall / wall / wall / Q / slow,0.75,"0.75,1",0.75,0.75,0.75,qualifies only for 0.75 <= alpha <= 0.75
+2.5M,Austin,8,0.8,200,wall / wall / wall / Q / slow,0.75,"0.75,1",0.75,0.75,0.75,qualifies only for 0.75 <= alpha <= 0.75
+2.5M,Austin,8,1.0,0,wall / Q / Q / Q / slow,"0.25,0.5,0.75","0.25,0.5,0.75,1",0.25,0.75,0.25,qualifies only for 0.25 <= alpha <= 0.75
+2.5M,Austin,8,1.0,200,wall / wall / Q / Q / slow,"0.5,0.75","0.5,0.75,1",0.5,0.75,0.5,qualifies only for 0.5 <= alpha <= 0.75
+2.5M,Catalunya,4,0.6,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Catalunya,4,0.6,200,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Catalunya,4,0.8,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Catalunya,4,0.8,200,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Catalunya,4,1.0,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Catalunya,4,1.0,200,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Catalunya,6,0.6,0,spin / spin / spin / lat / slow,,"0.75,1",0.75,,,never qualifies
+2.5M,Catalunya,6,0.6,200,spin / wall / spin / lat / slow,,"0.75,1",0.75,,,never qualifies
+2.5M,Catalunya,6,0.8,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Catalunya,6,0.8,200,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Catalunya,6,1.0,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Catalunya,6,1.0,200,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Catalunya,8,0.6,0,spin / spin / spin / spin / spin,,,,,,never qualifies
+2.5M,Catalunya,8,0.6,200,spin / spin / spin / spin / spin,,,,,,never qualifies
+2.5M,Catalunya,8,0.8,0,wall / spin / lat / lat / slow,,"0.5,0.75,1",0.5,,,never qualifies
+2.5M,Catalunya,8,0.8,200,wall / spin / lat / lat / slow,,"0.5,0.75,1",0.5,,,never qualifies
+2.5M,Catalunya,8,1.0,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Catalunya,8,1.0,200,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Silverstone,4,0.6,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Silverstone,4,0.6,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Silverstone,4,0.8,0,wall / wall / Q / Q / slow,"0.5,0.75","0.5,0.75,1",0.5,0.75,0.5,qualifies only for 0.5 <= alpha <= 0.75
+2.5M,Silverstone,4,0.8,200,wall / wall / Q / Q / slow,"0.5,0.75","0.5,0.75,1",0.5,0.75,0.5,qualifies only for 0.5 <= alpha <= 0.75
+2.5M,Silverstone,4,1.0,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Silverstone,4,1.0,200,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Silverstone,6,0.6,0,spin / spin / spin / wall / wall,,,,,,never qualifies
+2.5M,Silverstone,6,0.6,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Silverstone,6,0.8,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Silverstone,6,0.8,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Silverstone,6,1.0,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Silverstone,6,1.0,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Silverstone,8,0.6,0,spin / spin / spin / spin / spin,,,,,,never qualifies
+2.5M,Silverstone,8,0.6,200,wall / wall / wall / spin / spin,,,,,,never qualifies
+2.5M,Silverstone,8,0.8,0,spin / spin / wall / wall / wall,,,,,,never qualifies
+2.5M,Silverstone,8,0.8,200,wall / spin / wall / wall / wall,,,,,,never qualifies
+2.5M,Silverstone,8,1.0,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Silverstone,8,1.0,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Spielberg,4,0.6,0,wall / wall / wall / Q / slow,0.75,"0.75,1",0.75,0.75,0.75,qualifies only for 0.75 <= alpha <= 0.75
+2.5M,Spielberg,4,0.6,200,wall / wall / wall / wall / slow,,1,1.0,,,never qualifies
+2.5M,Spielberg,4,0.8,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Spielberg,4,0.8,200,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Spielberg,4,1.0,0,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Spielberg,4,1.0,200,Q / Q / Q / Q / slow,"0,0.25,0.5,0.75","0,0.25,0.5,0.75,1",0.0,0.75,0.0,qualifies only for alpha <= 0.75
+2.5M,Spielberg,6,0.6,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Spielberg,6,0.6,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Spielberg,6,0.8,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Spielberg,6,0.8,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Spielberg,6,1.0,0,wall / wall / wall / Q / slow,0.75,"0.75,1",0.75,0.75,0.75,qualifies only for 0.75 <= alpha <= 0.75
+2.5M,Spielberg,6,1.0,200,wall / wall / wall / Q / slow,0.75,"0.75,1",0.75,0.75,0.75,qualifies only for 0.75 <= alpha <= 0.75
+2.5M,Spielberg,8,0.6,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Spielberg,8,0.6,200,spin / spin / spin / spin / wall,,,,,,never qualifies
+2.5M,Spielberg,8,0.8,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Spielberg,8,0.8,200,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Spielberg,8,1.0,0,wall / wall / wall / wall / wall,,,,,,never qualifies
+2.5M,Spielberg,8,1.0,200,wall / wall / wall / wall / wall,,,,,,never qualifies

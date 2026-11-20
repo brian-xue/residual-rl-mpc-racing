@@ -115,6 +115,8 @@ def run_case(job):
         on = active(s_now) and job["variant"] != "orig"
         if on and job["variant"] == "a0":
             da = 0.0
+        elif on and job["variant"] == "scale":  # results/analysis/ares_sweep: a_res scaled by alpha
+            da = job["alpha"] * da
         elif on and job["variant"] == "d0":
             d = 0.0
         elif on and job["variant"] == "debias" and in_straight(s_now):
