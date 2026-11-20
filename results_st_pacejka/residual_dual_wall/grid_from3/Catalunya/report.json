@@ -1,0 +1,99 @@
+{
+  "track": "Catalunya",
+  "K_ff": 0.03,
+  "r_max": 0.2,
+  "base_K": 0.0,
+  "model": "results_st_pacejka/residual_dual_wall/ckpt_1250000.zip",
+  "controllers": {
+    "nominal": "Nominal MPC",
+    "ff": "MPC + K v\u00b2 \u03ba",
+    "residual": "MPC + RL residual (\u03b4, a) + wall obs"
+  },
+  "accel_r_max": 2.0,
+  "speed_plan_friction_ellipse": true,
+  "sweep_qualifying": {
+    "ff": 4,
+    "nominal": 4,
+    "residual": 12
+  },
+  "trace_cell": [
+    8.0,
+    1.0
+  ],
+  "lap_grid_min": 3.0,
+  "lap_time_comparison": [
+    {
+      "mu_scale": 1.0,
+      "controller": "nominal",
+      "best_a_lat": 4.5,
+      "lap_time": 59.50999999999673,
+      "max_ey": 0.24473991184490246,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "ff",
+      "best_a_lat": 5.5,
+      "lap_time": 56.119999999997404,
+      "max_ey": 0.28897121166763456,
+      "gap_s_vs_nominal": 3.3899999999993256
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "residual",
+      "best_a_lat": 10.0,
+      "lap_time": 53.67999999999789,
+      "max_ey": 0.46781422788196947,
+      "gap_s_vs_nominal": 5.82999999999884
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "nominal",
+      "best_a_lat": 3.5,
+      "lap_time": 63.399999999995956,
+      "max_ey": 0.1645785640906409,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "ff",
+      "best_a_lat": 4.0,
+      "lap_time": 60.54999999999652,
+      "max_ey": 0.20992149631205728,
+      "gap_s_vs_nominal": 2.849999999999433
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "residual",
+      "best_a_lat": 7.0,
+      "lap_time": 55.97999999999743,
+      "max_ey": 0.354216541612145,
+      "gap_s_vs_nominal": 7.419999999998524
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "nominal",
+      "best_a_lat": NaN,
+      "lap_time": NaN,
+      "max_ey": NaN,
+      "gap_s_vs_nominal": NaN
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "ff",
+      "best_a_lat": 3.0,
+      "lap_time": 65.63999999999668,
+      "max_ey": 0.11486036911504657,
+      "gap_s_vs_nominal": NaN
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "residual",
+      "best_a_lat": 5.5,
+      "lap_time": 58.6599999999969,
+      "max_ey": 0.28826832431451,
+      "gap_s_vs_nominal": NaN
+    }
+  ],
+  "runtime_s": 61.176262855529785
+}

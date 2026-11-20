@@ -1,0 +1,101 @@
+{
+  "track": "Austin",
+  "K_ff": 0.03,
+  "r_max": 0.2,
+  "base_K": 0.0,
+  "model": "results_st_pacejka/residual/ckpt_1250000.zip",
+  "controllers": {
+    "nominal": "Nominal MPC",
+    "ff": "MPC + K v\u00b2 \u03ba",
+    "residual": "MPC + RL residual"
+  },
+  "sweep_qualifying": {
+    "ff": 0,
+    "nominal": 0,
+    "residual": 10
+  },
+  "trace_cell": [
+    6.0,
+    0.8
+  ],
+  "lap_time_comparison": [
+    {
+      "mu_scale": 1.0,
+      "controller": "nominal",
+      "best_a_lat": 2.0,
+      "lap_time": 78.18000000000309,
+      "max_ey": 0.10931885020148084,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "ff",
+      "best_a_lat": 3.5,
+      "lap_time": 64.81999999999626,
+      "max_ey": 0.320655770850841,
+      "gap_s_vs_nominal": 13.360000000006835
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "residual",
+      "best_a_lat": 7.0,
+      "lap_time": 55.59999999999751,
+      "max_ey": 0.22947996578180718,
+      "gap_s_vs_nominal": 22.580000000005583
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "nominal",
+      "best_a_lat": 2.0,
+      "lap_time": 78.18000000000309,
+      "max_ey": 0.12394262795657258,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "ff",
+      "best_a_lat": 2.0,
+      "lap_time": 77.65000000000282,
+      "max_ey": 0.10557186545462866,
+      "gap_s_vs_nominal": 0.5300000000002711
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "residual",
+      "best_a_lat": 6.0,
+      "lap_time": 57.1599999999972,
+      "max_ey": 0.22633106186282909,
+      "gap_s_vs_nominal": 21.020000000005894
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "nominal",
+      "best_a_lat": 1.0,
+      "lap_time": 100.63000000001458,
+      "max_ey": 0.05233136595940344,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "ff",
+      "best_a_lat": 1.5,
+      "lap_time": 86.07000000000713,
+      "max_ey": 0.10308041143357237,
+      "gap_s_vs_nominal": 14.560000000007449
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "residual",
+      "best_a_lat": 4.0,
+      "lap_time": 62.82999999999607,
+      "max_ey": 0.192228366545025,
+      "gap_s_vs_nominal": 37.80000000001851
+    }
+  ],
+  "lap_time_gif": {
+    "path": "results_st_pacejka/residual/lap_time.gif",
+    "frames": 545,
+    "size_mb": 14.62
+  },
+  "runtime_s": 113.46219515800476
+}

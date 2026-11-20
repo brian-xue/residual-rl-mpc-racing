@@ -1,0 +1,86 @@
+{
+  "track": "Spielberg",
+  "K_ff": 0.03,
+  "controllers": {
+    "P": {
+      "mode": "pfb",
+      "plan_ellipse": false,
+      "mpc_ellipse": false
+    },
+    "P-E": {
+      "mode": "pfb",
+      "plan_ellipse": true,
+      "mpc_ellipse": false
+    },
+    "C": {
+      "mode": "mpc",
+      "plan_ellipse": false,
+      "mpc_ellipse": false
+    },
+    "C-E": {
+      "mode": "mpc",
+      "plan_ellipse": true,
+      "mpc_ellipse": true
+    },
+    "S": {
+      "mode": "slip",
+      "plan_ellipse": false,
+      "mpc_ellipse": false
+    },
+    "S-E": {
+      "mode": "slip",
+      "plan_ellipse": true,
+      "mpc_ellipse": false
+    }
+  },
+  "longitudinal_mpc": {
+    "q_v": 2.0,
+    "q_a": 0.1,
+    "r_da": 1.0,
+    "da_max": 2.0,
+    "friction_ellipse": false,
+    "ax_max": 4.0,
+    "n_facets": 8,
+    "slack_l1": 100.0,
+    "slack_l2": 1000.0
+  },
+  "sweep_qualifying": {
+    "S-E": 10
+  },
+  "lap_time_comparison": [
+    {
+      "controller": "S-E",
+      "long": "S-E",
+      "K": 0.0,
+      "mu_scale": 1.0,
+      "best_a_lat": 6.0,
+      "lap_time": 45.0699999999996,
+      "max_ey": 0.0583667008524468,
+      "ellipse_max": 1.1378391242564805,
+      "max_abs_ay": 6.463580355526851
+    },
+    {
+      "controller": "S-E",
+      "long": "S-E",
+      "K": 0.0,
+      "mu_scale": 0.8,
+      "best_a_lat": 6.0,
+      "lap_time": 45.109999999999594,
+      "max_ey": 0.10782759964953487,
+      "ellipse_max": 1.1721810697859498,
+      "max_abs_ay": 6.114647218867211
+    },
+    {
+      "controller": "S-E",
+      "long": "S-E",
+      "K": 0.0,
+      "mu_scale": 0.6,
+      "best_a_lat": 5.0,
+      "lap_time": 46.319999999999354,
+      "max_ey": 0.08759002101677217,
+      "ellipse_max": 1.1168487807831642,
+      "max_abs_ay": 5.480858502736197
+    }
+  ],
+  "runtime_s": 89.62491703033447
+}

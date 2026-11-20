@@ -1743,6 +1743,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pilot-core"
+version = "0.1.0"
+source = { directory = "pilot_core" }
+dependencies = [
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "numpy", specifier = ">=2.0" }]
+
+[[package]]
 name = "protobuf"
 version = "7.36.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1957,6 +1969,7 @@ wheels = [
 name = "residual-rl-mpc-racing"
 version = "0.1.0"
 source = { virtual = "." }
+default-groups = ["rust"]
 dependencies = [
     { name = "gymkhana" },
     { name = "gymnasium" },
@@ -1973,6 +1986,11 @@ dependencies = [
     { name = "torch" },
 ]
 
+[package.dev-dependencies]
+rust = [
+    { name = "pilot-core" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "gymkhana", specifier = "==1.2.0" },
@@ -1987,6 +2005,9 @@ requires-dist = [
     { name = "stable-baselines3", specifier = ">=2.4" },
     { name = "torch", specifier = ">=2.5" },
 ]
+
+[package.metadata.requires-dev]
+rust = [{ name = "pilot-core", directory = "pilot_core" }]
 
 [[package]]
 name = "scipy"

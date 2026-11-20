@@ -85,8 +85,23 @@ class TrackGeometry:
         ht = geo_cfg["tire_half_track_m"]
         self.tire_offsets = np.array([[lf, ht], [lf, -ht], [-lr, ht], [-lr, -ht]])  # FL FR RL RR
         self.patch_len, self.patch_w = geo_cfg["tire_patch_length_m"], geo_cfg["tire_patch_width_m"]
+        # footprints() rows: FL FR RL RR tire patches, then the body; corners in _rect's order
+        sizes = np.array([[self.patch_len, self.patch_w]] * 4 + [[self.length, self.width]])
+        self._fp_dx = np.array([1, 1, -1, -1]) * sizes[:, :1] / 2
+        self._fp_dy = np.array([1, -1, -1, 1]) * sizes[:, 1:] / 2
+        self._fp_steer = np.array([1.0, 1.0, 0.0, 0.0, 0.0])  # front tires steer
 
     # ------------------------------------------------------------------ polygons
+    def footprints(self, x, y, yaw, delta):
+        """(5, 4, 2) corners of the four tire patches and the body, same vertices as tire_patches() / body()."""
+        c, s = np.cos(yaw), np.sin(yaw)
+        ox, oy = self.tire_offsets[:, 0], self.tire_offsets[:, 1]
+        cx, cy = np.r_[x + c * ox - s * oy, x], np.r_[y + s * ox + c * oy, y]
+        th = yaw + delta * self._fp_steer
+        ct, st = np.cos(th)[:, None], np.sin(th)[:, None]
+        dx, dy = self._fp_dx, self._fp_dy
+        return np.stack([cx[:, None] + ct * dx - st * dy, cy[:, None] + st * dx + ct * dy], axis=-1)
+
     def body(self, x, y, yaw):
         return Polygon(_rect(x, y, yaw, self.length, self.width))
 
@@ -101,11 +116,12 @@ class TrackGeometry:
 
     # ------------------------------------------------------------------ checks
     def check(self, x, y, yaw, delta):
-        """Return (off_track, wall_collision, tires_in) for one pose."""
-        patches = self.tire_patches(x, y, yaw, delta)
-        tires_in = shapely.intersects(self.legal, patches)
+        """Return (off_track, wall_collision, tires_in) for one pose. Runs at every physics step: the five
+        polygons are built in one vectorised call (building them one by one cost ~90% of the check)."""
+        polys = shapely.polygons(self.footprints(x, y, yaw, delta))
+        tires_in = shapely.intersects(self.legal, polys[:4])
         off_track = not bool(np.any(tires_in))
-        hit = self.wall_tree.query(self.body(x, y, yaw), predicate="intersects")
+        hit = self.wall_tree.query(polys[4], predicate="intersects")
         return off_track, bool(len(hit) > 0), tires_in
 
     def wall_clearance(self, x, y, yaw):
@@ -122,6 +138,22 @@ class TrackGeometry:
         dist = shapely.distance(pts[idx[0]], self.wall_boxes[idx[1]])
         np.minimum.at(d, idx[0], dist)
         return d
+
+    def ray_wall_distance(self, xy, direction, cap=1.5, tol=1e-3, max_iter=200):
+        """Distance from each point along its unit ``direction`` to the first wall cell (``cap`` if none within
+        ``cap``). Sphere tracing: step by the distance to the nearest wall, which never crosses a wall."""
+        xy, u = np.asarray(xy, float), np.asarray(direction, float)
+        t = np.zeros(len(xy))
+        active = np.ones(len(xy), bool)
+        for _ in range(max_iter):
+            if not active.any():
+                break
+            d = self.wall_distance(xy[active] + t[active, None] * u[active])
+            t[active] += d
+            hit = d < tol
+            idx = np.flatnonzero(active)
+            active[idx[hit | (t[idx] >= cap)]] = False
+        return np.minimum(t, cap)
 
     def centerline_wall_distance(self):
         """Smallest distance from the track centerline to any wall cell edge."""

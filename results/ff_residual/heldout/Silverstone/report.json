@@ -3,12 +3,14 @@
   "K_ff": 0.03,
   "r_max": 0.2,
   "base_K": 0.03,
-  "model": "results/ff_residual/ckpt_1250000.zip",
+  "model": "results/ff_residual/ckpt_1500000.zip",
   "controllers": {
     "nominal": "Nominal MPC",
     "ff": "MPC + K v\u00b2 \u03ba",
     "residual": "MPC + K v\u00b2 \u03ba + RL residual"
   },
+  "accel_r_max": 0.0,
+  "speed_plan_friction_ellipse": false,
   "sweep_qualifying": {
     "ff": 10,
     "nominal": 0,
@@ -24,7 +26,7 @@
       "controller": "nominal",
       "best_a_lat": 2.5,
       "lap_time": 71.59999999999972,
-      "max_ey": 0.14063121867056025,
+      "max_ey": 0.1406312186705863,
       "gap_s_vs_nominal": 0.0
     },
     {
@@ -39,9 +41,9 @@
       "mu_scale": 1.0,
       "controller": "residual",
       "best_a_lat": 10.0,
-      "lap_time": 56.6599999999973,
-      "max_ey": 0.33866640937358267,
-      "gap_s_vs_nominal": 14.940000000002428
+      "lap_time": 56.619999999997304,
+      "max_ey": 0.35293784630688885,
+      "gap_s_vs_nominal": 14.98000000000242
     },
     {
       "mu_scale": 0.8,
@@ -63,9 +65,9 @@
       "mu_scale": 0.8,
       "controller": "residual",
       "best_a_lat": 10.0,
-      "lap_time": 56.769999999997275,
-      "max_ey": 0.32391099617474955,
-      "gap_s_vs_nominal": 42.84000000001678
+      "lap_time": 56.73999999999728,
+      "max_ey": 0.32122648320355757,
+      "gap_s_vs_nominal": 42.87000000001677
     },
     {
       "mu_scale": 0.6,
@@ -88,9 +90,9 @@
       "controller": "residual",
       "best_a_lat": 10.0,
       "lap_time": 56.93999999999724,
-      "max_ey": 0.2845461979450115,
+      "max_ey": 0.25967168218981473,
       "gap_s_vs_nominal": 42.74000000001685
     }
   ],
-  "runtime_s": 330.2029309272766
+  "runtime_s": 42.50205707550049
 }

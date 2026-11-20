@@ -1,7 +1,9 @@
-"""Step 1: simulator verification (step tests and mu replay).
+"""Step 1: simulator verification (step tests, mu replay, grip test, ST dynamics regression).
 
-Writes results/sim_checks/{steer_step,long_step,mu_replay}.csv, summary.json and
-sim_checks.png.
+Writes results/sim_checks/{steer_step,long_step,mu_replay,grip_test}.csv, summary.json and
+sim_checks.png. Grip test: ``a_y = v r`` (kept for continuity) overstates the lateral acceleration
+whenever the sideslip changes (spin transients); ``a_perp = v (r + beta')`` is the acceleration normal to
+the velocity, bounded by mu g for saturating tires.
 """
 
 from __future__ import annotations
@@ -16,7 +18,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from .sim import NOMINAL_PARAMS, SteeringServo, agent, make_env, reset_to_state, set_plant
+from gymkhana.envs.dynamic_models.single_track import vehicle_dynamics_st
+
+from .sim import (NOMINAL_PARAMS, SteeringServo, agent, make_env, plant_label, plant_tire,
+                  reset_to_state, set_plant, vehicle_params)
+from .tires import st_force_dynamics
 
 
 def _log(env, t, cmd_steer, cmd_acc):
@@ -104,20 +110,36 @@ def grip_test(track, dt, out, mu_scales, v_hold=5.0, ramp_rate=0.1, delta_end=0.
         servo = SteeringServo("steering_speed", dt, NOMINAL_PARAMS["sv_max"])
         for k in range(int(delta_end / ramp_rate / dt)):
             st = agent(env).state
+            beta_prev = float(st[6])
             u = servo.command(ramp_rate * k * dt, st[2])
             a = 3.0 * (v_hold - st[3])
             env.step(np.array([[u, a]]))
             st = agent(env).state
             rows.append(dict(mu_scale=mu, t=(k + 1) * dt, delta=st[2], v=st[3], yaw_rate=st[5], slip=st[6],
-                             a_y=st[3] * st[5]))
+                             a_y=st[3] * st[5], a_perp=st[3] * (st[5] + (st[6] - beta_prev) / dt)))
         env.close()
     df = pd.DataFrame(rows)
     df.to_csv(out / "grip_test.csv", index=False)
     return df
 
 
-def run(track: str, dt: float, out: pathlib.Path, mu_scales=(1.0, 0.6), model: str = "st"):
-    set_plant(model)
+def st_regression(n=2000, seed=0):
+    """Axle-force form with the linear law vs gymkhana's ``vehicle_dynamics_st`` (random states and inputs,
+    V >= 0.6 m/s, both mu levels). This is what makes the nonlinear laws a tire-only change."""
+    rng = np.random.default_rng(seed)
+    err = 0.0
+    for mu in (1.0, 0.6):
+        p = vehicle_params(mu, model="st")
+        for _ in range(n):
+            x = np.array([0.0, 0.0, rng.uniform(-0.4, 0.4), rng.uniform(0.6, 15.0), rng.uniform(0, 2 * np.pi),
+                          rng.uniform(-5, 5), rng.uniform(-0.5, 0.5)])
+            u = np.array([rng.uniform(-3.2, 3.2), rng.uniform(-9.5, 9.5)])
+            err = max(err, float(np.abs(st_force_dynamics(x, u, p, "linear") - vehicle_dynamics_st(x, u, p)).max()))
+    return dict(max_abs_derivative_diff=err, n_samples=2 * n)
+
+
+def run(track: str, dt: float, out: pathlib.Path, mu_scales=(1.0, 0.6), model: str = "st", tire=None):
+    set_plant(model, tire)
     out.mkdir(parents=True, exist_ok=True)
     ss = steer_step(track, dt, out)
     ls = long_step(track, dt, out)
@@ -155,9 +177,15 @@ def run(track: str, dt: float, out: pathlib.Path, mu_scales=(1.0, 0.6), model: s
         max_abs_delta_diff=float(np.abs(a.delta.values - b.delta.values).max()),
     )
     summ["plant_model"] = model
+    if model == "st":
+        summ["tire"] = plant_tire()
+        summ["st_linear_regression"] = st_regression()
     for mu, g in gt.groupby("mu_scale"):
         summ[f"grip_mu_{mu}"] = dict(max_abs_a_y=float(g.a_y.abs().max()),
                                      max_abs_a_y_g=float(g.a_y.abs().max() / 9.81),
+                                     max_abs_a_perp=float(g.a_perp.abs().max()),
+                                     max_abs_a_perp_g=float(g.a_perp.abs().max() / 9.81),
+                                     mu_g=float(NOMINAL_PARAMS["mu"] * mu * 9.81),
                                      delta_at_max_a_y=float(g.delta.iloc[int(np.argmax(g.a_y.abs().values))]),
                                      max_abs_slip=float(g.slip.abs().max()))
     (out / "summary.json").write_text(json.dumps(summ, indent=2))
@@ -178,14 +206,18 @@ def run(track: str, dt: float, out: pathlib.Path, mu_scales=(1.0, 0.6), model: s
     ax[1, 0].plot(g.t, g.yaw_rate_kin, "k--", lw=1, label="kinematic v·tanδ/L")
     ax[1, 0].set(title="μ replay: same state & steering, v0 = 6 m/s", xlabel="t [s]", ylabel="r [rad/s]")
     ax[1, 1].set(title="μ replay: sideslip", xlabel="t [s]", ylabel="β [deg]")
-    for mu, g in gt.groupby("mu_scale"):
-        ax[0, 2].plot(g.delta, g.a_y, label=f"μ/μ₀={mu}")
-        ax[1, 2].plot(g.delta, np.degrees(g.slip), label=f"μ/μ₀={mu}")
-    ax[0, 2].set(title="Grip test: steering ramp at 5 m/s", xlabel="δ [rad]", ylabel="a_y = v·r [m/s²]")
+    for i, (mu, g) in enumerate(gt.groupby("mu_scale")):
+        col = f"C{i}"
+        ax[0, 2].plot(g.delta, g.a_perp, color=col, label=f"v(r+β'), μ/μ₀={mu}")
+        ax[0, 2].plot(g.delta, g.a_y, color=col, ls="--", lw=0.8, label=f"v·r, μ/μ₀={mu}")
+        ax[0, 2].axhline(NOMINAL_PARAMS["mu"] * mu * 9.81, color=col, ls=":", lw=0.8)
+        ax[1, 2].plot(g.delta, np.degrees(g.slip), color=col, label=f"μ/μ₀={mu}")
+    ax[0, 2].set(title="Grip test: steering ramp at 5 m/s (dotted: μg)", xlabel="δ [rad]",
+                 ylabel="lateral acceleration [m/s²]")
     ax[1, 2].set(title="Grip test: sideslip", xlabel="δ [rad]", ylabel="β [deg]")
     for a_ in [*ax[1], ax[0, 2]]:
         a_.legend(fontsize=7)
-    fig.suptitle(f"Simulator checks, plant model = {model.upper()}", fontsize=11)
+    fig.suptitle(f"Simulator checks, plant model = {plant_label().upper()}", fontsize=11)
     fig.tight_layout()
     fig.savefig(out / "sim_checks.png", dpi=130)
     plt.close(fig)
@@ -196,4 +228,5 @@ if __name__ == "__main__":
     from . import cli
 
     cfg, _, out = cli.parse(__doc__)
-    print(json.dumps(run(cfg["track"], cfg["dt"], out / "sim_checks", model=cfg.get("model", "st")), indent=2))
+    print(json.dumps(run(cfg["track"], cfg["dt"], out / "sim_checks", model=cfg.get("model", "st"), tire=cfg.get("tire")),
+                     indent=2))

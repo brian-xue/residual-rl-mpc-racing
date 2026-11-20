@@ -1,0 +1,4 @@
+start 03:22:04
+trained 03:27:37
+austin eval 03:29:33
+heldout 03:31:55

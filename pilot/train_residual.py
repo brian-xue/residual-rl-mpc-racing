@@ -37,7 +37,7 @@ class LogAndSave(BaseCallback):
         for info in self.locals["infos"]:
             if "episode" in info:
                 self.ep_buf.append(dict(ret=info["episode"]["r"], len=info["episode"]["l"],
-                                        crash=info.get("outcome") in ("wall_collision", "lateral_error")))
+                                        crash=info.get("outcome") in ("wall_collision", "spin", "lateral_error")))
         if self.num_timesteps >= self.next_save:
             self.model.save(self.out / f"ckpt_{self.num_timesteps}.zip")
             self.next_save += self.every

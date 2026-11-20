@@ -1,0 +1,86 @@
+{
+  "track": "Catalunya",
+  "K_ff": 0.03,
+  "controllers": {
+    "P": {
+      "mode": "pfb",
+      "plan_ellipse": false,
+      "mpc_ellipse": false
+    },
+    "P-E": {
+      "mode": "pfb",
+      "plan_ellipse": true,
+      "mpc_ellipse": false
+    },
+    "C": {
+      "mode": "mpc",
+      "plan_ellipse": false,
+      "mpc_ellipse": false
+    },
+    "C-E": {
+      "mode": "mpc",
+      "plan_ellipse": true,
+      "mpc_ellipse": true
+    },
+    "S": {
+      "mode": "slip",
+      "plan_ellipse": false,
+      "mpc_ellipse": false
+    },
+    "S-E": {
+      "mode": "slip",
+      "plan_ellipse": true,
+      "mpc_ellipse": false
+    }
+  },
+  "longitudinal_mpc": {
+    "q_v": 2.0,
+    "q_a": 0.1,
+    "r_da": 1.0,
+    "da_max": 2.0,
+    "friction_ellipse": false,
+    "ax_max": 4.0,
+    "n_facets": 8,
+    "slack_l1": 100.0,
+    "slack_l2": 1000.0
+  },
+  "sweep_qualifying": {
+    "S-E": 11
+  },
+  "lap_time_comparison": [
+    {
+      "controller": "S-E",
+      "long": "S-E",
+      "K": 0.0,
+      "mu_scale": 1.0,
+      "best_a_lat": 7.0,
+      "lap_time": 54.649999999997696,
+      "max_ey": 0.4637354478307816,
+      "ellipse_max": 1.1855944497554436,
+      "max_abs_ay": 7.058870488619225
+    },
+    {
+      "controller": "S-E",
+      "long": "S-E",
+      "K": 0.0,
+      "mu_scale": 0.8,
+      "best_a_lat": 6.0,
+      "lap_time": 55.66999999999749,
+      "max_ey": 0.4994863063909535,
+      "ellipse_max": 1.1643591198495802,
+      "max_abs_ay": 6.228113702050432
+    },
+    {
+      "controller": "S-E",
+      "long": "S-E",
+      "K": 0.0,
+      "mu_scale": 0.6,
+      "best_a_lat": 5.0,
+      "lap_time": 57.779999999997074,
+      "max_ey": 0.4805408096307827,
+      "ellipse_max": 1.1308036902400682,
+      "max_abs_ay": 5.467393276756187
+    }
+  ],
+  "runtime_s": 136.88675618171692
+}

@@ -1,0 +1,13 @@
+track,controller,qual,spin,wall,lap_1.0,lap_0.8,lap_0.6,from3_1.0,from3_0.8,from3_0.6
+Austin,S-E (slip-aware MPC + ellipse),8,3,7,58.71 (6),59.88 (5.5),62.94 (4.5),,,
+Austin,"MPC + RL (δ), standard plan",10,6,2,55.60 (7),57.16 (6),62.83 (4),,,
+Austin,"MPC + RL (δ, a), ellipse plan",14,1,3,,,,56.18 (10),57.91 (8),63.68 (5)
+Spielberg,S-E (slip-aware MPC + ellipse),10,1,7,45.07 (6),45.11 (6),46.32 (5),,,
+Spielberg,"MPC + RL (δ), standard plan",4,3,11,45.99 (4.5),46.92 (4),49.72 (3),,,
+Spielberg,"MPC + RL (δ, a), ellipse plan",0,1,17,52.72 (3),52.72 (3),52.73 (3),52.72 (3),52.72 (3),52.73 (3)
+Catalunya,S-E (slip-aware MPC + ellipse),11,2,4,54.65 (7),55.67 (6),57.78 (5),,,
+Catalunya,"MPC + RL (δ), standard plan",10,7,1,53.12 (7),54.37 (6),59.07 (4),,,
+Catalunya,"MPC + RL (δ, a), ellipse plan",16,2,0,,,,53.73 (10),55.07 (8),57.74 (6)
+Silverstone,S-E (slip-aware MPC + ellipse),10,2,6,60.06 (7),60.78 (6),62.39 (5),,,
+Silverstone,"MPC + RL (δ), standard plan",4,5,9,61.01 (5),62.08 (4.5),65.34 (3.5),,,
+Silverstone,"MPC + RL (δ, a), ellipse plan",0,0,18,81.79 (2),81.79 (2),81.79 (2),,,
