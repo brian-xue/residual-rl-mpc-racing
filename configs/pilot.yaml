@@ -8,6 +8,8 @@ out: results                 # default output folder for this config
 dt: 0.01                     # simulator step [s], RK4
 workers: 8                   # parallel lap simulations
 steer_mode: steering_speed   # sim mode; steering-angle targets are realised by a delay-aware rate-limited servo
+kernel: python               # physics-step loop: "python" or "rust" (pilot_core, bit-identical, ~1.8x faster laps;
+                             # ST plant + steering_speed only; check with python -m pilot.kernel_check)
 
 reference:                   # fixed reference line
   source: raceline           # Austin_raceline.csv (shipped with the map); "centerline" = previous pilot

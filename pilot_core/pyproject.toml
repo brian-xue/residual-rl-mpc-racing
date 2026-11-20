@@ -1,0 +1,18 @@
+[build-system]
+requires = ["maturin>=1.8,<2"]
+build-backend = "maturin"
+
+[project]
+name = "pilot-core"
+version = "0.1.0"
+description = "Rust core of the residual-RL racing pilot (PyO3 extension)"
+requires-python = ">=3.11"
+dependencies = ["numpy>=2.0"]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "pilot_core"
+
+[tool.uv]
+# rebuild the extension when the Rust sources change
+cache-keys = [{ file = "pyproject.toml" }, { file = "Cargo.toml" }, { file = "Cargo.lock" }, { file = "src/**/*.rs" }]

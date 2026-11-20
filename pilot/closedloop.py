@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 
 from .geometry import TrackGeometry
+from .kernel import KERNELS, make_kernel
 from .mpc import CoupledMPC, KinematicMPC, SlipMPC
 from .reference import Reference, speed_plan, wall_safe_raceline
 from .sim import NOMINAL_PARAMS, SteeringServo, agent, make_env, reset_to_state, set_plant, vehicle_params
@@ -123,6 +124,7 @@ class LapSim:
         # periodic lookups on arrays built once (called several times per physics step)
         s_ext, L_ref = np.r_[ref.s, ref.length], ref.length
         v_ext = np.r_[vplan, vplan[0]]
+        self._plan_s, self._plan_v = s_ext, v_ext  # also handed to the Rust kernel
         self.vplan_at = lambda s: np.interp(np.mod(s, L_ref), s_ext, v_ext)  # noqa: E731
         aplan = vplan * np.gradient(vplan, ref.ds)  # plan acceleration v dv/ds (feedforward for the coupled MPC)
         a_ext = np.r_[aplan, aplan[0]]
@@ -198,6 +200,11 @@ class LapSim:
         self.tires_in = np.ones(4, bool)
         self.off_in_interval = 0  # off-track physics steps since the last control instant
         self.done = self._pre()
+        # physics-step loop: "python" (_physics/_pre below) or "rust" (pilot_core.LapKernel, bit-identical)
+        kernel = cfg.get("kernel", "python")
+        if kernel not in KERNELS:
+            raise ValueError(f"kernel must be one of {KERNELS}, got {kernel!r}")
+        self.kernel = make_kernel(self) if kernel == "rust" else None
 
     # ------------------------------------------------------------------ per physics step
     def _pre(self):
@@ -225,7 +232,10 @@ class LapSim:
         return False
 
     def _physics(self):
-        """Servo + longitudinal control + one simulator step + validity checks. Returns True when the lap ended."""
+        """Servo + longitudinal control + one simulator step + validity checks. Returns True when the lap ended.
+
+        ``_physics``, ``_pre`` and ``advance_interval`` are mirrored operation by operation in
+        ``pilot_core/src/kernel.rs`` (``kernel: rust``): change both, then run ``python -m pilot.kernel_check``."""
         ref, st = self.ref, self.st
         u_steer = self.servo.command(self.delta_cmd, st[2])
         if self.cfg["steer_mode"] == "steering_speed":
@@ -339,6 +349,8 @@ class LapSim:
 
     def advance_interval(self):
         """Run physics steps up to the next control instant or the end of the lap. Returns ``self.done``."""
+        if self.kernel is not None:
+            return self._advance_kernel()
         while not self.done:
             if self._physics() or self._pre():
                 self.done = True
@@ -346,11 +358,32 @@ class LapSim:
                 break
         return self.done
 
+    def _advance_kernel(self):
+        """``advance_interval`` in Rust; copies back every attribute the 20 Hz code and the summary read."""
+        if self.done:
+            return True
+        (done, outcome, st, x, (t, s, e_y, e_psi, v, vp, progress), (step, i_g, off, env_step),
+         tires_in) = self.kernel.advance(self.delta_cmd, self.a_mpc)
+        self.st, self.t, self.s, self.e_y, self.e_psi, self.v, self.vp = st, t, s, e_y, e_psi, v, vp
+        self.progress, self.step, self.i_g, self.off_in_interval = progress, step, i_g, off
+        self.tires_in, self.outcome, self.done = np.array(tires_in), outcome, done
+        agent(self.env).state = x  # the simulator's view of the car (e.g. for a reused env)
+        self.env.current_step = env_step
+        if done:
+            self._sync_kernel_metrics()
+        return done
+
+    def _sync_kernel_metrics(self):
+        for k, val in self.kernel.metrics().items():
+            setattr(self, k, val)
+
     def close(self):
         if self._own_env:
             self.env.close()
 
     def summary(self):
+        if self.kernel is not None:
+            self._sync_kernel_metrics()
         scn, cfg, ref, outcome, t = self.scn, self.cfg, self.ref, self.outcome, self.t
         st = np.array(self.solve_times) * 1e3
         summ = dict(

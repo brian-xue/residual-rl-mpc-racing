@@ -16,4 +16,8 @@ dependencies = [
     "shapely>=2.2.0",
     "stable-baselines3>=2.4",
     "torch>=2.5",
+    "pilot-core",  # Rust core (pilot_core/, PyO3 + maturin; needs cargo on PATH to build)
 ]
+
+[tool.uv.sources]
+pilot-core = { path = "pilot_core" }

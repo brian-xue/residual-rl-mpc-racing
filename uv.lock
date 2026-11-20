@@ -1743,6 +1743,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pilot-core"
+version = "0.1.0"
+source = { directory = "pilot_core" }
+dependencies = [
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "numpy", specifier = ">=2.0" }]
+
+[[package]]
 name = "protobuf"
 version = "7.36.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1965,6 +1977,7 @@ dependencies = [
     { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "osqp" },
     { name = "pandas" },
+    { name = "pilot-core" },
     { name = "pyyaml" },
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "scipy", version = "1.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
@@ -1981,6 +1994,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.0" },
     { name = "osqp", specifier = ">=1.1.3" },
     { name = "pandas", specifier = ">=3.1.1" },
+    { name = "pilot-core", directory = "pilot_core" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "scipy", specifier = ">=1.17.1" },
     { name = "shapely", specifier = ">=2.2.0" },
