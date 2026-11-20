@@ -221,7 +221,10 @@ def main():
         mu_g = min(lc["mu_scales"])
         pick = {c: bdf[(bdf.mu_scale == mu_g) & (bdf.controller == c)].iloc[0].best_a_lat for c in ctrls}
         pick = {c: a for c, a in pick.items() if a is not None and pd.notna(a)}
-        if pick:
+        if "residual" not in pick:  # the GIF is about the residual; without its lap it would show only baselines
+            print(f"[gif] skipped: the residual has no qualifying fastest lap at mu/mu0 = {mu_g}", flush=True)
+            report["lap_time_gif"] = f"skipped: no qualifying residual lap at mu_scale {mu_g}"
+        elif pick:
             print("[gif] rendering", flush=True)
             tr_g = {c: ltr[(c, mu_g, a, starts[0])] for c, a in pick.items()}
             sm_g = {c: _clean({**summs[(c, mu_g, a, starts[0])]}) for c, a in pick.items()}

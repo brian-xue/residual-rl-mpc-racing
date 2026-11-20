@@ -13,7 +13,17 @@ uv run python -m pilot.longitudinal --config configs/pilot_st_pacejka.yaml --fro
 
 Outputs go to `results_st_pacejka/longitudinal/Austin/`: `sweep.csv`, `lap_time_grid.csv`, `lap_time_comparison.csv/.png` and `report.json`. On first use, Gym-Khana downloads the Austin map into `~/.gymkhana/maps/`.
 
-`uv sync` also builds the Rust core `pilot_core/` (PyO3 extension, a path dependency), so it needs a Rust toolchain and `cmake` on `PATH` (with Homebrew's keg-only rustup: `export PATH="/opt/homebrew/opt/rustup/bin:$PATH"`). Set `kernel: rust` in a config to run laps on it; see [Speed](#speed-rust-core-kernel-rust).
+**Rust core (optional).** `uv sync` also builds the Rust core `pilot_core/` (PyO3 extension, uv dependency group `rust`, installed by default). That needs a Rust toolchain and `cmake` on `PATH`; with Homebrew's keg-only rustup, run `export PATH="/opt/homebrew/opt/rustup/bin:$PATH"` first. Set `kernel: rust` in a config to run laps on it; see [Speed](#speed-rust-core-kernel-rust).
+
+Without Rust, use `uv sync --no-group rust`. A `kernel: rust` config then prints a warning and runs on the Python loop, with identical results (about 5× slower).
+
+**GIFs (Git LFS).** The result GIFs are stored with [Git LFS](https://git-lfs.com). Install it (`brew install git-lfs`, then `git lfs install`) before cloning to get them, or run `git lfs pull` afterwards. Code and CSV results do not need it.
+
+**Checks.** `.github/workflows/checks.yml` runs on every push and PR:
+- `python -m pilot.kernel_check` and `cargo test` on macOS arm64, the platform the Python/Rust bit-identity was verified on;
+- an install without Rust on Linux.
+
+**License:** MIT (`LICENSE`).
 
 ## Plant: ST with saturating tires (`pilot/tires.py`)
 

@@ -16,8 +16,16 @@ dependencies = [
     "shapely>=2.2.0",
     "stable-baselines3>=2.4",
     "torch>=2.5",
-    "pilot-core",  # Rust core (pilot_core/, PyO3 + maturin; needs cargo on PATH to build)
 ]
+
+[dependency-groups]
+# Optional Rust core (pilot_core/, PyO3 + maturin) for `kernel: rust`. Installed by default with `uv sync`
+# (needs a Rust toolchain and cmake); without Rust use `uv sync --no-group rust`: `kernel: rust` then falls back to
+# the Python loop with identical results.
+rust = ["pilot-core"]
+
+[tool.uv]
+default-groups = ["rust"]
 
 [tool.uv.sources]
 pilot-core = { path = "pilot_core" }

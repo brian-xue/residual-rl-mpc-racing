@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 
 from .geometry import TrackGeometry
-from .kernel import KERNELS, make_kernel
+from .kernel import KERNELS, make_kernel, rust_available
 from .mpc import CoupledMPC, KinematicMPC, SlipMPC
 from .reference import Reference, speed_plan, wall_safe_raceline
 from .sim import (NOMINAL_PARAMS, SteeringServo, agent, make_env, plant_model, reset_to_state, set_env_params,
@@ -244,6 +244,8 @@ class LapSim:
         kernel = cfg.get("kernel", "python")
         if kernel not in KERNELS:
             raise ValueError(f"kernel must be one of {KERNELS}, got {kernel!r}")
+        if kernel == "rust" and not rust_available():
+            kernel = "python"  # pilot_core not installed: same laps (bit-identical), only slower
         self.kernel = make_kernel(self) if kernel == "rust" else None
         # with the Rust kernel the kinematic MPC step (previews, QP, OSQP) also runs in Rust (bit-identical)
         self.rqp = self.mpc.rust_qp() if self.kernel is not None else None

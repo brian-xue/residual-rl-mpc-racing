@@ -94,10 +94,6 @@
       "gap_s_vs_nominal": NaN
     }
   ],
-  "lap_time_gif": {
-    "path": "results_st_pacejka/residual_dual/lap_time.gif",
-    "frames": 445,
-    "size_mb": 8.82
-  },
+  "lap_time_gif": "removed: the standard search gave the residual no qualifying lap at mu_scale 0.6, so the GIF showed only the baselines; see results_st_pacejka/residual_dual/grid_from3/Austin/lap_time.gif",
   "runtime_s": 88.04616284370422
 }

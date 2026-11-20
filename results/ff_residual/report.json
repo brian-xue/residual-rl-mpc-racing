@@ -3,12 +3,14 @@
   "K_ff": 0.03,
   "r_max": 0.2,
   "base_K": 0.03,
-  "model": "results/ff_residual/ckpt_1250000.zip",
+  "model": "results/ff_residual/ckpt_1500000.zip",
   "controllers": {
     "nominal": "Nominal MPC",
     "ff": "MPC + K v\u00b2 \u03ba",
     "residual": "MPC + K v\u00b2 \u03ba + RL residual"
   },
+  "accel_r_max": 0.0,
+  "speed_plan_friction_ellipse": false,
   "sweep_qualifying": {
     "ff": 6,
     "nominal": 0,
@@ -24,7 +26,7 @@
       "controller": "nominal",
       "best_a_lat": 3.0,
       "lap_time": 68.6199999999982,
-      "max_ey": 0.1647221029543051,
+      "max_ey": 0.16472210295429973,
       "gap_s_vs_nominal": 0.0
     },
     {
@@ -32,16 +34,16 @@
       "controller": "ff",
       "best_a_lat": 4.5,
       "lap_time": 60.329999999996566,
-      "max_ey": 0.2445536474761881,
+      "max_ey": 0.24455364747642436,
       "gap_s_vs_nominal": 8.290000000001633
     },
     {
       "mu_scale": 1.0,
       "controller": "residual",
       "best_a_lat": 10.0,
-      "lap_time": 52.599999999998104,
-      "max_ey": 0.24950996544421705,
-      "gap_s_vs_nominal": 16.020000000000095
+      "lap_time": 52.51999999999812,
+      "max_ey": 0.24608120381281426,
+      "gap_s_vs_nominal": 16.10000000000008
     },
     {
       "mu_scale": 0.8,
@@ -63,16 +65,16 @@
       "mu_scale": 0.8,
       "controller": "residual",
       "best_a_lat": 10.0,
-      "lap_time": 52.739999999998076,
-      "max_ey": 0.2104812499792041,
-      "gap_s_vs_nominal": 19.98000000000222
+      "lap_time": 52.699999999998084,
+      "max_ey": 0.1985372913973749,
+      "gap_s_vs_nominal": 20.020000000002213
     },
     {
       "mu_scale": 0.6,
       "controller": "nominal",
       "best_a_lat": 1.5,
       "lap_time": 86.67000000000743,
-      "max_ey": 0.14583539275764212,
+      "max_ey": 0.1458353927576455,
       "gap_s_vs_nominal": 0.0
     },
     {
@@ -86,16 +88,16 @@
     {
       "mu_scale": 0.6,
       "controller": "residual",
-      "best_a_lat": 9.0,
-      "lap_time": 53.549999999997915,
-      "max_ey": 0.15567149880565406,
-      "gap_s_vs_nominal": 33.12000000000952
+      "best_a_lat": 8.0,
+      "lap_time": 54.28999999999777,
+      "max_ey": 0.14315194182724122,
+      "gap_s_vs_nominal": 32.380000000009666
     }
   ],
   "lap_time_gif": {
     "path": "results/ff_residual/lap_time.gif",
     "frames": 475,
-    "size_mb": 12.39
+    "size_mb": 12.37
   },
-  "runtime_s": 412.04824018478394
+  "runtime_s": 78.53808569908142
 }

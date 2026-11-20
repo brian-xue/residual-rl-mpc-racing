@@ -23,7 +23,7 @@ This is the minimal feasibility pilot for the proposal *Residual RL on MPC for V
 ## Setup and run
 
 ```bash
-uv sync                                  # .venv with Python 3.11, gymkhana==1.2.0 (PyPI), osqp, shapely, ...
+uv sync                                  # .venv with Python 3.11, gymkhana==1.2.0 (PyPI), osqp, shapely, ... (no Rust: --no-group rust)
 uv run python -m pilot.run_pilot         # whole pilot + plots + both GIFs, about 3 min (8 parallel workers)
 uv run python -m pilot.sensitivity       # optional: wall margin x K sensitivity, about 1 min
 uv run python -m pilot.reference_lap     # optional: dynamic-model reference lap + 3-car GIF, about 3 min (after run_pilot)
@@ -145,7 +145,7 @@ The same residual setup, trained on top of the feedforward: δ = clip(δ_MPC + K
 uv run python -m pilot.train_residual --config configs/pilot_ff_residual.yaml     # about 45 min
 uv run python -m pilot.eval_residual  --config configs/pilot_ff_residual.yaml     # about 7 min
 uv run python -m pilot.eval_residual  --config configs/pilot_ff_residual.yaml --track Spielberg \
-    --model results/ff_residual/ckpt_1250000.zip --out results/ff_residual/heldout/Spielberg --no-gif
+    --model results/ff_residual/ckpt_1500000.zip --out results/ff_residual/heldout/Spielberg --no-gif
 ```
 
 **All four controllers, all four tracks** (`results/ff_residual/all_tracks_summary.csv`). Sweep cells show qualifying laps out of 18. Lap cells show the fastest qualifying lap with its a_lat level in brackets.
@@ -155,24 +155,24 @@ uv run python -m pilot.eval_residual  --config configs/pilot_ff_residual.yaml --
 | Austin (training) | Nominal MPC | 0 | – | 68.62 (3.0) | 72.72 (2.5) | 86.67 (1.5) |
 | | MPC + Kv²κ | 6 | 0.058 | 60.33 (4.5) | 60.47 (4.5) | 62.67 (4.0) |
 | | MPC + RL | 16 | 0.053 | 53.27 (10) | 53.45 (10) | 55.86 (7.0) |
-| | **MPC + Kv²κ + RL** | **18** | **0.039** | **52.60 (10)** | **52.74 (10)** | **53.55 (9.0)** |
+| | **MPC + Kv²κ + RL** | **18** | **0.043** | **52.52 (10)** | **52.70 (10)** | **54.29 (8.0)** |
 | Spielberg | Nominal MPC | 0 | – | 55.24 (2.0) | 60.03 (1.5) | 68.48 (1.0) |
 | | MPC + Kv²κ | 16 | 0.075 | 42.94 (8.0) | 43.03 (8.0) | 46.88 (4.0) |
 | | MPC + RL | 14 | 0.044 | 42.87 (10) | 42.96 (10) | 49.81 (3.0) |
-| | **MPC + Kv²κ + RL** | **18** | **0.032** | **42.63 (10)** | **42.70 (10)** | **42.80 (10)** |
+| | **MPC + Kv²κ + RL** | **18** | **0.035** | **42.61 (10)** | **42.68 (10)** | **42.98 (9.0)** |
 | Catalunya | Nominal MPC | 6 | 0.109 | 53.57 (7.0) | 57.93 (4.5) | 64.41 (3.0) |
 | | MPC + Kv²κ | 16 | 0.089 | 52.47 (7.0) | 53.86 (6.0) | 54.12 (6.0) |
 | | MPC + RL | 18 | 0.056 | 51.39 (10) | 51.55 (10) | 51.85 (10) |
-| | **MPC + Kv²κ + RL** | **18** | **0.037** | **50.98 (10)** | **51.09 (10)** | **51.28 (10)** |
+| | **MPC + Kv²κ + RL** | **18** | **0.042** | **50.93 (10)** | **51.06 (10)** | **51.28 (10)** |
 | Silverstone | Nominal MPC | 0 | – | 71.60 (2.5) | 99.61 (1.0) | 99.68 (1.0) |
 | | MPC + Kv²κ | 10 | 0.067 | 58.13 (7.0) | 71.19 (2.5) | 76.58 (2.0) |
 | | MPC + RL | 13 | 0.047 | 57.07 (10) | 57.22 (10) | 65.47 (3.5) |
-| | **MPC + Kv²κ + RL** | **18** | **0.034** | **56.66 (10)** | **56.77 (10)** | **56.94 (10)** |
+| | **MPC + Kv²κ + RL** | **18** | **0.039** | **56.62 (10)** | **56.74 (10)** | **56.94 (10)** |
 
-- **Best on every track and friction level.** It qualifies in all 72 sweep laps across the four tracks, including a_lat 8 at μ/μ₀ 0.6. On Austin, Spielberg and Silverstone, every other controller fails that cell from at least one start pose. It has the fastest lap in all 12 track × friction combinations, and its RMS e_y is 26–34% below the RL-only residual's.
+- **Best on every track and friction level.** It qualifies in all 72 sweep laps across the four tracks, including a_lat 8 at μ/μ₀ 0.6. On Austin, Spielberg and Silverstone, every other controller fails that cell from at least one start pose. It has the fastest lap in all 12 track × friction combinations, and its RMS e_y is 17–24% below the RL-only residual's.
 - **It fixes the RL-only residual's held-out failures.** On Spielberg and Silverstone at μ/μ₀ 0.6, the RL-only residual ran wide in long, gentle corners. With the feedforward underneath, the policy only has to learn corrections around it.
-- **Friction barely costs lap time.** From μ₀ to 0.6 μ₀ it loses 0.2–1.0 s per lap, against 1.7–18 s for MPC + Kv²κ. At a_lat 10 it reaches the top of the grid in 11 of 12 combinations; on Austin at 0.6 it stops at a_lat 9.
-- **Caveat: checkpoint selection decides the result.** Only `ckpt_1250000` passed all 4 validation laps. Later checkpoints passed 1–2 of 4 and `final.zip` 1 of 4, even though the training crash rate kept falling to 0% with policy std 0.026. Training on half-lap episodes keeps improving the training objective while getting worse on full validation laps. Without the validation step, this run would have looked much worse. The selected checkpoint was chosen on Austin validation laps only, before any benchmark or held-out run.
+- **Friction barely costs lap time.** From μ₀ to 0.6 μ₀ it loses 0.3–1.8 s per lap, against 1.7–18 s for MPC + Kv²κ. It reaches the top of the a_lat grid (10) in 10 of 12 combinations; at μ/μ₀ 0.6 it stops at a_lat 8 on Austin and 9 on Spielberg.
+- **Checkpoint selection (corrected).** The first evaluation of this run selected `ckpt_1250000` with a bug: the validation laps ran the policy on plain MPC instead of the MPC + Kv²κ it was trained on (`residual.base_K` was ignored; fixed in `pilot.eval_residual`). That bug also produced an apparent regression of later checkpoints. Re-run correctly, all 13 checkpoints pass 4 of 4 validation laps, and the rule's progress tie-break selects `ckpt_1500000`. The table above is `ckpt_1500000` on all four tracks (re-evaluated with `kernel: rust`, which gives the same laps as the Python loop). With `ckpt_1250000` the sweep was also 72/72, with lap times within 0.1 s except at μ/μ₀ 0.6 on Austin (53.55 s) and Spielberg (42.80 s).
 - **Other caveats:** one seed; the ST plant has no grip limit (section 6), so this is stiffness mismatch; a_lat 10 is above the training range.
 
 ### MPC speed control, stage 1: coupled steering + speed MPC (`pilot/longitudinal.py`, `results/longitudinal/`)
@@ -205,7 +205,7 @@ Four longitudinal controllers, each with steering MPC and with MPC + K·v²·κ:
 | P-E | **18** | **53.43 (10)** | **53.63 (10)** | **54.65 (9)** |
 | C | 16 | 53.67 (8) | 53.86 (8) | 60.70 (4.5) |
 | C-E | **18** | 53.53 (10) | 53.73 (10) | 54.75 (9) |
-| *for reference: MPC + RL residual / MPC + Kv²κ + RL* | *16 / 18* | *53.27 / 52.60* | *53.45 / 52.74* | *55.86 / 53.55* |
+| *for reference: MPC + RL residual / MPC + Kv²κ + RL* | *16 / 18* | *53.27 / 52.52* | *53.45 / 52.70* | *55.86 / 54.29* |
 
 - **The friction-ellipse speed plan is the main lever.** With only the pilot's P speed control, it turns 6 qualifying sweep laps into 18 and cuts 6.8–8.0 s per lap. On Austin that matches the RL-only residual (better at μ/μ₀ 0.6) without any learning. MPC + Kv²κ + RL is still fastest.
 - **MPC speed control helps on an infeasible plan, and adds little on a feasible one.** On the standard plan, C reaches a_lat 8 where P stops at 4.5. On the ellipse plan, C-E is within 0.1 s of P-E, with slightly lower max |e_y| (0.22–0.35 vs 0.24–0.38 m) and ellipse use.

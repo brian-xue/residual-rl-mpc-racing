@@ -22,7 +22,7 @@ __pycache__/
 results*/**/ckpt_*.zip
 results*/**/final.zip
 !results/residual/ckpt_1750000.zip
-!results/ff_residual/ckpt_1250000.zip
+!results/ff_residual/ckpt_1500000.zip
 !results_st_pacejka/residual/ckpt_1250000.zip
 !results_st_pacejka/residual_dual/ckpt_1250000.zip
 !results_st_pacejka/residual_dual_wall/ckpt_1250000.zip

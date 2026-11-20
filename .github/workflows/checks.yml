@@ -1,0 +1,84 @@
+name: checks
+
+# Small CI for the guarantees the results rely on:
+# - kernel-equivalence: the Rust lap kernel (pilot_core) is bit-identical to the Python loop
+#   (python -m pilot.kernel_check) and the Rust unit tests pass (cargo test). Runs on macOS arm64, the platform
+#   the bit-identity was verified on (see pilot_core/README.md); other platforms may differ in libm.
+# - install-without-rust: the project installs without a Rust toolchain (uv sync --no-group rust) and a
+#   `kernel: rust` lap falls back to the Python loop.
+
+on:
+  push:
+    branches: [main, "explore/**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  kernel-equivalence:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false  # the GIFs are not needed for the checks
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Rust toolchain (pinned by pilot_core/rust-toolchain.toml) and cmake
+        working-directory: pilot_core
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          cmake --version
+
+      - name: Cache Gym-Khana track maps
+        uses: actions/cache@v4
+        with:
+          path: ~/.gymkhana/maps
+          key: gymkhana-maps-v1.4.0
+
+      - name: Install (builds pilot_core)
+        run: uv sync --locked
+
+      - name: Python vs Rust kernel equivalence
+        run: uv run python -m pilot.kernel_check
+
+      - name: Rust unit tests
+        working-directory: pilot_core
+        env:
+          PYO3_PYTHON: ${{ github.workspace }}/.venv/bin/python
+        run: cargo test
+
+  install-without-rust:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Cache Gym-Khana track maps
+        uses: actions/cache@v4
+        with:
+          path: ~/.gymkhana/maps
+          key: gymkhana-maps-v1.4.0
+
+      - name: Install without the Rust core
+        run: uv sync --locked --no-group rust
+
+      - name: A kernel-rust lap falls back to the Python loop
+        run: |
+          uv run --no-group rust python - <<'EOF'
+          import yaml
+          from pilot.closedloop import Track, Scenario, run_lap
+          cfg = yaml.safe_load(open("configs/pilot_st_pacejka_residual.yaml"))
+          assert cfg["kernel"] == "rust"
+          sm, _ = run_lap(Track(cfg), Scenario(2.0, 1.0, 0.0), 0.0, cfg, log=False)
+          print(sm["outcome"], sm["lap_time"])
+          assert sm["outcome"] == "completed", sm["outcome"]
+          EOF

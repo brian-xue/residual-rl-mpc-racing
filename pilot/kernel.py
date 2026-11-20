@@ -13,12 +13,36 @@ simulator's own bang-bang servo (``steering_angle``) stay on the Python loop.
 
 from __future__ import annotations
 
+import sys
+
 import numpy as np
 import shapely
 
 from .sim import ST_TIRE_PLANT, agent, plant_model
 
 KERNELS = ("python", "rust")
+_RUST: dict = {}
+
+
+def rust_available() -> bool:
+    """True if the optional Rust core is installed (``uv sync`` installs it; ``uv sync --no-group rust`` skips it).
+    Warns once per process when it is missing; ``LapSim`` then runs ``kernel: rust`` laps on the Python loop, which
+    gives bit-identical results."""
+    if "ok" not in _RUST:
+        try:
+            import pilot_core
+
+            # from the repository root the pilot_core/ source folder also imports (as an empty namespace package),
+            # so check for the compiled extension itself
+            ok = hasattr(pilot_core, "LapKernel")
+        except ImportError:
+            ok = False
+        _RUST["ok"] = ok
+        if not ok:  # printed, not warnings.warn: pilot.sim silences all warnings (gymkhana's)
+            print("warning: kernel: rust requested but pilot_core is not installed (needs a Rust toolchain and cmake; "
+                  "`uv sync` builds it). Falling back to the Python loop: same results, about 5x slower.",
+                  file=sys.stderr, flush=True)
+    return _RUST["ok"]
 
 
 def unsupported(sim) -> str | None:

@@ -95,5 +95,10 @@
       "gap_s_vs_nominal": NaN
     }
   ],
-  "runtime_s": 30.908951997756958
+  "lap_time_gif": {
+    "path": "results_st_pacejka/residual_dual/grid_from3/Austin/lap_time.gif",
+    "frames": 360,
+    "size_mb": 3.95
+  },
+  "runtime_s": 43.48946189880371
 }
