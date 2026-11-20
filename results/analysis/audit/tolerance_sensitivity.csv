@@ -1,0 +1,20 @@
+ctrl,1.03,1.05,1.07,1.1,inf
+P (std),0,0,0,0,0
+P+ff (std),0,0,0,0,0
+P-E (ell),4,4,4,4,4
+P-E+ff (ell),17,17,17,17,17
+RL δ,28,28,28,28,28
+RL δa,0,30,30,30,30
+RL δa+wall,0,40,40,40,40
+S-E,39,39,39,39,39
+[Austin only] C,0,0,0,0,0
+[Austin only] C+ff,0,0,0,0,0
+[Austin only] C-E,0,0,0,0,0
+[Austin only] C-E+ff,4,4,4,4,4
+[Austin only] P,0,0,0,0,0
+[Austin only] P+ff,0,0,0,0,0
+[Austin only] P-E,0,0,0,0,0
+[Austin only] P-E+ff,4,4,4,4,4
+[Austin only] S,4,4,4,4,4
+[Austin only] S+ff,2,2,2,2,2
+[Austin only] S-E+ff,4,4,4,4,4

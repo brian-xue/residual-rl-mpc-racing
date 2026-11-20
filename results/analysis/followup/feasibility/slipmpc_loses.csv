@@ -1,0 +1,10 @@
+track,a_lat,mu_scale,start_s,status,lap_id,fail_s,lap_time_ratio,status_SE,fail_s_SE,lap_time_ratio_SE,cls
+Austin,6.0,0.8,0.0,qualifying,66,,1.0378739953827607,wall_collision,151.00531775745762,,
+Austin,6.0,0.8,200.0,qualifying,74,,1.0378739953827607,wall_collision,151.38480544453355,,
+Austin,8.0,1.0,0.0,qualifying,98,,1.0359615220459717,wall_collision,55.18534872690515,,
+Austin,8.0,1.0,200.0,qualifying,106,,1.0357817300428398,wall_collision,286.1468117186297,,
+Austin,8.0,0.8,0.0,qualifying,114,,1.0393775701054773,wall_collision,55.158899753033914,,
+Austin,8.0,0.8,200.0,qualifying,122,,1.0393775701054773,wall_collision,286.1045073602201,,
+Spielberg,8.0,1.0,0.0,qualifying,242,,1.0326374869488173,wall_collision,42.016612097753054,,
+Spielberg,8.0,1.0,200.0,qualifying,250,,1.032408622257561,wall_collision,224.13499726352597,,
+Catalunya,8.0,1.0,0.0,qualifying,386,,1.0355543906703812,lateral_error,,1.0261093487999853,

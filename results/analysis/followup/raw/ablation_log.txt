@@ -1,0 +1,2 @@
+Austin straight-line bias: {'ckpt_1250000.zip': 0.014883821448586522, 'ckpt_2500000.zip': -0.006442043500756607} straights: [(0, 42), (196, 275)]
+1116 laps in 181 s

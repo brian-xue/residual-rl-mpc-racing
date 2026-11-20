@@ -1,0 +1,26 @@
+{
+ "cells":72,
+ "q_early":40,
+ "q_late":0,
+ "lost_total":40,
+ "lost_to_speed":34,
+ "lost_to_failure":6,
+ "gained":0,
+ "completed_early":44,
+ "completed_late":42,
+ "both_completed":38,
+ "dlap_both_mean":1.0110526316,
+ "ratio_early":1.0371018429,
+ "ratio_late":1.055255246,
+ "late_status":{
+  "speed_tolerance":42,
+  "wall_collision":26,
+  "spin":4
+ },
+ "early_status":{
+  "qualifying":40,
+  "wall_collision":23,
+  "spin":5,
+  "lateral_error":4
+ }
+}

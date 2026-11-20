@@ -1,0 +1,13 @@
+ctrl,ablation,qual,n,wall,spin,lat,slow,ratio
+delta,debias,30,72,16,26,0,0,1.0017
+delta,none,28,72,23,21,0,0,1.0016
+delta,zero_d,0,72,11,61,0,0,
+dual,debias,37,72,30,5,0,0,1.0385
+dual,none,30,72,38,4,0,0,1.0402
+dual,zero_a,24,72,37,11,0,0,1.0068
+dual,zero_d,6,72,34,32,0,0,1.0464
+wall,debias,40,72,23,5,4,0,1.0371
+wall,none,40,72,23,5,4,0,1.0371
+wall,wall_cap,46,72,18,4,4,0,1.0385
+wall,zero_a,34,72,26,12,0,0,1.0048
+wall,zero_d,6,72,31,35,0,0,1.0440

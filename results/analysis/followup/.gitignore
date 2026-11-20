@@ -1,0 +1,3 @@
+# Large regenerable files (ablate.py run, feasibility.py probe)
+raw/ablation_traces.csv.gz
+raw/probe_data.csv.gz

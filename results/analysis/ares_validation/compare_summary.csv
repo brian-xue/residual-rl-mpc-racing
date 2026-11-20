@@ -1,0 +1,6 @@
+group,cells,jointly_completed,dlap_mean,dlap_median,dlap_min,dlap_max
+all,72,38,0.230,0.275,-0.130,0.410
+1.25M/α=1 only,6,0,,,,
+2.5M/α=0.75 only,3,0,,,,
+both qualify,34,34,0.210,0.255,-0.130,0.410
+neither,29,4,0.395,0.395,0.380,0.410

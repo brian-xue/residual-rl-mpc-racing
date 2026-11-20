@@ -1,0 +1,15 @@
+output,group,delta,dual,wall
+accel,accel-plan preview,,0.1894,0.1022
+accel,curvature/plan preview,,0.4189,0.1164
+accel,previous residuals,,0.0878,0.0228
+accel,"steering (MPC, actual)",,0.0156,0.0063
+accel,tracking errors,,0.0637,0.0317
+accel,"vehicle state (v, r, β)",,0.0543,0.0259
+accel,wall gaps,,,0.2478
+steer,accel-plan preview,,0.1384,0.0672
+steer,curvature/plan preview,1.3049,0.9293,0.4944
+steer,previous residuals,0.0250,0.0192,0.0618
+steer,"steering (MPC, actual)",0.0646,0.0421,0.0122
+steer,tracking errors,0.1989,0.1268,0.1205
+steer,"vehicle state (v, r, β)",0.0754,0.0954,0.0476
+steer,wall gaps,,,0.1636

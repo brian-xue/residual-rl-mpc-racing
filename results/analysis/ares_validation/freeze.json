@@ -1,0 +1,44 @@
+{
+  "frozen_at": "2026-11-20T14:03:11",
+  "rule": "Per checkpoint, over all tested alpha (coarse + fine) on the 72 sweep cells only: maximise qualifying laps; ties -> more completed laps; remaining ties -> the alpha closest to the middle of the contiguous alpha range that is within 1 qualifying lap of the maximum (robustness). For 1.25M the best alpha < 1 under the same rule is also kept as a challenger. Reference settings evaluated alongside: 1.25M/alpha=1 (published baseline) and 2.5M/alpha=1.",
+  "data": "72 sweep cells",
+  "candidates": {
+    "1.25M best": {
+      "ck": "1.25M",
+      "alpha": 0.9,
+      "max_qualifying": 40,
+      "plateau": [
+        0.8,
+        1.0
+      ]
+    },
+    "2.5M best": {
+      "ck": "2.5M",
+      "alpha": 0.8,
+      "max_qualifying": 38,
+      "plateau": [
+        0.75,
+        0.85
+      ]
+    },
+    "1.25M best alpha<1": {
+      "ck": "1.25M",
+      "alpha": 0.85,
+      "max_qualifying": 40,
+      "plateau": [
+        0.8,
+        0.95
+      ]
+    }
+  },
+  "reference": [
+    {
+      "ck": "1.25M",
+      "alpha": 1.0
+    },
+    {
+      "ck": "2.5M",
+      "alpha": 1.0
+    }
+  ]
+}

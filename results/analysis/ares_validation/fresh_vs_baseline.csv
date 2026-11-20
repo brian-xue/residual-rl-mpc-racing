@@ -1,0 +1,6 @@
+setting,frozen_as,qualifying,baseline_qualifying,both,candidate_only,baseline_only,neither,completed,baseline_completed,crash,too_slow,ey_limit,completed_but_miss,paired_n,dlap_mean,dlap_median,dlap_min,dlap_max,q_high_demand,base_q_high_demand,q_routine,base_q_routine,q_within_0p5pt_of_5pct,q_within_2cm_of_ey
+1.25M/α=0.9,1.25M best,45,44,44,1,0,27,45,44,27,0,0,0,44,-0.212,-0.200,-0.270,-0.140,14,13,20,20,0,0
+2.5M/α=0.8,2.5M best,45,44,39,6,5,22,45,44,27,0,0,0,39,0.374,0.420,0.030,0.570,12,13,23,20,16,0
+1.25M/α=0.85,1.25M best alpha<1,44,44,43,1,1,27,44,44,28,0,0,0,43,-0.314,-0.300,-0.390,-0.220,13,13,20,20,0,0
+2.5M/α=0.75,2.5M alpha=0.75 (coarse pick),44,44,38,6,6,22,44,44,28,0,0,0,38,0.222,0.255,-0.130,0.420,12,13,22,20,2,0
+2.5M/α=1,2.5M alpha=1,0,44,0,0,44,28,47,44,25,47,0,47,40,1.009,1.095,0.710,1.210,0,13,0,20,0,0

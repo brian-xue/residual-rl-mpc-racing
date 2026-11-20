@@ -60,9 +60,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="configs/pilot.yaml")
     ap.add_argument("--steps", type=int, default=None)
+    ap.add_argument("--seed", type=int, default=None, help="override residual.ppo.seed (multi-seed runs)")
+    ap.add_argument("--out", default=None, help="override residual.out")
     args = ap.parse_args()
     cfg = yaml.safe_load(open(args.config))
     rc, pc = cfg["residual"], cfg["residual"]["ppo"]
+    if args.seed is not None:
+        pc["seed"] = args.seed
+    if args.out is not None:
+        rc["out"] = args.out
     out = pathlib.Path(rc["out"])
     out.mkdir(parents=True, exist_ok=True)
     steps = args.steps or pc["total_timesteps"]

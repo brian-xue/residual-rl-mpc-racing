@@ -131,13 +131,16 @@ class ResidualRacingEnv(gym.Env):
         self.n += 1
         w = rc["reward"]
         dprog = sim.progress - p0
-        rew = (w["progress"] * dprog / max(sim.vp * sim.Ts, 1e-3)
+        ratio = dprog / max(sim.vp * sim.Ts, 1e-3)  # progress relative to the speed plan this step
+        rew = (w["progress"] * ratio
                - w["e_y"] * sim.e_y**2
                - w["res"] * res**2
                - w["dres"] * (res - self.prev_res) ** 2
                - w["off_track"] * (sim.off_in_interval > 0))
         if self.ra_max > 0:  # dual channel: gentle acceleration-residual regularisation (size and chatter)
             rew -= w.get("ares", 0.0) * ares**2 + w.get("dares", 0.0) * (ares - self.prev_ares) ** 2
+        if w.get("slow", 0.0) > 0:  # opt-in: hinge on running slower than slow_ratio x plan (the lap-time rule is 1.05)
+            rew -= w["slow"] * max(w["slow_ratio"] - ratio, 0.0)
         if w.get("beta", 0.0) > 0:  # high sideslip, before it becomes a spin
             rew -= w["beta"] * max(abs(sim.st[6]) - w["beta_soft_rad"], 0.0) ** 2
         self.prev_res, self.prev_ares = res, ares

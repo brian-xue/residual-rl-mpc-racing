@@ -1,0 +1,9 @@
+ctrl,corner: front saturation (understeer),corner: insufficient correction (grip left),corner: rear saturation,low grip use: clearance / steering offset,rear saturation (spin)
+SE,0,18,7,0,8
+delta,0,11,3,9,21
+dual,1,0,2,35,4
+ff_ell,0,0,5,0,50
+ff_std,1,0,2,0,69
+nominal_ell,0,18,5,4,41
+nominal_std,0,8,1,2,61
+wall,0,23,4,0,5
