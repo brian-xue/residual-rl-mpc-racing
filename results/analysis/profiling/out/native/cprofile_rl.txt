@@ -1,0 +1,38 @@
+         19885830 function calls (18951651 primitive calls) in 10.348 seconds
+
+   Ordered by: internal time
+   List reduced from 16018 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     3281    2.669    0.001    2.669    0.001 {built-in method builtins.compile}
+    12141    1.083    0.000    1.083    0.000 {method 'plan_kinematic' of 'pilot_core.LapKernel' objects}
+    66882    0.362    0.000    0.514    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/numpy/lib/_index_tricks_impl.py:343(__getitem__)
+    82/81    0.321    0.004    0.321    0.004 {built-in method _imp.create_dynamic}
+14404/14398    0.191    0.000    0.336    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/llvmlite/binding/ffi.py:210(__call__)
+3171555/2782958    0.186    0.000    0.320    0.000 {built-in method builtins.isinstance}
+     2061    0.140    0.000    0.140    0.000 {method 'query_nearest' of 'shapely.lib.STRtree' objects}
+   194315    0.133    0.000    0.361    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py:1980(__setattr__)
+194256/12141    0.129    0.000    0.652    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py:2898(train)
+    12141    0.121    0.000    0.944    0.000 /Users/brian/dev/residual-rl-mpc-racing/pilot/residual_env.py:46(residual_obs)
+    12141    0.086    0.000    0.086    0.000 {method 'advance' of 'pilot_core.LapKernel' objects}
+  5479/54    0.085    0.000    4.586    0.085 {built-in method builtins.exec}
+   527140    0.082    0.000    0.100    0.000 {built-in method numpy.array}
+57919/56632    0.080    0.000    0.089    0.000 {built-in method __new__ of type object at 0x10559ba98}
+    36423    0.075    0.000    0.075    0.000 {built-in method torch._C._nn.linear}
+   376446    0.075    0.000    0.091    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py:2798(named_children)
+     2811    0.072    0.000    0.072    0.000 {method 'read' of '_io.BufferedReader' objects}
+    85007    0.069    0.000    0.069    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/numpy/_core/_methods.py:96(_clip)
+     5267    0.068    0.000    0.068    0.000 {built-in method io.open_code}
+   376446    0.065    0.000    0.156    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py:2789(children)
+        1    0.065    0.065    0.065    0.065 {built-in method scipy.ndimage._nd_image.euclidean_feature_transform}
+    25275    0.063    0.000    0.127    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/scipy/interpolate/_interpolate.py:788(__call__)
+     2783    0.055    0.000    0.129    0.000 /Users/brian/.local/share/uv/python/cpython-3.11.18-macos-aarch64-none/lib/python3.11/dataclasses.py:413(_create_fn)
+    12141    0.053    0.000    1.520    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/stable_baselines3/common/policies.py:331(predict)
+   194302    0.053    0.000    0.073    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/nn/parameter.py:21(__instancecheck__)
+97128/36423    0.051    0.000    0.268    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py:1791(_call_impl)
+   194293    0.048    0.000    0.067    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/nn/parameter.py:240(__instancecheck__)
+458531/458240    0.047    0.000    0.089    0.000 {built-in method builtins.getattr}
+117904/19275    0.045    0.000    0.062    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/numba/core/ir.py:321(_rec_list_vars)
+     7309    0.045    0.000    0.049    0.000 <frozen importlib._bootstrap>:179(_get_module_lock)
+
+

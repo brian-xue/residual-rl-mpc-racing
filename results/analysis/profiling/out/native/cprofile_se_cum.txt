@@ -1,0 +1,48 @@
+         19982050 function calls (19944840 primitive calls) in 11.856 seconds
+
+   Ordered by: cumulative time
+   List reduced from 3084 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000   11.856   11.856 /Users/brian/dev/residual-rl-mpc-racing/results/analysis/profiling/bench.py:811(loop_se)
+        3    0.000    0.000   10.472    3.491 /Users/brian/dev/residual-rl-mpc-racing/results/analysis/profiling/bench.py:139(one_lap)
+        3    0.005    0.002   10.472    3.491 /Users/brian/dev/residual-rl-mpc-racing/pilot/closedloop.py:467(run_lap)
+     3894    0.027    0.000    7.378    0.002 /Users/brian/dev/residual-rl-mpc-racing/pilot/closedloop.py:334(plan)
+     3894    0.470    0.000    7.278    0.002 /Users/brian/dev/residual-rl-mpc-racing/pilot/mpc.py:552(solve)
+    81774    1.045    0.000    3.533    0.000 /Users/brian/dev/residual-rl-mpc-racing/pilot/mpc.py:485(_disc)
+     3894    0.014    0.000    3.030    0.001 /Users/brian/dev/residual-rl-mpc-racing/pilot/closedloop.py:404(advance_interval)
+    19461    0.124    0.000    2.743    0.000 /Users/brian/dev/residual-rl-mpc-racing/pilot/closedloop.py:278(_physics)
+     3894    0.021    0.000    1.953    0.001 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/osqp/interface.py:403(solve)
+     3894    1.900    0.000    1.900    0.000 {built-in method osqp.ext_builtin.solve}
+    19464    0.080    0.000    1.533    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/gymkhana/envs/base_classes.py:519(step)
+   654192    1.043    0.000    1.484    0.000 /Users/brian/dev/residual-rl-mpc-racing/pilot/mpc.py:461(f)
+        1    0.000    0.000    1.384    1.384 /Users/brian/dev/residual-rl-mpc-racing/results/analysis/profiling/bench.py:121(lap_setup)
+    19464    0.103    0.000    1.203    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/gymkhana/envs/base_classes.py:301(update_pose)
+    21493    0.051    0.000    1.003    0.000 /Users/brian/dev/residual-rl-mpc-racing/pilot/geometry.py:118(check)
+    19461    0.116    0.000    0.831    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/gymkhana/envs/integrator.py:37(integrate)
+    81774    0.237    0.000    0.817    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/scipy/linalg/_matfuncs.py:234(expm)
+        1    0.004    0.004    0.750    0.750 /Users/brian/dev/residual-rl-mpc-racing/pilot/closedloop.py:44(__init__)
+    77844    0.031    0.000    0.714    0.000 /Users/brian/dev/residual-rl-mpc-racing/pilot/tires.py:130(vehicle_dynamics_st_tire)
+    77844    0.172    0.000    0.680    0.000 /Users/brian/dev/residual-rl-mpc-racing/pilot/tires.py:110(st_force_dynamics)
+        1    0.000    0.000    0.633    0.633 /Users/brian/dev/residual-rl-mpc-racing/results/analysis/rlana.py:46(load_cfg)
+7941/7811    0.004    0.000    0.624    0.000 <frozen importlib._bootstrap>:1165(_find_and_load)
+    133/7    0.000    0.000    0.618    0.088 <frozen importlib._bootstrap>:1120(_find_and_load_unlocked)
+    127/1    0.000    0.000    0.618    0.618 <frozen importlib._bootstrap>:666(_load_unlocked)
+    120/1    0.000    0.000    0.618    0.618 <frozen importlib._bootstrap_external>:934(exec_module)
+    425/9    0.000    0.000    0.617    0.069 <frozen importlib._bootstrap>:233(_call_with_frames_removed)
+    144/1    0.002    0.000    0.615    0.615 {built-in method builtins.exec}
+        1    0.000    0.000    0.615    0.615 /Users/brian/dev/residual-rl-mpc-racing/pilot/longitudinal.py:1(<module>)
+     3897    0.374    0.000    0.536    0.000 /Users/brian/dev/residual-rl-mpc-racing/pilot/mpc.py:512(_build)
+    21493    0.209    0.000    0.523    0.000 /Users/brian/dev/residual-rl-mpc-racing/pilot/geometry.py:95(footprints)
+   223/85    0.000    0.000    0.519    0.006 <frozen importlib._bootstrap>:1207(_handle_fromlist)
+    41/14    0.000    0.000    0.519    0.037 {built-in method builtins.__import__}
+        1    0.000    0.000    0.479    0.479 /Users/brian/dev/residual-rl-mpc-racing/pilot/sim.py:127(make_env)
+    84133    0.345    0.000    0.479    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/numpy/lib/_index_tricks_impl.py:343(__getitem__)
+        1    0.000    0.000    0.479    0.479 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/gymnasium/envs/registration.py:698(make)
+        1    0.000    0.000    0.479    0.479 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/gymkhana/envs/gymkhana_env.py:83(__init__)
+    77844    0.226    0.000    0.454    0.000 /Users/brian/dev/residual-rl-mpc-racing/pilot/tires.py:73(axle_forces)
+        1    0.000    0.000    0.449    0.449 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/matplotlib/pyplot.py:1(<module>)
+  1813045    0.359    0.000    0.401    0.000 {built-in method numpy.array}
+        2    0.007    0.004    0.388    0.194 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/gymkhana/envs/track/track.py:134(from_track_name)
+
+

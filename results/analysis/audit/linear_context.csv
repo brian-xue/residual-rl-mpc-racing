@@ -1,0 +1,9 @@
+run,track,qual,n,qualifying,wall_collision
+linear RL δ (results/residual),Austin,16,18,16,2.0
+linear RL δ (results/residual),Spielberg,14,18,14,4.0
+linear RL δ (results/residual),Catalunya,18,18,18,0.0
+linear RL δ (results/residual),Silverstone,13,18,13,5.0
+linear MPC+Kv²κ+RL (results/ff_residual),Austin,18,18,18,0.0
+linear MPC+Kv²κ+RL (results/ff_residual),Spielberg,18,18,18,0.0
+linear MPC+Kv²κ+RL (results/ff_residual),Catalunya,18,18,18,0.0
+linear MPC+Kv²κ+RL (results/ff_residual),Silverstone,18,18,18,0.0

@@ -1,0 +1,10 @@
+ctrl,rule,pick,q_Austin,q_heldout,q_all
+delta,published: val qual > progress > rms,ckpt_1250000.zip,10,18,28
+delta,val qual > rms (no progress tie-break),ckpt_2250000.zip,10,18,28
+delta,val + Austin sweep qual > rms,ckpt_2250000.zip,10,18,28
+dual,published: val qual > progress > rms,ckpt_1250000.zip,14,16,30
+dual,val qual > rms (no progress tie-break),ckpt_1750000.zip,14,24,38
+dual,val + Austin sweep qual > rms,ckpt_1750000.zip,14,24,38
+wall,published: val qual > progress > rms,ckpt_1250000.zip,14,26,40
+wall,val qual > rms (no progress tie-break),ckpt_1250000.zip,14,26,40
+wall,val + Austin sweep qual > rms,ckpt_1250000.zip,14,26,40

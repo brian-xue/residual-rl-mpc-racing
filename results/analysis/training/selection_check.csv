@@ -1,0 +1,4 @@
+ctrl,saved_csv_reproduced,selected,runner_up,tie_on_qual,progress_margin,sel_q_all,best_q_all,best_q_all_ckpt,best_q_heldout,best_q_heldout_ckpt,sel_q_heldout,spearman_val_vs_heldout,spearman_austin_vs_heldout
+delta,True,ckpt_1250000.zip,ckpt_2250000.zip,2,0.0002811589647476742,28,32,ckpt_1750000.zip,22,ckpt_1750000.zip,18,0.34618884438838876,0.6292912568626852
+dual,True,ckpt_1250000.zip,ckpt_1750000.zip,2,7.176782279083582e-05,30,52,final.zip,38,ckpt_2000000.zip,16,0.04872737367223956,-0.11879574702521213
+wall,True,ckpt_1250000.zip,ckpt_1500000.zip,1,,40,47,ckpt_1000000.zip,33,ckpt_1000000.zip,26,0.9295944002562916,0.9738608002684959

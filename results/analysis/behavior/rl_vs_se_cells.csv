@@ -1,0 +1,4 @@
+policy,both,rl_only,se_only,neither
+delta,26,2,13,31
+dual,19,11,20,22
+wall,31,9,8,24

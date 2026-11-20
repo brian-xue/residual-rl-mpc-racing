@@ -1,0 +1,48 @@
+         19885830 function calls (18951651 primitive calls) in 10.348 seconds
+
+   Ordered by: cumulative time
+   List reduced from 16018 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000   10.354   10.354 /Users/brian/dev/residual-rl-mpc-racing/results/analysis/profiling/bench.py:801(loop_rl)
+        9    0.000    0.000    8.274    0.919 /Users/brian/dev/residual-rl-mpc-racing/results/analysis/profiling/bench.py:139(one_lap)
+        9    0.015    0.002    8.274    0.919 /Users/brian/dev/residual-rl-mpc-racing/pilot/closedloop.py:467(run_lap)
+ 6575/408    0.008    0.000    4.684    0.011 <frozen importlib._bootstrap>:1165(_find_and_load)
+  2879/53    0.007    0.000    4.683    0.088 <frozen importlib._bootstrap>:1120(_find_and_load_unlocked)
+  2757/54    0.005    0.000    4.680    0.087 <frozen importlib._bootstrap>:666(_load_unlocked)
+  2644/54    0.003    0.000    4.680    0.087 <frozen importlib._bootstrap_external>:934(exec_module)
+  9024/90    0.003    0.000    4.677    0.052 <frozen importlib._bootstrap>:233(_call_with_frames_removed)
+  5479/54    0.085    0.000    4.586    0.085 {built-in method builtins.exec}
+  764/114    0.001    0.000    4.402    0.039 {built-in method builtins.__import__}
+13212/10867    0.007    0.000    3.950    0.000 <frozen importlib._bootstrap>:1207(_handle_fromlist)
+        9    0.000    0.000    3.139    0.349 /Users/brian/dev/residual-rl-mpc-racing/pilot/residual_env.py:175(__call__)
+        9    0.000    0.000    3.139    0.349 /Users/brian/dev/residual-rl-mpc-racing/pilot/residual_env.py:180(__init__)
+     2644    0.008    0.000    2.842    0.001 <frozen importlib._bootstrap_external>:1007(get_code)
+     2623    0.002    0.000    2.669    0.001 <frozen importlib._bootstrap_external>:999(source_to_code)
+     3281    2.669    0.001    2.669    0.001 {built-in method builtins.compile}
+    12141    0.029    0.000    2.551    0.000 /Users/brian/dev/residual-rl-mpc-racing/pilot/residual_env.py:193(__call__)
+        1    0.000    0.000    2.081    2.081 /Users/brian/dev/residual-rl-mpc-racing/results/analysis/profiling/bench.py:121(lap_setup)
+        1    0.000    0.000    1.786    1.786 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/stable_baselines3/common/base_class.py:642(load)
+        1    0.000    0.000    1.777    1.777 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/stable_baselines3/ppo/ppo.py:173(_setup_model)
+        1    0.000    0.000    1.777    1.777 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/stable_baselines3/common/on_policy_algorithm.py:115(_setup_model)
+        1    0.000    0.000    1.775    1.775 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/stable_baselines3/common/policies.py:448(__init__)
+        1    0.000    0.000    1.775    1.775 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/stable_baselines3/common/policies.py:585(_build)
+        2    0.000    0.000    1.774    0.887 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/_compile.py:42(inner)
+        1    0.000    0.000    1.773    1.773 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/optim/adam.py:36(__init__)
+        1    0.000    0.000    1.773    1.773 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/optim/optimizer.py:406(__init__)
+        1    0.000    0.000    1.773    1.773 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/_dynamo/__init__.py:1(<module>)
+        1    0.000    0.000    1.666    1.666 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/_dynamo/aot_compile.py:1(<module>)
+        1    0.000    0.000    1.659    1.659 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/_dynamo/convert_frame.py:1(<module>)
+        1    0.000    0.000    1.628    1.628 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/_dynamo/symbolic_convert.py:1(<module>)
+    12141    0.007    0.000    1.527    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/stable_baselines3/common/base_class.py:537(predict)
+    12141    0.053    0.000    1.520    0.000 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/stable_baselines3/common/policies.py:331(predict)
+        1    0.001    0.001    1.308    1.308 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/torch/__init__.py:1(<module>)
+        1    0.000    0.000    1.302    1.302 /Users/brian/dev/residual-rl-mpc-racing/pilot/closedloop.py:1(<module>)
+        9    0.000    0.000    1.293    0.144 /Users/brian/dev/residual-rl-mpc-racing/pilot/closedloop.py:152(__init__)
+        1    0.000    0.000    1.251    1.251 /Users/brian/dev/residual-rl-mpc-racing/pilot/geometry.py:1(<module>)
+        9    0.000    0.000    1.249    0.139 /Users/brian/dev/residual-rl-mpc-racing/pilot/sim.py:158(reset_to_state)
+        9    0.000    0.000    1.249    0.139 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/gymkhana/envs/gymkhana_env.py:1267(reset)
+        7    0.000    0.000    1.244    0.178 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/numba/core/dispatcher.py:342(_compile_for_args)
+    106/7    0.001    0.000    1.240    0.177 /Users/brian/dev/residual-rl-mpc-racing/.venv/lib/python3.11/site-packages/numba/core/dispatcher.py:873(compile)
+
+

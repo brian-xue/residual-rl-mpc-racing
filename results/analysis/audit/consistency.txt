@@ -1,0 +1,11 @@
+MISMATCH dual/Austin: report model results_st_pacejka/residual_dual/ckpt_1250000.zip vs rule ckpt_1750000.zip
+MISMATCH dual/Spielberg: report model results_st_pacejka/residual_dual/ckpt_1250000.zip vs rule ckpt_1750000.zip
+MISMATCH dual/Catalunya: report model results_st_pacejka/residual_dual/ckpt_1250000.zip vs rule ckpt_1750000.zip
+MISMATCH dual/Silverstone: report model results_st_pacejka/residual_dual/ckpt_1250000.zip vs rule ckpt_1750000.zip
+inventory: report models vs selection rule and config vs train_config checked (8/12 match)
+baselines (nominal/ff) in the dual and wall runs: identical on all tracks
+P-E (longitudinal/Austin) vs nominal in the dual run: statuses identical = True, max |Δ rms_ey| = 0.00e+00
+P (longitudinal/Austin) vs nominal in the δ run: statuses identical = True
+comparison_all_tracks.csv (wall run): 16/16 rows match the sweep counts
+status counts: every track x controller sums to 18 sweep laps
+fastest-lap levels recomputed from lap_time_grid.csv: 0 mismatches with lap_time_comparison.csv

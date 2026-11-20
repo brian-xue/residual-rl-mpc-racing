@@ -1,0 +1,186 @@
+ctrl,output,feature,group,sens
+delta,steer,e_y,tracking errors,0.02356
+delta,steer,e_psi,tracking errors,0.12614
+delta,steer,v,"vehicle state (v, r, β)",0.00934
+delta,steer,v-vp,"vehicle state (v, r, β)",0.00310
+delta,steer,r,"vehicle state (v, r, β)",0.01014
+delta,steer,beta,"vehicle state (v, r, β)",0.05281
+delta,steer,r-vκ,tracking errors,0.04925
+delta,steer,delta,"steering (MPC, actual)",0.02590
+delta,steer,d_mpc,"steering (MPC, actual)",0.03873
+delta,steer,prev_res,previous residuals,0.02496
+delta,steer,κ@0,curvature/plan preview,0.06419
+delta,steer,κ@0.15,curvature/plan preview,0.02172
+delta,steer,κ@0.3,curvature/plan preview,0.12972
+delta,steer,κ@0.5,curvature/plan preview,0.14595
+delta,steer,κ@0.75,curvature/plan preview,0.05362
+delta,steer,κ@1,curvature/plan preview,0.07677
+delta,steer,ay_plan@0,curvature/plan preview,0.08632
+delta,steer,ay_plan@0.15,curvature/plan preview,0.28688
+delta,steer,ay_plan@0.3,curvature/plan preview,0.24223
+delta,steer,ay_plan@0.5,curvature/plan preview,0.03242
+delta,steer,ay_plan@0.75,curvature/plan preview,0.05583
+delta,steer,ay_plan@1,curvature/plan preview,0.10922
+delta,steer_perm,curvature/plan preview,curvature/plan preview,0.44480
+delta,steer_perm,previous residuals,previous residuals,0.03167
+delta,steer_perm,"steering (MPC, actual)","steering (MPC, actual)",0.04158
+delta,steer_perm,tracking errors,tracking errors,0.10838
+delta,steer_perm,"vehicle state (v, r, β)","vehicle state (v, r, β)",0.04594
+dual,steer,e_y,tracking errors,0.01451
+dual,steer,e_psi,tracking errors,0.08807
+dual,steer,v,"vehicle state (v, r, β)",0.03838
+dual,steer,v-vp,"vehicle state (v, r, β)",0.01533
+dual,steer,r,"vehicle state (v, r, β)",0.00707
+dual,steer,beta,"vehicle state (v, r, β)",0.03460
+dual,steer,r-vκ,tracking errors,0.02425
+dual,steer,delta,"steering (MPC, actual)",0.01256
+dual,steer,d_mpc,"steering (MPC, actual)",0.02959
+dual,steer,prev_res,previous residuals,0.01265
+dual,steer,κ@0,curvature/plan preview,0.01574
+dual,steer,κ@0.15,curvature/plan preview,0.03170
+dual,steer,κ@0.3,curvature/plan preview,0.04929
+dual,steer,κ@0.5,curvature/plan preview,0.13422
+dual,steer,κ@0.75,curvature/plan preview,0.05613
+dual,steer,κ@1,curvature/plan preview,0.01089
+dual,steer,ay_plan@0,curvature/plan preview,0.12540
+dual,steer,ay_plan@0.15,curvature/plan preview,0.24579
+dual,steer,ay_plan@0.3,curvature/plan preview,0.14842
+dual,steer,ay_plan@0.5,curvature/plan preview,0.01296
+dual,steer,ay_plan@0.75,curvature/plan preview,0.00755
+dual,steer,ay_plan@1,curvature/plan preview,0.09126
+dual,steer,prev_ares,previous residuals,0.00654
+dual,steer,a_plan@0,accel-plan preview,0.01886
+dual,steer,a_plan@0.15,accel-plan preview,0.01792
+dual,steer,a_plan@0.3,accel-plan preview,0.02439
+dual,steer,a_plan@0.5,accel-plan preview,0.03035
+dual,steer,a_plan@0.75,accel-plan preview,0.03039
+dual,steer,a_plan@1,accel-plan preview,0.01648
+dual,accel,e_y,tracking errors,0.02977
+dual,accel,e_psi,tracking errors,0.01603
+dual,accel,v,"vehicle state (v, r, β)",0.01115
+dual,accel,v-vp,"vehicle state (v, r, β)",0.01251
+dual,accel,r,"vehicle state (v, r, β)",0.00875
+dual,accel,beta,"vehicle state (v, r, β)",0.02184
+dual,accel,r-vκ,tracking errors,0.01787
+dual,accel,delta,"steering (MPC, actual)",0.00445
+dual,accel,d_mpc,"steering (MPC, actual)",0.01111
+dual,accel,prev_res,previous residuals,0.02729
+dual,accel,κ@0,curvature/plan preview,0.02772
+dual,accel,κ@0.15,curvature/plan preview,0.03720
+dual,accel,κ@0.3,curvature/plan preview,0.01523
+dual,accel,κ@0.5,curvature/plan preview,0.01465
+dual,accel,κ@0.75,curvature/plan preview,0.05780
+dual,accel,κ@1,curvature/plan preview,0.01455
+dual,accel,ay_plan@0,curvature/plan preview,0.02275
+dual,accel,ay_plan@0.15,curvature/plan preview,0.04846
+dual,accel,ay_plan@0.3,curvature/plan preview,0.04498
+dual,accel,ay_plan@0.5,curvature/plan preview,0.04942
+dual,accel,ay_plan@0.75,curvature/plan preview,0.01918
+dual,accel,ay_plan@1,curvature/plan preview,0.06694
+dual,accel,prev_ares,previous residuals,0.06053
+dual,accel,a_plan@0,accel-plan preview,0.04420
+dual,accel,a_plan@0.15,accel-plan preview,0.02241
+dual,accel,a_plan@0.3,accel-plan preview,0.04106
+dual,accel,a_plan@0.5,accel-plan preview,0.05626
+dual,accel,a_plan@0.75,accel-plan preview,0.01171
+dual,accel,a_plan@1,accel-plan preview,0.01374
+dual,steer_perm,accel-plan preview,accel-plan preview,0.04943
+dual,accel_perm,accel-plan preview,accel-plan preview,0.06903
+dual,steer_perm,curvature/plan preview,curvature/plan preview,0.35511
+dual,accel_perm,curvature/plan preview,curvature/plan preview,0.18939
+dual,steer_perm,previous residuals,previous residuals,0.01420
+dual,accel_perm,previous residuals,previous residuals,0.05944
+dual,steer_perm,"steering (MPC, actual)","steering (MPC, actual)",0.03016
+dual,accel_perm,"steering (MPC, actual)","steering (MPC, actual)",0.01203
+dual,steer_perm,tracking errors,tracking errors,0.09906
+dual,accel_perm,tracking errors,tracking errors,0.03813
+dual,steer_perm,"vehicle state (v, r, β)","vehicle state (v, r, β)",0.06413
+dual,accel_perm,"vehicle state (v, r, β)","vehicle state (v, r, β)",0.02451
+wall,steer,e_y,tracking errors,0.05222
+wall,steer,e_psi,tracking errors,0.03910
+wall,steer,v,"vehicle state (v, r, β)",0.00752
+wall,steer,v-vp,"vehicle state (v, r, β)",0.00144
+wall,steer,r,"vehicle state (v, r, β)",0.00904
+wall,steer,beta,"vehicle state (v, r, β)",0.02957
+wall,steer,r-vκ,tracking errors,0.02919
+wall,steer,delta,"steering (MPC, actual)",0.00993
+wall,steer,d_mpc,"steering (MPC, actual)",0.00222
+wall,steer,prev_res,previous residuals,0.05345
+wall,steer,κ@0,curvature/plan preview,0.01349
+wall,steer,κ@0.15,curvature/plan preview,0.01717
+wall,steer,κ@0.3,curvature/plan preview,0.03753
+wall,steer,κ@0.5,curvature/plan preview,0.04087
+wall,steer,κ@0.75,curvature/plan preview,0.01108
+wall,steer,κ@1,curvature/plan preview,0.02649
+wall,steer,ay_plan@0,curvature/plan preview,0.08553
+wall,steer,ay_plan@0.15,curvature/plan preview,0.10932
+wall,steer,ay_plan@0.3,curvature/plan preview,0.08308
+wall,steer,ay_plan@0.5,curvature/plan preview,0.03129
+wall,steer,ay_plan@0.75,curvature/plan preview,0.01296
+wall,steer,ay_plan@1,curvature/plan preview,0.02558
+wall,steer,prev_ares,previous residuals,0.00839
+wall,steer,a_plan@0,accel-plan preview,0.01159
+wall,steer,a_plan@0.15,accel-plan preview,0.01279
+wall,steer,a_plan@0.3,accel-plan preview,0.00667
+wall,steer,a_plan@0.5,accel-plan preview,0.00890
+wall,steer,a_plan@0.75,accel-plan preview,0.00752
+wall,steer,a_plan@1,accel-plan preview,0.01971
+wall,steer,gapL@0,wall gaps,0.01584
+wall,steer,gapL@0.25,wall gaps,0.03440
+wall,steer,gapL@0.5,wall gaps,0.02929
+wall,steer,gapL@1,wall gaps,0.01963
+wall,steer,gapR@0,wall gaps,0.01150
+wall,steer,gapR@0.25,wall gaps,0.01522
+wall,steer,gapR@0.5,wall gaps,0.01763
+wall,steer,gapR@1,wall gaps,0.02009
+wall,accel,e_y,tracking errors,0.01321
+wall,accel,e_psi,tracking errors,0.01113
+wall,accel,v,"vehicle state (v, r, β)",0.00323
+wall,accel,v-vp,"vehicle state (v, r, β)",0.00132
+wall,accel,r,"vehicle state (v, r, β)",0.00469
+wall,accel,beta,"vehicle state (v, r, β)",0.01667
+wall,accel,r-vκ,tracking errors,0.00733
+wall,accel,delta,"steering (MPC, actual)",0.00403
+wall,accel,d_mpc,"steering (MPC, actual)",0.00225
+wall,accel,prev_res,previous residuals,0.00952
+wall,accel,κ@0,curvature/plan preview,0.00653
+wall,accel,κ@0.15,curvature/plan preview,0.00859
+wall,accel,κ@0.3,curvature/plan preview,0.00555
+wall,accel,κ@0.5,curvature/plan preview,0.00733
+wall,accel,κ@0.75,curvature/plan preview,0.00477
+wall,accel,κ@1,curvature/plan preview,0.00890
+wall,accel,ay_plan@0,curvature/plan preview,0.01372
+wall,accel,ay_plan@0.15,curvature/plan preview,0.01450
+wall,accel,ay_plan@0.3,curvature/plan preview,0.01147
+wall,accel,ay_plan@0.5,curvature/plan preview,0.00521
+wall,accel,ay_plan@0.75,curvature/plan preview,0.00295
+wall,accel,ay_plan@1,curvature/plan preview,0.02694
+wall,accel,prev_ares,previous residuals,0.01326
+wall,accel,a_plan@0,accel-plan preview,0.01429
+wall,accel,a_plan@0.15,accel-plan preview,0.01171
+wall,accel,a_plan@0.3,accel-plan preview,0.01253
+wall,accel,a_plan@0.5,accel-plan preview,0.00704
+wall,accel,a_plan@0.75,accel-plan preview,0.00941
+wall,accel,a_plan@1,accel-plan preview,0.04724
+wall,accel,gapL@0,wall gaps,0.00693
+wall,accel,gapL@0.25,wall gaps,0.03323
+wall,accel,gapL@0.5,wall gaps,0.02118
+wall,accel,gapL@1,wall gaps,0.02067
+wall,accel,gapR@0,wall gaps,0.01884
+wall,accel,gapR@0.25,wall gaps,0.04254
+wall,accel,gapR@0.5,wall gaps,0.05136
+wall,accel,gapR@1,wall gaps,0.05306
+wall,steer_perm,accel-plan preview,accel-plan preview,0.03377
+wall,accel_perm,accel-plan preview,accel-plan preview,0.05410
+wall,steer_perm,curvature/plan preview,curvature/plan preview,0.26164
+wall,accel_perm,curvature/plan preview,curvature/plan preview,0.05356
+wall,steer_perm,previous residuals,previous residuals,0.06199
+wall,accel_perm,previous residuals,previous residuals,0.02144
+wall,steer_perm,"steering (MPC, actual)","steering (MPC, actual)",0.00980
+wall,accel_perm,"steering (MPC, actual)","steering (MPC, actual)",0.00508
+wall,steer_perm,tracking errors,tracking errors,0.07507
+wall,accel_perm,tracking errors,tracking errors,0.02146
+wall,steer_perm,"vehicle state (v, r, β)","vehicle state (v, r, β)",0.03675
+wall,accel_perm,"vehicle state (v, r, β)","vehicle state (v, r, β)",0.02373
+wall,steer_perm,wall gaps,wall gaps,0.05779
+wall,accel_perm,wall gaps,wall gaps,0.07939

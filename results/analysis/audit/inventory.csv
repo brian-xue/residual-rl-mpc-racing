@@ -1,0 +1,21 @@
+exp,label,config,train_config_identical,track,report_model,selected_by_rule,model_matches_rule,ckpt_sha,ckpt_in_git,n_ckpts_on_disk,top_ties,tie_margin_progress,base_K,accel_r_max,ellipse_plan,K_ff,lap_grid_min
+delta,MPC + RL (δ),configs/pilot_st_pacejka_residual.yaml,True,Austin,results_st_pacejka/residual/ckpt_1250000.zip,ckpt_1250000.zip,True,c79b01c460ed,True,13.0,2.0,0.000300000000000078,0.0,,,0.03,
+delta,MPC + RL (δ),configs/pilot_st_pacejka_residual.yaml,True,Spielberg,results_st_pacejka/residual/ckpt_1250000.zip,ckpt_1250000.zip,True,c79b01c460ed,True,13.0,2.0,0.000300000000000078,0.0,,,0.03,
+delta,MPC + RL (δ),configs/pilot_st_pacejka_residual.yaml,True,Catalunya,results_st_pacejka/residual/ckpt_1250000.zip,ckpt_1250000.zip,True,c79b01c460ed,True,13.0,2.0,0.000300000000000078,0.0,,,0.03,
+delta,MPC + RL (δ),configs/pilot_st_pacejka_residual.yaml,True,Silverstone,results_st_pacejka/residual/ckpt_1250000.zip,ckpt_1250000.zip,True,c79b01c460ed,True,13.0,2.0,0.000300000000000078,0.0,,,0.03,
+dual,"MPC + RL (δ, a)",configs/pilot_st_pacejka_residual_dual.yaml,True,Austin,results_st_pacejka/residual_dual/ckpt_1250000.zip,ckpt_1750000.zip,False,4563f91b7154,False,13.0,2.0,0.0,0.0,2.0,True,0.03,
+dual,"MPC + RL (δ, a)",configs/pilot_st_pacejka_residual_dual.yaml,True,Spielberg,results_st_pacejka/residual_dual/ckpt_1250000.zip,ckpt_1750000.zip,False,4563f91b7154,False,13.0,2.0,0.0,0.0,2.0,True,0.03,
+dual,"MPC + RL (δ, a)",configs/pilot_st_pacejka_residual_dual.yaml,True,Catalunya,results_st_pacejka/residual_dual/ckpt_1250000.zip,ckpt_1750000.zip,False,4563f91b7154,False,13.0,2.0,0.0,0.0,2.0,True,0.03,
+dual,"MPC + RL (δ, a)",configs/pilot_st_pacejka_residual_dual.yaml,True,Silverstone,results_st_pacejka/residual_dual/ckpt_1250000.zip,ckpt_1750000.zip,False,4563f91b7154,False,13.0,2.0,0.0,0.0,2.0,True,0.03,
+dual_from3,"MPC + RL (δ, a)",configs/pilot_st_pacejka_residual_dual.yaml,,Austin,results_st_pacejka/residual_dual/ckpt_1250000.zip,,,,,,,,,,True,,3.0
+dual_from3,"MPC + RL (δ, a)",configs/pilot_st_pacejka_residual_dual.yaml,,Spielberg,results_st_pacejka/residual_dual/ckpt_1250000.zip,,,,,,,,,,True,,3.0
+dual_from3,"MPC + RL (δ, a)",configs/pilot_st_pacejka_residual_dual.yaml,,Catalunya,results_st_pacejka/residual_dual/ckpt_1250000.zip,,,,,,,,,,True,,3.0
+dual_from3,"MPC + RL (δ, a)",configs/pilot_st_pacejka_residual_dual.yaml,,Silverstone,results_st_pacejka/residual_dual/ckpt_1250000.zip,,,,,,,,,,True,,3.0
+wall,"MPC + RL (δ, a) + wall",configs/pilot_st_pacejka_residual_dual_wall.yaml,True,Austin,results_st_pacejka/residual_dual_wall/ckpt_1250000.zip,ckpt_1250000.zip,True,b36d19bcf892,True,13.0,1.0,,0.0,2.0,True,0.03,
+wall,"MPC + RL (δ, a) + wall",configs/pilot_st_pacejka_residual_dual_wall.yaml,True,Spielberg,results_st_pacejka/residual_dual_wall/ckpt_1250000.zip,ckpt_1250000.zip,True,b36d19bcf892,True,13.0,1.0,,0.0,2.0,True,0.03,
+wall,"MPC + RL (δ, a) + wall",configs/pilot_st_pacejka_residual_dual_wall.yaml,True,Catalunya,results_st_pacejka/residual_dual_wall/ckpt_1250000.zip,ckpt_1250000.zip,True,b36d19bcf892,True,13.0,1.0,,0.0,2.0,True,0.03,
+wall,"MPC + RL (δ, a) + wall",configs/pilot_st_pacejka_residual_dual_wall.yaml,True,Silverstone,results_st_pacejka/residual_dual_wall/ckpt_1250000.zip,ckpt_1250000.zip,True,b36d19bcf892,True,13.0,1.0,,0.0,2.0,True,0.03,
+wall_from3,"MPC + RL (δ, a) + wall",configs/pilot_st_pacejka_residual_dual_wall.yaml,,Austin,results_st_pacejka/residual_dual_wall/ckpt_1250000.zip,,,,,,,,,,True,,3.0
+wall_from3,"MPC + RL (δ, a) + wall",configs/pilot_st_pacejka_residual_dual_wall.yaml,,Spielberg,results_st_pacejka/residual_dual_wall/ckpt_1250000.zip,,,,,,,,,,True,,3.0
+wall_from3,"MPC + RL (δ, a) + wall",configs/pilot_st_pacejka_residual_dual_wall.yaml,,Catalunya,results_st_pacejka/residual_dual_wall/ckpt_1250000.zip,,,,,,,,,,True,,3.0
+wall_from3,"MPC + RL (δ, a) + wall",configs/pilot_st_pacejka_residual_dual_wall.yaml,,Silverstone,results_st_pacejka/residual_dual_wall/ckpt_1250000.zip,,,,,,,,,,True,,3.0

@@ -1,0 +1,130 @@
+track,ctrl,mu_scale,qual,n,spin,wall,slow
+Austin,P (std),0.6,0,6,6,0,0
+Austin,P (std),0.8,0,6,6,0,0
+Austin,P (std),1.0,0,6,5,1,0
+Austin,P+ff (std),0.6,0,6,6,0,0
+Austin,P+ff (std),0.8,0,6,6,0,0
+Austin,P+ff (std),1.0,0,6,5,1,0
+Austin,P-E (ell),0.6,0,6,6,0,0
+Austin,P-E (ell),0.8,0,6,4,2,0
+Austin,P-E (ell),1.0,0,6,1,5,0
+Austin,P-E+ff (ell),0.6,0,6,6,0,0
+Austin,P-E+ff (ell),0.8,2,6,4,0,0
+Austin,P-E+ff (ell),1.0,2,6,3,1,0
+Austin,RL δ,0.6,2,6,4,0,0
+Austin,RL δ,0.8,4,6,2,0,0
+Austin,RL δ,1.0,4,6,0,2,0
+Austin,RL δa,0.6,2,6,1,3,0
+Austin,RL δa,0.8,6,6,0,0,0
+Austin,RL δa,1.0,6,6,0,0,0
+Austin,RL δa+wall,0.6,2,6,1,3,0
+Austin,RL δa+wall,0.8,6,6,0,0,0
+Austin,RL δa+wall,1.0,6,6,0,0,0
+Austin,S-E,0.6,2,6,3,1,0
+Austin,S-E,0.8,2,6,0,4,0
+Austin,S-E,1.0,4,6,0,2,0
+Austin,[Austin only] C,0.6,0,6,6,0,0
+Austin,[Austin only] C,0.8,0,6,6,0,0
+Austin,[Austin only] C,1.0,0,6,5,1,0
+Austin,[Austin only] C+ff,0.6,0,6,6,0,0
+Austin,[Austin only] C+ff,0.8,0,6,6,0,0
+Austin,[Austin only] C+ff,1.0,0,6,6,0,0
+Austin,[Austin only] C-E,0.6,0,6,5,1,0
+Austin,[Austin only] C-E,0.8,0,6,4,2,0
+Austin,[Austin only] C-E,1.0,0,6,1,5,0
+Austin,[Austin only] C-E+ff,0.6,0,6,6,0,0
+Austin,[Austin only] C-E+ff,0.8,2,6,4,0,0
+Austin,[Austin only] C-E+ff,1.0,2,6,3,1,0
+Austin,[Austin only] P,0.6,0,6,6,0,0
+Austin,[Austin only] P,0.8,0,6,6,0,0
+Austin,[Austin only] P,1.0,0,6,5,1,0
+Austin,[Austin only] P+ff,0.6,0,6,6,0,0
+Austin,[Austin only] P+ff,0.8,0,6,6,0,0
+Austin,[Austin only] P+ff,1.0,0,6,5,1,0
+Austin,[Austin only] P-E,0.6,0,6,6,0,0
+Austin,[Austin only] P-E,0.8,0,6,4,2,0
+Austin,[Austin only] P-E,1.0,0,6,1,5,0
+Austin,[Austin only] P-E+ff,0.6,0,6,6,0,0
+Austin,[Austin only] P-E+ff,0.8,2,6,4,0,0
+Austin,[Austin only] P-E+ff,1.0,2,6,3,1,0
+Austin,[Austin only] S,0.6,0,6,6,0,0
+Austin,[Austin only] S,0.8,2,6,0,4,0
+Austin,[Austin only] S,1.0,2,6,0,4,0
+Austin,[Austin only] S+ff,0.6,0,6,6,0,0
+Austin,[Austin only] S+ff,0.8,0,6,6,0,0
+Austin,[Austin only] S+ff,1.0,2,6,4,0,0
+Austin,[Austin only] S-E+ff,0.6,0,6,6,0,0
+Austin,[Austin only] S-E+ff,0.8,2,6,4,0,0
+Austin,[Austin only] S-E+ff,1.0,2,6,1,1,0
+Catalunya,P (std),0.6,0,6,6,0,0
+Catalunya,P (std),0.8,0,6,6,0,0
+Catalunya,P (std),1.0,0,6,6,0,0
+Catalunya,P+ff (std),0.6,0,6,6,0,0
+Catalunya,P+ff (std),0.8,0,6,6,0,0
+Catalunya,P+ff (std),1.0,0,6,6,0,0
+Catalunya,P-E (ell),0.6,0,6,5,1,0
+Catalunya,P-E (ell),0.8,0,6,6,0,0
+Catalunya,P-E (ell),1.0,4,6,2,0,0
+Catalunya,P-E+ff (ell),0.6,0,6,6,0,0
+Catalunya,P-E+ff (ell),0.8,2,6,4,0,0
+Catalunya,P-E+ff (ell),1.0,2,6,4,0,0
+Catalunya,RL δ,0.6,2,6,4,0,0
+Catalunya,RL δ,0.8,4,6,2,0,0
+Catalunya,RL δ,1.0,4,6,1,1,0
+Catalunya,RL δa,0.6,4,6,2,0,0
+Catalunya,RL δa,0.8,6,6,0,0,0
+Catalunya,RL δa,1.0,6,6,0,0,0
+Catalunya,RL δa+wall,0.6,2,6,2,0,0
+Catalunya,RL δa+wall,0.8,4,6,0,0,0
+Catalunya,RL δa+wall,1.0,6,6,0,0,0
+Catalunya,S-E,0.6,2,6,2,2,0
+Catalunya,S-E,0.8,4,6,0,2,0
+Catalunya,S-E,1.0,5,6,0,0,0
+Silverstone,P (std),0.6,0,6,4,2,0
+Silverstone,P (std),0.8,0,6,3,3,0
+Silverstone,P (std),1.0,0,6,3,3,0
+Silverstone,P+ff (std),0.6,0,6,4,2,0
+Silverstone,P+ff (std),0.8,0,6,6,0,0
+Silverstone,P+ff (std),1.0,0,6,6,0,0
+Silverstone,P-E (ell),0.6,0,6,3,3,0
+Silverstone,P-E (ell),0.8,0,6,3,3,0
+Silverstone,P-E (ell),1.0,0,6,2,4,0
+Silverstone,P-E+ff (ell),0.6,0,6,6,0,0
+Silverstone,P-E+ff (ell),0.8,0,6,6,0,0
+Silverstone,P-E+ff (ell),1.0,2,6,4,0,0
+Silverstone,RL δ,0.6,0,6,3,3,0
+Silverstone,RL δ,0.8,2,6,2,2,0
+Silverstone,RL δ,1.0,2,6,0,4,0
+Silverstone,RL δa,0.6,0,6,0,6,0
+Silverstone,RL δa,0.8,0,6,0,6,0
+Silverstone,RL δa,1.0,0,6,0,6,0
+Silverstone,RL δa+wall,0.6,2,6,1,3,0
+Silverstone,RL δa+wall,0.8,2,6,0,4,0
+Silverstone,RL δa+wall,1.0,4,6,0,2,0
+Silverstone,S-E,0.6,2,6,2,2,0
+Silverstone,S-E,0.8,4,6,0,2,0
+Silverstone,S-E,1.0,4,6,0,2,0
+Spielberg,P (std),0.6,0,6,6,0,0
+Spielberg,P (std),0.8,0,6,6,0,0
+Spielberg,P (std),1.0,0,6,4,2,0
+Spielberg,P+ff (std),0.6,0,6,6,0,0
+Spielberg,P+ff (std),0.8,0,6,6,0,0
+Spielberg,P+ff (std),1.0,0,6,6,0,0
+Spielberg,P-E (ell),0.6,0,6,6,0,0
+Spielberg,P-E (ell),0.8,0,6,3,3,0
+Spielberg,P-E (ell),1.0,0,6,0,6,0
+Spielberg,P-E+ff (ell),0.6,1,6,5,0,0
+Spielberg,P-E+ff (ell),0.8,2,6,2,2,0
+Spielberg,P-E+ff (ell),1.0,4,6,0,2,0
+Spielberg,RL δ,0.6,0,6,2,4,0
+Spielberg,RL δ,0.8,2,6,1,3,0
+Spielberg,RL δ,1.0,2,6,0,4,0
+Spielberg,RL δa,0.6,0,6,1,5,0
+Spielberg,RL δa,0.8,0,6,0,6,0
+Spielberg,RL δa,1.0,0,6,0,6,0
+Spielberg,RL δa+wall,0.6,0,6,1,5,0
+Spielberg,RL δa+wall,0.8,2,6,0,4,0
+Spielberg,RL δa+wall,1.0,4,6,0,2,0
+Spielberg,S-E,0.6,2,6,1,3,0
+Spielberg,S-E,0.8,4,6,0,2,0
+Spielberg,S-E,1.0,4,6,0,2,0
