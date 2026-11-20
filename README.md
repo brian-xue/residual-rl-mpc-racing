@@ -115,6 +115,65 @@ Rows without ff for P-E, C and C-E are in `lap_time_comparison.csv`. They are sl
 - **Solve time:** S/S-E solves (OSQP, Python) take about 1 ms typically, but p99 reaches 18 / 39 ms and the maximum 82 ms (one S-E lap). That exceeds the 50 ms period. The simulation does not model computation time, so results are unaffected, but a real-time implementation needs a faster solver or warm-started real-time iterations.
 - **The ellipse metric is noisy:** `ellipse_max` (measured at 100 Hz) includes transients.
 
+## MPC + RL residual (`configs/pilot_st_pacejka_residual.yaml`)
+
+This is the residual-RL setup of the linear-tire study, retrained on the Pacejka plant:
+- a PPO policy adds a steering correction to the kinematic MPC, `δ = clip(δ_MPC + 0.2·π(obs))`;
+- the observation contains no arc length and no true μ;
+- unchanged from the linear-tire study: reward, PPO settings, training distribution (a_lat 3–9, μ/μ₀ 0.5–1.05, random starts), standard speed plan, checkpoint-selection rule and evaluation protocol.
+
+The config differs from `pilot_st_pacejka.yaml` only in `kernel: rust` and `residual.out`. The selected checkpoint (`ckpt_1250000`) was chosen on Austin validation laps and evaluated unchanged on three held-out tracks.
+
+```bash
+C=configs/pilot_st_pacejka_residual.yaml
+uv run python -m pilot.train_residual --config $C                     # 3M steps: 5.5 min with kernel: rust (8 workers, M4)
+uv run python -m pilot.eval_residual  --config $C                     # Austin: selection, sweep, fastest laps, GIF: 2 min
+uv run python -m pilot.eval_residual  --config $C --track Spielberg \
+    --model results_st_pacejka/residual/ckpt_1250000.zip --out results_st_pacejka/residual/heldout/Spielberg --no-gif
+```
+
+The whole chain (training, Austin and three held-out tracks) took 10 minutes. On linear ST and the old Python loop, training alone took 55 minutes.
+
+![MPC + RL on Pacejka](results_st_pacejka/residual/lap_time_comparison.png)
+
+**Fastest qualifying lap** (seconds, with its a_lat level; nominal = kinematic MPC, ff = MPC + K·v²·κ with K = 0.03):
+
+| Track | Controller | μ/μ₀ = 1.0 | μ/μ₀ = 0.8 | μ/μ₀ = 0.6 | Sweep qualifying (of 18) |
+| --- | --- | --- | --- | --- | --- |
+| Austin (training) | Nominal MPC | 78.18 (2.0) | 78.18 (2.0) | 100.63 (1.0) | 0 |
+| | MPC + Kv²κ | 64.82 (3.5) | 77.65 (2.0) | 86.07 (1.5) | 0 |
+| | **MPC + RL** | **55.60 (7.0)** | **57.16 (6.0)** | **62.83 (4.0)** | **10** |
+| | *Slip-aware MPC S / S-E (above)* | *58.00 / 58.71* | *59.27 / 59.88* | *65.13 / 62.94* | *4 / 8* |
+| Spielberg | Nominal / Kv²κ | 55.24 / 47.94 | 55.24 / 49.58 | 60.00 / 59.80 | 0 / 0 |
+| | **MPC + RL** | **45.99 (4.5)** | **46.92 (4.0)** | **49.72 (3.0)** | **4** |
+| Catalunya | Nominal / Kv²κ | 67.78 / 63.56 | 72.95 / 67.27 | 80.94 / 72.53 | 0 / 0 |
+| | **MPC + RL** | **53.12 (7.0)** | **54.37 (6.0)** | **59.07 (4.0)** | **10** |
+| Silverstone | Nominal / Kv²κ | 76.83 / 71.13 | 85.05 / 76.43 | 99.57 / 84.72 | 0 / 0 |
+| | **MPC + RL** | **61.01 (5.0)** | **62.08 (4.5)** | **65.34 (3.5)** | **4** |
+
+**Findings**
+
+- **MPC + RL is the best controller on every track and friction level.**
+  - Nominal MPC and MPC + Kv²κ qualify none of the 72 sweep laps across the four tracks; MPC + RL qualifies 28.
+  - Against the faster of the two baselines, its best lap is 9.2–23.2 s faster per lap on the training track and 2.0–19.4 s on held-out tracks.
+  - The largest gains are at μ/μ₀ 0.6, where the baselines fall back to a_lat 1–2.
+- **It also beats the slip-aware MPC on Austin**, with no model of slip or grip:
+  - faster at μ/μ₀ 1.0 and 0.8 (55.60 vs 58.00 s; 57.16 vs 59.27 s);
+  - level at 0.6 (62.83 vs 62.94 s);
+  - more qualifying sweep laps (10 vs 8).
+
+  The slip-aware MPC was not run on the held-out tracks.
+- **It learns to prevent the turn-in spin.** On Austin the residual cuts sweep spins from 17 to 6. Mean |residual| is 0.046 rad, and max |e_y| on qualifying laps is ≤ 0.23 m. The rest of its failures are at grip-limited cells (a_lat 6–8 at low μ).
+- **Held-out failures are mostly walls, not spins.** Spielberg has 11 wall collisions and 3 spins; Silverstone 9 and 5. This is the same "runs wide" pattern seen with linear tires on these two tracks.
+
+**Caveats**
+
+- One training seed.
+- **Checkpoint selection was close:** `ckpt_1250000` and `ckpt_2250000` tied on qualifying validation laps (3 of 4), and the tie was broken by a 0.0003 difference in mean progress.
+- **The training crash rate stays at 40–65%,** because many randomised cells (high a_lat, low μ) ask for more grip than the tires have, and no steering correction can save them.
+- **Same K and MPC weights as linear ST:** K = 0.03 and the steering MPC weights were not retuned for this plant.
+- **Different speed plans:** the slip-aware MPC comparison mixes speed plans. MPC + RL runs on the standard plan; S-E on the friction-ellipse plan.
+
 ## Speed: Rust core (`kernel: rust`)
 
 With `kernel: rust` in a config, the per-physics-step loop of `LapSim` and the kinematic steering MPC run in Rust (`pilot_core/`). That covers:
@@ -162,5 +221,6 @@ The two methods agree to 6e-16 relative. Rerunning the results above therefore m
 | `pilot/reference.py` | Reference line, standard and friction-ellipse speed plans, Frenet projection |
 | `pilot/longitudinal.py` | Controller comparison: sweep, fastest-lap search, chart |
 | `configs/pilot_st_pacejka.yaml` | This plant's config; `longitudinal.slip_mpc` holds the slip-aware MPC settings |
+| `configs/pilot_st_pacejka_residual.yaml` | MPC + RL residual on this plant (`kernel: rust`, output `results_st_pacejka/residual/`) |
 
 The remaining modules (pilot pipeline, residual RL, held-out evaluation, dynamic-model reference) are described in [README-simple-st-tire.md](README-simple-st-tire.md). `pilot.reference_lap` is not available for this plant, because its privileged model is linear ST.

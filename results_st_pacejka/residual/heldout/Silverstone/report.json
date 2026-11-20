@@ -1,0 +1,96 @@
+{
+  "track": "Silverstone",
+  "K_ff": 0.03,
+  "r_max": 0.2,
+  "base_K": 0.0,
+  "model": "results_st_pacejka/residual/ckpt_1250000.zip",
+  "controllers": {
+    "nominal": "Nominal MPC",
+    "ff": "MPC + K v\u00b2 \u03ba",
+    "residual": "MPC + RL residual"
+  },
+  "sweep_qualifying": {
+    "ff": 0,
+    "nominal": 0,
+    "residual": 4
+  },
+  "trace_cell": [
+    4.0,
+    0.8
+  ],
+  "lap_time_comparison": [
+    {
+      "mu_scale": 1.0,
+      "controller": "nominal",
+      "best_a_lat": 2.0,
+      "lap_time": 76.8300000000024,
+      "max_ey": 0.11124549104956034,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "ff",
+      "best_a_lat": 2.5,
+      "lap_time": 71.12999999999948,
+      "max_ey": 0.16371462288845323,
+      "gap_s_vs_nominal": 5.700000000002916
+    },
+    {
+      "mu_scale": 1.0,
+      "controller": "residual",
+      "best_a_lat": 5.0,
+      "lap_time": 61.00999999999643,
+      "max_ey": 0.20182049769753874,
+      "gap_s_vs_nominal": 15.820000000005969
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "nominal",
+      "best_a_lat": 1.5,
+      "lap_time": 85.0500000000066,
+      "max_ey": 0.08862615316930944,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "ff",
+      "best_a_lat": 2.0,
+      "lap_time": 76.4300000000022,
+      "max_ey": 0.19520043057094588,
+      "gap_s_vs_nominal": 8.62000000000441
+    },
+    {
+      "mu_scale": 0.8,
+      "controller": "residual",
+      "best_a_lat": 4.5,
+      "lap_time": 62.07999999999622,
+      "max_ey": 0.18063681288968073,
+      "gap_s_vs_nominal": 22.970000000010387
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "nominal",
+      "best_a_lat": 1.0,
+      "lap_time": 99.57000000001403,
+      "max_ey": 0.0663992585938314,
+      "gap_s_vs_nominal": 0.0
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "ff",
+      "best_a_lat": 1.5,
+      "lap_time": 84.72000000000644,
+      "max_ey": 0.0913171178581531,
+      "gap_s_vs_nominal": 14.850000000007597
+    },
+    {
+      "mu_scale": 0.6,
+      "controller": "residual",
+      "best_a_lat": 3.5,
+      "lap_time": 65.33999999999652,
+      "max_ey": 0.13109409424466756,
+      "gap_s_vs_nominal": 34.23000000001751
+    }
+  ],
+  "runtime_s": 44.873109102249146
+}
