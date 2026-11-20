@@ -10,6 +10,78 @@ use osqp_sys as ffi;
 
 use crate::numerics::sin;
 
+/// Kinematic error model of ``KinematicMPC._f``: ``(e_y', e_psi')`` at ``(e_y, e_psi, steering d)``.
+///
+/// Closed-form ZOH requirement (checked by [`zoh_stage`] on every stage): e_y' and e_psi' must not depend on
+/// e_y, and e_psi' must not depend on e_psi.
+pub fn kinematic_error_model(
+    lr: f64,
+    l: f64,
+    v: f64,
+    kappa: f64,
+) -> impl Fn(f64, f64, f64) -> (f64, f64) {
+    move |_ey: f64, epsi: f64, d: f64| {
+        let b = (lr / l * d.tan()).atan();
+        (v * sin(epsi + b), v * b.cos() * d.tan() / l - v * kappa)
+    }
+}
+
+/// One stage of the closed-form ZOH: the entries of ``I + M Ts + (M Ts)^2 / 2`` that are not 0 or 1.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ZohStage {
+    /// ``Ad[0, 1]``
+    pub a_t: f64,
+    /// ``Ad[0, 2] = Bd[0]``
+    pub g0: f64,
+    /// ``Ad[1, 2] = Bd[1]``
+    pub b1_t: f64,
+    /// ``cd[0]``
+    pub w0: f64,
+    /// ``cd[1]``
+    pub c1_t: f64,
+}
+
+#[inline]
+fn same(a: f64, b: f64) -> bool {
+    a == b || (a.is_nan() && b.is_nan()) // np.array_equal(..., equal_nan=True)
+}
+
+/// Closed-form ZOH of the model ``f`` linearised at ``(0, e1, d_r)`` (forward differences, step ``h``) over ``t``,
+/// as ``KinematicMPC._discretize_many``.
+///
+/// With ``M = [[Ac, Bc, cc], [0, 0, 0, 0], [0, 0, 0, 0]]``, ``expm(M t) = I + M t + (M t)^2 / 2`` holds exactly
+/// only when ``M^3 = 0``, i.e. when ``Ac`` is strictly upper triangular: d e_y'/d e_y = d e_psi'/d e_y =
+/// d e_psi'/d e_psi = 0. Those three derivatives are evaluated here and the function panics if any is not
+/// exactly zero (a changed model needs a general matrix exponential instead).
+#[inline]
+pub fn zoh_stage(
+    f: impl Fn(f64, f64, f64) -> (f64, f64),
+    e1: f64,
+    d_r: f64,
+    h: f64,
+    t: f64,
+) -> ZohStage {
+    let f0 = f(0.0, e1, d_r);
+    let fe = f(h, e1, d_r);
+    let fp = f(0.0, e1 + h, d_r);
+    let fd = f(0.0, e1, d_r + h);
+    assert!(
+        same(fe.0, f0.0) && same(fe.1, f0.1) && same(fp.1, f0.1),
+        "kinematic error model depends on e_y, or e_psi' on e_psi: M is not nilpotent, the closed-form ZOH is invalid"
+    );
+    let a = (fp.0 - f0.0) / h;
+    let (b0, b1) = ((fd.0 - f0.0) / h, (fd.1 - f0.1) / h);
+    let (c0, c1) = (f0.0 - a * e1 - b0 * d_r, f0.1 - b1 * d_r);
+    let (a_t, b0_t, b1_t, c0_t, c1_t) = (a * t, b0 * t, b1 * t, c0 * t, c1 * t);
+    ZohStage {
+        a_t,
+        g0: b0_t + a_t * b1_t / 2.0,
+        b1_t,
+        w0: c0_t + a_t * c1_t / 2.0,
+        c1_t,
+    }
+}
+
 /// ``np.maximum(a, b)`` for float64: ``a`` if ``a >= b`` or ``a`` is NaN, else ``b``.
 #[inline]
 fn np_maximum(a: f64, b: f64) -> f64 {
@@ -153,21 +225,16 @@ impl KinematicQp {
         for k in 0..n {
             let v = np_maximum(v_seq[k], 0.5);
             let kappa = kappa_seq[k];
-            let f = |epsi: f64, d: f64| -> (f64, f64) {
-                let b = self.beta(d);
-                (v * sin(epsi + b), v * b.cos() * d.tan() / l - v * kappa)
-            };
+            let f = kinematic_error_model(self.lr, l, v, kappa);
             let d_r = (l * kappa).atan();
             let e1 = -self.beta(d_r);
-            let f0 = f(e1, d_r);
-            let fp = f(e1 + h, d_r);
-            let fd = f(e1, d_r + h);
-            let a = (fp.0 - f0.0) / h;
-            let (b0, b1) = ((fd.0 - f0.0) / h, (fd.1 - f0.1) / h);
-            let (c0, c1) = (f0.0 - a * e1 - b0 * d_r, f0.1 - b1 * d_r);
-            let (a_t, b0_t, b1_t, c0_t, c1_t) = (a * t, b0 * t, b1 * t, c0 * t, c1 * t);
-            let g0 = b0_t + a_t * b1_t / 2.0;
-            let w0 = c0_t + a_t * c1_t / 2.0;
+            let ZohStage {
+                a_t,
+                g0,
+                b1_t,
+                w0,
+                c1_t,
+            } = zoh_stage(&f, e1, d_r, h, t);
             ad[k * 9..k * 9 + 9].copy_from_slice(&[1.0, a_t, g0, 0.0, 1.0, b1_t, 0.0, 0.0, 1.0]);
             bd[k * 3..k * 3 + 3].copy_from_slice(&[g0, b1_t, 1.0]);
             cd[k * 3..k * 3 + 3].copy_from_slice(&[w0, c1_t, 0.0]);
@@ -310,5 +377,129 @@ pub fn osqp_version() -> String {
         std::ffi::CStr::from_ptr(ffi::osqp_version())
             .to_string_lossy()
             .into_owned()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    type M4 = [[f64; 4]; 4];
+
+    fn mul(a: &M4, b: &M4) -> M4 {
+        let mut c = [[0.0; 4]; 4];
+        for i in 0..4 {
+            for j in 0..4 {
+                for k in 0..4 {
+                    c[i][j] += a[i][k] * b[k][j];
+                }
+            }
+        }
+        c
+    }
+
+    /// exp(M) by its Taylor series (40 terms; ||M|| is small here).
+    fn expm_taylor(m: &M4) -> M4 {
+        let mut e = [[0.0; 4]; 4];
+        let mut term = [[0.0; 4]; 4];
+        for i in 0..4 {
+            e[i][i] = 1.0;
+            term[i][i] = 1.0;
+        }
+        for k in 1..40 {
+            term = mul(&term, m);
+            for row in term.iter_mut() {
+                for x in row.iter_mut() {
+                    *x /= k as f64;
+                }
+            }
+            for i in 0..4 {
+                for j in 0..4 {
+                    e[i][j] += term[i][j];
+                }
+            }
+        }
+        e
+    }
+
+    /// Full augmented matrix M t from forward differences of ``f``, with every Jacobian column (including the
+    /// ones the closed form assumes zero).
+    fn full_m(f: &impl Fn(f64, f64, f64) -> (f64, f64), e1: f64, d_r: f64, h: f64, t: f64) -> M4 {
+        let f0 = f(0.0, e1, d_r);
+        let col = |g: (f64, f64)| [(g.0 - f0.0) / h, (g.1 - f0.1) / h];
+        let (ce, cp, cd) = (
+            col(f(h, e1, d_r)),
+            col(f(0.0, e1 + h, d_r)),
+            col(f(0.0, e1, d_r + h)),
+        );
+        let mut m = [[0.0; 4]; 4];
+        let f0v = [f0.0, f0.1];
+        for i in 0..2 {
+            m[i] = [
+                ce[i] * t,
+                cp[i] * t,
+                cd[i] * t,
+                (f0v[i] - cp[i] * e1 - cd[i] * d_r) * t,
+            ];
+        }
+        m
+    }
+
+    fn cases() -> Vec<(f64, f64)> {
+        let mut out = Vec::new();
+        for &v in &[0.5, 2.0, 5.0, 8.0, 15.0] {
+            for &kappa in &[-1.5, -0.3, -0.01, 0.0, 0.004, 0.2, 1.2] {
+                out.push((v, kappa));
+            }
+        }
+        out
+    }
+
+    #[test]
+    fn model_gives_nilpotent_m_and_closed_form_matches_exponential() {
+        let (lr, l, h, t) = (0.17145, 0.3302, 1e-6, 0.05);
+        for (v, kappa) in cases() {
+            let f = kinematic_error_model(lr, l, v, kappa);
+            let d_r = (l * kappa).atan();
+            let e1 = -(lr / l * d_r.tan()).atan();
+            let m = full_m(&f, e1, d_r, h, t);
+            let m3 = mul(&mul(&m, &m), &m);
+            assert!(
+                m3.iter().flatten().all(|&x| x == 0.0),
+                "M^3 != 0 for v={v}, kappa={kappa}"
+            );
+            let e = expm_taylor(&m);
+            let z = zoh_stage(&f, e1, d_r, h, t);
+            let got = [z.a_t, z.g0, z.b1_t, z.w0, z.c1_t];
+            let want = [e[0][1], e[0][2], e[1][2], e[0][3], e[1][3]];
+            for (g, w) in got.iter().zip(want) {
+                assert!(
+                    (g - w).abs() <= 1e-14 * w.abs().max(1.0),
+                    "v={v} kappa={kappa}: {g} vs {w}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "not nilpotent")]
+    fn guard_rejects_e_psi_dependence_of_e_psi_rate() {
+        let base = kinematic_error_model(0.17145, 0.3302, 5.0, 0.1);
+        let f = move |ey: f64, epsi: f64, d: f64| {
+            let (a, b) = base(ey, epsi, d);
+            (a, b - 0.5 * epsi) // e.g. a heading-error damping term
+        };
+        zoh_stage(&f, -0.05, 0.03, 1e-6, 0.05);
+    }
+
+    #[test]
+    #[should_panic(expected = "not nilpotent")]
+    fn guard_rejects_e_y_dependence() {
+        let base = kinematic_error_model(0.17145, 0.3302, 5.0, 0.1);
+        let f = move |ey: f64, epsi: f64, d: f64| {
+            let (a, b) = base(ey, epsi, d);
+            (a - 0.2 * ey, b)
+        };
+        zoh_stage(&f, -0.05, 0.03, 1e-6, 0.05);
     }
 }

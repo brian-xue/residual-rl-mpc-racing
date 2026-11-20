@@ -36,28 +36,40 @@ class KinematicMPC:
         return np.arctan(self.lr / self.L * np.tan(d))
 
     def _f(self, ey, epsi, d, v, kappa):
+        """Kinematic error model (e_y', e_psi'), element-wise over arrays. The only model definition: the
+        discretisation linearises it, and ``pilot_core/src/mpc.rs`` (``kinematic_error_model``) mirrors it.
+
+        Closed-form ZOH requirement (see ``_discretize_many``): e_y' and e_psi' must not depend on e_y, and e_psi'
+        must not depend on e_psi. ``_discretize_many`` raises if a change to this model breaks that."""
         b = self._beta(d)
-        return np.array([v * np.sin(epsi + b), v * np.cos(b) * np.tan(d) / self.L - v * kappa])
+        return v * np.sin(epsi + b), v * np.cos(b) * np.tan(d) / self.L - v * kappa
 
     def _discretize_many(self, v, kappa):
         """Exact ZOH of the Jacobian linearisation at (0, -beta_r, delta_r) for every stage at once.
 
         v, kappa: (n,) arrays. Returns Ad (n, 3, 3), Bd (n, 3), cd (n, 3), e_psi_ref (n,). The Jacobian comes from
-        forward differences (h = 1e-6). The error model does not depend on e_y, and e_psi' does not depend on
-        e_psi, so the augmented matrix M = [[0, a, b0, c0], [0, 0, b1, c1], 0, 0] is nilpotent (M^3 = 0) and
+        forward differences (h = 1e-6) of ``_f``.
+
+        Closed form, and the assumption it rests on: with state (e_y, e_psi) and augmented input (delta, 1),
+        M = [[Ac, Bc, cc], [0, 0, 0, 0], [0, 0, 0, 0]]. If Ac is strictly upper triangular,
+        Ac = [[0, a], [0, 0]], i.e. d e_y'/d e_y = d e_psi'/d e_y = d e_psi'/d e_psi = 0, then M^3 = 0 and
         expm(M Ts) = I + M Ts + (M Ts)^2 / 2 exactly. That closed form is used (it agrees with scipy's Pade expm
-        to ~6e-16 relative); ``pilot_core.KinematicQP`` mirrors it bit for bit."""
+        to ~6e-16 relative); ``pilot_core.KinematicQP`` mirrors it bit for bit. The three assumed-zero
+        derivatives are evaluated on every call and a ValueError is raised if any is not exactly zero (a
+        changed model then needs a general discretisation, e.g. ``scipy.linalg.expm`` of M). Checked
+        against expm by ``python -m pilot.kernel_check``."""
         v, kappa = np.asarray(v, dtype=float), np.asarray(kappa, dtype=float)
         n, L, h, T = len(v), self.L, 1e-6, self.Ts
-
-        def f(epsi, d):
-            b = self._beta(d)
-            return v * np.sin(epsi + b), v * np.cos(b) * np.tan(d) / L - v * kappa
-
         d_r = np.arctan(L * kappa)
         e1 = -self._beta(d_r)  # e0 = (0, e1)
-        f0, fp, fd = f(e1, d_r), f(e1 + h, d_r), f(e1, d_r + h)
-        a = (fp[0] - f0[0]) / h  # d e_y' / d e_psi (d e_psi' / d e_psi = (fp[1] - f0[1]) / h is exactly 0)
+        f0 = self._f(0.0, e1, d_r, v, kappa)
+        fe, fp, fd = self._f(h, e1, d_r, v, kappa), self._f(0.0, e1 + h, d_r, v, kappa), self._f(0.0, e1, d_r + h, v, kappa)
+        # guard: the closed form drops d/d e_y (both rows) and d e_psi'/d e_psi, so they must be exactly zero
+        if not (np.array_equal(fe[0], f0[0], equal_nan=True) and np.array_equal(fe[1], f0[1], equal_nan=True)
+                and np.array_equal(fp[1], f0[1], equal_nan=True)):
+            raise ValueError("KinematicMPC._f now depends on e_y, or e_psi' depends on e_psi: M is no longer "
+                             "nilpotent and the closed-form ZOH in _discretize_many (and pilot_core) is invalid")
+        a = (fp[0] - f0[0]) / h  # d e_y' / d e_psi, the only nonzero entry of Ac
         b0, b1 = (fd[0] - f0[0]) / h, (fd[1] - f0[1]) / h  # d / d delta
         c0, c1 = f0[0] - a * e1 - b0 * d_r, f0[1] - b1 * d_r  # f0 - Ac e0 - Bc d_r
         aT, b0T, b1T, c0T, c1T = a * T, b0 * T, b1 * T, c0 * T, c1 * T

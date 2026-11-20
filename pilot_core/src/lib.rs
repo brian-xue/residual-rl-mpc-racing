@@ -410,7 +410,11 @@ fn osqp_version() -> String {
     mpc::osqp_version()
 }
 
-type Arrays3<'py> = (Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>);
+type Arrays3<'py> = (
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+);
 
 type Sync<'py> = (
     bool,

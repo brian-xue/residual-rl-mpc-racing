@@ -29,8 +29,10 @@ macOS arm64 that needs:
 * Python modulo / `max` / `min` and `np.clip` comparison orders; expressions in Python's evaluation order;
 * OSQP: the same C version as the `osqp` wheel (1.0.0), set up and updated with the same calls
   (`osqp_update_data_vec(q, l, u)`, then `osqp_update_data_mat(A_x)`), settings and CSC arrays. The MPC
-  discretisation is the exact closed form `I + M Ts + (M Ts)^2 / 2` (M is nilpotent) in both languages, so no
-  LAPACK / scipy `expm` has to be reproduced.
+  discretisation is the exact closed form `I + M Ts + (M Ts)^2 / 2` in both languages, so no LAPACK / scipy
+  `expm` has to be reproduced. It needs M^3 = 0 (the error model independent of e_y, e_psi' independent of
+  e_psi): `mpc::zoh_stage` evaluates those derivatives and panics if they are nonzero, and `cargo test` checks
+  M^3 = 0 and the closed form against a series exponential.
 
 Other platforms (a different libm) may need the same checks repeated.
 

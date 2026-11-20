@@ -143,7 +143,11 @@ The Python-loop gains apply to both kernels:
 
 A 3M-step residual training run is estimated to take about 6 min with the Rust kernel, against 43–55 min before; this was not timed end to end.
 
-**MPC discretisation.** `KinematicMPC` now uses `I + M·Ts + (M·Ts)²/2` instead of scipy's `expm`. This is exact: the error model's augmented matrix M is nilpotent. The two agree to 6e-16 relative. Rerunning the results above therefore matches to rounding, not bit for bit: on the checked laps, outcomes and lap times are identical and traces differ by ≤ 1e-11. `SlipMPC` is unchanged.
+**MPC discretisation.** `KinematicMPC` now uses `I + M·Ts + (M·Ts)²/2` instead of scipy's `expm`. This is exact only while M³ = 0, i.e. while the error model (`KinematicMPC._f`) has e_y′ and e_ψ′ independent of e_y and e_ψ′ independent of e_ψ.
+- **Guard:** both implementations evaluate those three derivatives on every solve and fail loudly (`ValueError` in Python, a panic in Rust) if any is nonzero. A changed model then needs a general `expm`.
+- **Checks:** `kernel_check` compares the closed form with scipy `expm` of the full M on 500 random horizons (4e-16), confirms M³ = 0 exactly, and confirms the guard fires on a model with e_ψ-dependent e_ψ′. `cargo test` in `pilot_core` covers the same on the Rust side.
+
+The two methods agree to 6e-16 relative. Rerunning the results above therefore matches to rounding, not bit for bit: on the checked laps, outcomes and lap times are identical and traces differ by ≤ 1e-11. `SlipMPC` is unchanged.
 
 ## Code
 
