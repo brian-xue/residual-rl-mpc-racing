@@ -89,8 +89,16 @@ class ResidualRacingEnv(gym.Env):
         self.ra_max = float(rc.get("accel_r_max", 0.0))  # > 0: dual channel (steering + acceleration residual)
         self.wall_obs = bool(rc.get("obs_wall_clearance", False))  # side-wall gaps in the observation
         self.K = rc.get("base_K", 0.0)
-        self.track = Track(cfg)
-        self._env = make_env(cfg["track"], 1.0, cfg["steer_mode"], cfg["dt"], max_steps=10**9)
+        # training tracks (residual.tracks, default: the config's track). One Track + simulator env per track,
+        # built once; with several tracks each episode draws one uniformly (episodes have a fixed length, so this
+        # gives about equal samples per track). A single track draws nothing extra from the rng.
+        self.track_names = list(rc.get("tracks") or [cfg["track"]])
+        self._tracks = {}
+        for name in self.track_names:
+            tc = {**cfg, "track": name}
+            self._tracks[name] = (tc, Track(tc), make_env(name, 1.0, cfg["steer_mode"], cfg["dt"], max_steps=10**9))
+        self.track_name = self.track_names[0]
+        self.track_cfg, self.track, self._env = self._tracks[self.track_name]
         self.obs_dim = obs_dim(self.ra_max, self.wall_obs)
         self.observation_space = spaces.Box(-5.0, 5.0, (self.obs_dim,), np.float32)
         self.action_space = spaces.Box(-1.0, 1.0, (2 if self.ra_max > 0 else 1,), np.float32)
@@ -104,6 +112,11 @@ class ResidualRacingEnv(gym.Env):
         if seed is not None:
             self._rng = np.random.default_rng(seed)
         rng, rc, opt = self._rng, self.rc, options or {}
+        if "track" in opt:
+            self.track_name = opt["track"]
+        elif len(self.track_names) > 1:
+            self.track_name = self.track_names[int(rng.integers(len(self.track_names)))]
+        self.track_cfg, self.track, self._env = self._tracks[self.track_name]
         scn = Scenario(
             a_lat=float(opt.get("a_lat", rng.choice(self.a_lat_levels))),
             mu_scale=float(opt.get("mu_scale", rng.uniform(*rc["mu_range"]))),
@@ -111,12 +124,12 @@ class ResidualRacingEnv(gym.Env):
         )
         ey0 = rng.uniform(-1, 1) * rc["init_ey_m"]
         epsi0 = rng.uniform(-1, 1) * rc["init_epsi_rad"]
-        self.sim = LapSim(self.track, scn, self.K, self.cfg, log=False, env=self._env, ey0=ey0, epsi0=epsi0,
+        self.sim = LapSim(self.track, scn, self.K, self.track_cfg, log=False, env=self._env, ey0=ey0, epsi0=epsi0,
                           steady_init=True)
         self.prev_res = self.prev_ares = 0.0
         self.n = 0
         self.sim.plan()
-        return self._obs(0.0, 0.0), {"a_lat": scn.a_lat, "mu_scale": scn.mu_scale}
+        return self._obs(0.0, 0.0), {"a_lat": scn.a_lat, "mu_scale": scn.mu_scale, "track": self.track_name}
 
     def _obs(self, res, ares):
         return residual_obs(self.sim, res, self.r_max, ares, self.ra_max, self.wall_obs)
@@ -157,6 +170,7 @@ class ResidualRacingEnv(gym.Env):
             truncated = True
         if terminated or truncated:
             info["outcome"] = sim.outcome or "running"
+            info["track"] = self.track_name
             obs = np.zeros(self.obs_dim, np.float32) if sim.outcome == "wall_collision" else self._obs(res, ares)
             return obs, float(rew), terminated, truncated, info
         sim.plan()
