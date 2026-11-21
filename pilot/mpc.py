@@ -424,6 +424,8 @@ class SlipMPC:
         self.n_soft = 4 + n_f  # +-alpha_f, +-alpha_r, facets
         self.m = self.n_eq + 3 * N + 2 * N + self.n_soft * N + N
         self.solver, self.guess, self._mask = None, None, None
+        self.alpha_scale = (1.0, 1.0)  # (front, rear) multipliers on alpha_f_max / alpha_r_max, see set_limit_scale
+        self.speed_scale = 1.0  # multiplier on the speed reference, see set_speed_scale
         # cost (constant): block per stage, course error couples e_psi and beta
         rows, cols, vals = [], [], []
         for k in range(1, N + 1):
@@ -451,6 +453,20 @@ class SlipMPC:
 
     def _e(self, k):  # slack of z_{k+1}, k = 0..N-1
         return self.NZ * self.N + self.NU * self.N + k
+
+    def set_limit_scale(self, front: float = 1.0, rear: float = 1.0):
+        """Scale the soft slip-angle limits for the following solves (no solver rebuild: only the bounds change).
+
+        The plant keeps mu0's small-slip stiffness and lowers only the peak force with mu, so the Pacejka peak slip
+        angle scales with mu/mu0. A friction estimate therefore belongs in the limits, not in the (linear) model.
+        (1, 1) gives the published SlipMPC bit for bit (x * 1.0 == x)."""
+        self.alpha_scale = (float(front), float(rear))
+
+    def set_speed_scale(self, scale: float = 1.0):
+        """Track ``scale`` x the planned speed for the following solves: v_ref -> scale v_ref and, since the plan's
+        acceleration is v dv/ds, a_ref -> scale^2 a_ref. Only the cost and the linearisation guess change. 1.0 leaves
+        the references untouched (the published SlipMPC). The lap-time rule still compares against the unscaled plan."""
+        self.speed_scale = float(scale)
 
     # ------------------------------------------------------------------ model
     def _loads(self, a):
@@ -554,6 +570,10 @@ class SlipMPC:
         """One MPC step. The measured state is propagated by ``tau`` (actuator delay) with the model.
         Returns (delta_cmd, a_cmd, ok, solve_time_s, pred) with pred the (N, 7) predicted z."""
         N, Ts, nz, w = self.N, self.Ts, self.NZ, self.w
+        if self.speed_scale != 1.0:
+            sv, v_ref_plan, a_ref_plan = self.speed_scale, v_ref_at, a_ref_at
+            v_ref_at = lambda s: sv * v_ref_plan(s)  # noqa: E731
+            a_ref_at = lambda s: sv * sv * a_ref_plan(s)  # noqa: E731
         x0 = np.array([e_y, e_psi, beta, r, v], float)
         if tau > 0:
             x0 = self.predict(x0, (delta_prev, a_prev), float(kappa_at(s0)), tau)
@@ -590,13 +610,14 @@ class SlipMPC:
         hi = [beq, np.ravel([[self.s_max, self._a_upper(g[k, 4]), 1e9] for k in range(N)]),
               np.tile([self.du_max, w["da_max"]], N)]
         soft_hi = []
+        af_max, ar_max = w["alpha_f_max"] * self.alpha_scale[0], w["alpha_r_max"] * self.alpha_scale[1]
         for k in range(N):
             vb, rb = max(g[k, 4], 0.5), g[k, 3]
             # r/v ~ r/vb - rb v/vb^2 + rb/vb: constant parts alpha_f -= lf rb/vb, alpha_r += lr rb/vb, so
             # sgn alpha <= alpha_max becomes sgn (row z) <= alpha_max - sgn * const
             cf, cr = self.p["lf"] * rb / vb, self.p["lr"] * rb / vb
             for sgn in (1.0, -1.0):
-                soft_hi += [w["alpha_f_max"] + sgn * cf, w["alpha_r_max"] - sgn * cr]
+                soft_hi += [af_max + sgn * cf, ar_max - sgn * cr]
             if self.ell:
                 ay = self.ell["ay_max"]
                 soft_hi += [1.0 + s / ay * kap_p[k + 1] * vb**2 for s in self._fs]

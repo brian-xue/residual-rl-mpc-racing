@@ -1,0 +1,25 @@
+{
+ "kernel": "rust",
+ "cells": 72,
+ "unmatched_rows": 0,
+ "status_mismatch": 0,
+ "max_abs_diff": {
+  "progress_m": 4.9176705658737774e-05,
+  "lap_time": 3.723243935382925e-12,
+  "rms_ey": 4.983786314094636e-05,
+  "max_ey": 4.99271568504267e-05,
+  "max_abs_ay": 4.9608847128901346e-05
+ },
+ "ours": {
+  "qualifying": 39,
+  "spin": 8,
+  "wall": 24,
+  "n": 72
+ },
+ "published": {
+  "qualifying": 39,
+  "spin": 8,
+  "wall": 24,
+  "n": 72
+ }
+}

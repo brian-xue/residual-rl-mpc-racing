@@ -210,6 +210,12 @@ class LapSim:
             self.smpc = SlipMPC(vehicle_params(1.0), self.Ts, mc["N"],
                                 {k: mc[k] for k in ("q_y", "q_psi", "r_du", "q_terminal")}, sw_,
                                 self.s_max, self.sv_max * self.Ts, ellipse=ell)
+            if sw_.get("oracle_mu_limits", False):  # PRIVILEGED diagnostic (upper bound for a friction estimate):
+                self.smpc.set_limit_scale(scn.mu_scale, scn.mu_scale)  # slip limits scaled by the TRUE mu/mu0
+            if "limit_scale" in sw_:  # diagnostic: constant slip-limit scale for the whole lap (default: none)
+                self.smpc.set_limit_scale(sw_["limit_scale"], sw_["limit_scale"])
+            if "speed_scale" in sw_:  # diagnostic: constant speed-reference scale for the whole lap (default: none)
+                self.smpc.set_speed_scale(sw_["speed_scale"])
         if lc.get("mode", "pfb") == "mpc" and self.planner is None:
             lm = lc["mpc"]
             vp_ = vehicle_params(scn.mu_scale)
