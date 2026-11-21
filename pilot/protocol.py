@@ -4,7 +4,11 @@ Usage:
     uv run python -m pilot.protocol run --config CFG --run-dir DIR [--all-ckpts]
         select a checkpoint of one training run on the selection grid, then lap the reporting grid with it
         (--all-ckpts: also lap the reporting grid with every checkpoint, as a diagnostic that selection never sees)
-    uv run python -m pilot.protocol compare --out DIR LABEL=RUN_DIR [LABEL=RUN_DIR ...]
+    uv run python -m pilot.protocol run ... --select-tracks Austin Catalunya Silverstone --tag sel3
+        same, with the selection grid laid on each listed track (24 laps per track); outputs get the suffix _<tag>.
+        If the run already has protocol_report_all_ckpts.csv, the selected checkpoint's report is taken from it
+        (laps are deterministic) instead of being lapped again.
+    uv run python -m pilot.protocol compare --out DIR LABEL=RUN_DIR[@TAG] [LABEL=RUN_DIR[@TAG] ...]
         per-run and per-variant (label prefix before '/') summaries; e.g. base/s0=... base/s1=... slow/s0=...
 
 Fixed before any run of the multi-seed study, and shared by every variant:
@@ -103,6 +107,16 @@ def select(sel: pd.DataFrame):
     return t, best.checkpoint
 
 
+def train_tracks(run_dir: pathlib.Path):
+    """Tracks a run was trained on (residual.tracks of its train_config.yaml; default its track)."""
+    tc = yaml.safe_load(open(run_dir / "train_config.yaml"))
+    return list(tc["residual"].get("tracks") or [tc["track"]])
+
+
+def _suffix(tag):
+    return f"_{tag}" if tag else ""
+
+
 def report_cells():
     return [(t, a, mu, s0, grid) for t in TRACKS for a in REPORT_A_LAT for grid, mus, ss in REPORT for mu in mus for s0 in ss]
 
@@ -113,29 +127,41 @@ def cmd_run(args):
     ck = _ckpts(run)
     if not ck:
         raise SystemExit(f"no checkpoints in {run}")
-    cells = [(SELECT["track"], a, mu, s0) for a in SELECT["a_lat"] for mu in SELECT["mu_scale"] for s0 in SELECT["start_s"]]
+    sel_tracks = args.select_tracks or [SELECT["track"]]
+    sx = _suffix(args.tag)
+    cells = [(tr, a, mu, s0) for tr in sel_tracks for a in SELECT["a_lat"] for mu in SELECT["mu_scale"]
+             for s0 in SELECT["start_s"]]
     sel = lap(cfg, ck, cells)
-    sel.to_csv(run / "protocol_selection_laps.csv", index=False, float_format="%.5g")
+    sel.to_csv(run / f"protocol_selection_laps{sx}.csv", index=False, float_format="%.5g")
     t, best = select(sel)
-    t.to_csv(run / "protocol_selection.csv", index=False, float_format="%.4f")
-    (run / "protocol_selected.txt").write_text(best + "\n")
+    t.to_csv(run / f"protocol_selection{sx}.csv", index=False, float_format="%.4f")
+    (run / f"protocol_selected{sx}.txt").write_text(best + "\n")
     print(t.to_string(index=False))
     print("selected:", best, flush=True)
-    rep = lap(cfg, [ck_ for ck_ in ck if ck_.name == best], report_cells())
-    rep.to_csv(run / "protocol_report.csv", index=False, float_format="%.5g")
-    print(summarize(rep).to_string(), flush=True)
-    if args.all_ckpts:
-        allr = lap(cfg, ck, report_cells())
-        allr.to_csv(run / "protocol_report_all_ckpts.csv", index=False, float_format="%.5g")
+    allp = run / "protocol_report_all_ckpts.csv"
+    if args.all_ckpts and not allp.exists():
+        pd.DataFrame(lap(cfg, ck, report_cells())).to_csv(allp, index=False, float_format="%.5g")
+    cached = pd.read_csv(allp) if allp.exists() else None
+    if cached is not None and (cached.checkpoint == best).sum() == len(report_cells()):
+        rep = cached[cached.checkpoint == best].reset_index(drop=True)
+        print(f"report of {best} taken from {allp.name}")
+    else:
+        rep = lap(cfg, [ck_ for ck_ in ck if ck_.name == best], report_cells())
+    rep.to_csv(run / f"protocol_report{sx}.csv", index=False, float_format="%.5g")
+    print(summarize(rep, train_tracks(run)).to_string(), flush=True)
 
 
-def summarize(rep: pd.DataFrame) -> pd.Series:
+def summarize(rep: pd.DataFrame, trained_on=("Austin",)) -> pd.Series:
+    """Held-out = reporting tracks the policy was not trained on (``trained_on``)."""
     c = rep[rep.completed]
     q = rep[rep.qualifying]
     aus = rep.track == "Austin"
+    tr = rep.track.isin(list(trained_on))
     return pd.Series(dict(
         qualifying=int(rep.qualifying.sum()), qualifying_austin=int(rep.qualifying[aus].sum()),
-        qualifying_heldout=int(rep.qualifying[~aus].sum()),
+        qualifying_heldout=int(rep.qualifying[~tr].sum()), qualifying_train=int(rep.qualifying[tr].sum()),
+        **{f"qualifying_{t}": int(rep.qualifying[rep.track == t].sum()) for t in TRACKS},
+        **{f"crash_{t}": int(rep.status[rep.track == t].isin(CRASH).sum()) for t in TRACKS},
         qualifying_sweep=int(rep.qualifying[rep.grid == "sweep"].sum()), qualifying_fresh=int(rep.qualifying[rep.grid == "fresh"].sum()),
         completed=int(rep.completed.sum()), crash=int(rep.status.isin(CRASH).sum()),
         too_slow=int((rep.status == "speed_tolerance").sum()), ey_limit=int((rep.status == "lateral_error").sum()),
@@ -151,12 +177,13 @@ def cmd_compare(args):
     runs = dict(a.split("=", 1) for a in args.runs)
     reps, rows, sels = [], [], []
     for label, d in runs.items():
-        d = pathlib.Path(d)
-        rep = pd.read_csv(d / "protocol_report.csv").assign(run=label, variant=label.split("/")[0])
+        d, _, tag = d.partition("@")
+        d, sx = pathlib.Path(d), _suffix(tag)
+        rep = pd.read_csv(d / f"protocol_report{sx}.csv").assign(run=label, variant=label.split("/")[0])
         reps.append(rep)
-        s = summarize(rep)
+        s = summarize(rep, train_tracks(d))
         rows.append(dict(run=label, variant=label.split("/")[0], selected=rep.checkpoint.iloc[0], **s))
-        sels.append(pd.read_csv(d / "protocol_selection.csv").assign(run=label, variant=label.split("/")[0]))
+        sels.append(pd.read_csv(d / f"protocol_selection{sx}.csv").assign(run=label, variant=label.split("/")[0]))
         if (d / "protocol_report_all_ckpts.csv").exists():
             a = pd.read_csv(d / "protocol_report_all_ckpts.csv")
             for ck, g in a.groupby("checkpoint"):
@@ -196,6 +223,8 @@ def main():
     r.add_argument("--config", required=True)
     r.add_argument("--run-dir", required=True)
     r.add_argument("--all-ckpts", action="store_true")
+    r.add_argument("--select-tracks", nargs="+", default=None, help="selection-grid tracks (default: Austin)")
+    r.add_argument("--tag", default="", help="suffix for the output files (keeps earlier selections)")
     c = sp.add_parser("compare")
     c.add_argument("--out", required=True)
     c.add_argument("runs", nargs="+")
