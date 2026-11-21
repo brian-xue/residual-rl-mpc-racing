@@ -1,6 +1,6 @@
 # Plan: multi-track training, leave one track out (Spielberg held out)
 
-Branch `explore/multitrack-loto`. **Status: done; results in [`results/analysis/multitrack/REPORT.md`](../results/analysis/multitrack/REPORT.md).**
+Branch `explore/multitrack-loto`. **Status: both folds done; results in [`results/analysis/multitrack/REPORT.md`](../results/analysis/multitrack/REPORT.md).**
 
 ## Question
 
@@ -45,8 +45,8 @@ Spielberg is 12–21 of 36. That spread over seeds (9 laps) is the noise floor a
    - `--select-tracks` (default `Austin`, so existing runs reproduce): the selection grid becomes the same cells (a_lat {3.5, 5, 7, 8.5} × μ/μ₀ {1.0, 0.85, 0.65} × s {50, 250}) on each listed track: 24 laps per track, 72 for three tracks.
    - `select` subcommand that re-runs selection on an existing run without retraining (needed for A3 and MT-A).
    - `summarize` reports qualifying per track instead of the hard-coded "Austin vs held-out" split, and takes the training-track set from the config.
-4. **New config** `configs/pilot_st_pacejka_residual_dual_wall_mt.yaml`: the wall-aware dual config plus `residual.tracks: [Austin, Catalunya, Silverstone]` and a new `out`. Nothing else changes: same reward, PPO settings, 3M steps, μ and a_lat ranges.
-5. **Run script and report** in `results/analysis/multitrack/` (`run.sh`, `REPORT.md`, figure), the same layout as `results/analysis/multiseed/`.
+4. **New config** `configs/pilot_st_pacejka_residual_dual_wall_mt.yaml` (later: the fold is set with `train_residual --holdout`): the wall-aware dual config plus `residual.tracks: [Austin, Catalunya, Silverstone]` and a new `out`. Nothing else changes: same reward, PPO settings, 3M steps, μ and a_lat ranges.
+5. **Run script and report** in `results/analysis/multitrack/` (later merged into `run_fold.sh <Holdout>`; `REPORT.md`), the same layout as `results/analysis/multiseed/`.
 
 Before training, a check: an env with `tracks: [Austin]` must give bit-identical episodes to the current env with the same seed, and a short smoke run (≈50k steps) must show episodes on all three tracks.
 
@@ -87,3 +87,36 @@ With 3 seeds and a 9-lap seed spread, we can only call large effects:
 - **One track dominating training:** if Silverstone episodes crash much more often, the value function and the advantages may be dominated by it. The per-track training log will show this. A fix (per-track reward normalisation) is out of scope unless it happens.
 - **Track-specific tuning carried over from Austin:** `wall_margin_m` and the reference settings were chosen on Austin. The protocol already laps all four tracks with the same config, so this is unchanged, but it is a shared confound for every variant.
 - **Only four tracks on disk:** with three for training and one for test there is no independent selection track. Spielberg must stay out of every choice, including the stage 5/6 decisions (those are based on training tracks only).
+
+---
+
+# Second fold: Silverstone held out (pre-registered 2026-11-20, before any run of this fold)
+
+The same study with the roles of Spielberg and Silverstone swapped. It tests whether the first fold's result (multi-track training makes held-out results reliable from seed to seed) holds on a second unseen track. Silverstone is the longest track (446 m) and the one where Austin-only policies did worst (median 13 of 36 over 5 seeds, with Austin selection).
+
+**Variants** (5 seeds each from the start; no stage-6 extension):
+
+| Variant | Trained on | Selected on | Runs |
+| --- | --- | --- | --- |
+| base | Austin | Austin | existing base s0–s4 (no new laps) |
+| A3S | Austin | Austin + Catalunya + Spielberg | base s0–s4, re-selected (tag `selACS`, later renamed `noSilverstone`) |
+| **MTS** | Austin + Catalunya + Spielberg | Austin + Catalunya + Spielberg | new, `results_st_pacejka/multitrack_heldout_silverstone/s0–s4` |
+| MTS-A | Austin + Catalunya + Spielberg | Austin | MTS runs re-selected (diagnostic) |
+
+- **Everything else is unchanged:** reward, PPO settings, 3M steps, μ and a_lat ranges, selection cells, reporting grid and qualifying rule.
+- **Silverstone is used by nothing** except the final report: not training, selection or any stage decision.
+- **Main comparison:** MTS vs A3S on Silverstone qualifying (of 36).
+
+**Decision rule.** This revises the first fold's rule, which could not separate "reliably near the ceiling" from "sometimes at the ceiling". It is fixed before any lap of this fold.
+- **Helps:**
+  - the MTS median is at least 6 laps above the A3S median,
+  - **and** MTS's worst seed is at or above the A3S median,
+  - **and** the MTS Austin median is no more than 3 laps below base's.
+- **Hurts:** the MTS median is at least 6 laps below the A3S median.
+- **Ambiguous:** anything else. There is no further extension; it gets reported as is.
+- A one-sided Mann-Whitney p-value on the 5 vs 5 Silverstone counts is reported alongside, but it does not decide.
+
+**Secondary questions:**
+- Does including Spielberg instead of Silverstone in training change Austin and Catalunya?
+- Does the late-training slowdown appear as often (2 of 5 in the first fold)?
+- Compare with the first fold: is the Spielberg result of fold 1's MT (trained with Silverstone) matched by MTS's Silverstone result?

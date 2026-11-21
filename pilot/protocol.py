@@ -4,7 +4,7 @@ Usage:
     uv run python -m pilot.protocol run --config CFG --run-dir DIR [--all-ckpts]
         select a checkpoint of one training run on the selection grid, then lap the reporting grid with it
         (--all-ckpts: also lap the reporting grid with every checkpoint, as a diagnostic that selection never sees)
-    uv run python -m pilot.protocol run ... --select-tracks Austin Catalunya Silverstone --tag sel3
+    uv run python -m pilot.protocol run ... --select-tracks Austin Catalunya Silverstone --tag noSpielberg
         same, with the selection grid laid on each listed track (24 laps per track); outputs get the suffix _<tag>.
         If the run already has protocol_report_all_ckpts.csv, the selected checkpoint's report is taken from it
         (laps are deterministic) instead of being lapped again.

@@ -1,6 +1,8 @@
 # Multi-track training, leave one track out: identical to configs/pilot_st_pacejka_residual_dual_wall.yaml except
-# residual.tracks (Austin + Catalunya + Silverstone, one drawn per episode; Spielberg held out) and residual.out.
-# Plan: docs/multitrack_plan.md.
+# residual.tracks and residual.out. The fold is chosen at training time with
+#   python -m pilot.train_residual --config <this> --holdout <Track> --out <dir>
+# (residual.tracks = the four benchmark tracks minus the held-out one); results/analysis/multitrack/run_fold.sh
+# runs a whole fold. Plan: docs/multitrack_plan.md.
 # Dual-channel MPC + RL residual WITH the wall-clearance observation (side-wall gaps now and 0.25/0.5/1 s ahead).
 # Identical to configs/pilot_st_pacejka_residual_dual.yaml except residual.obs_wall_clearance and residual.out.
 # OPTIONAL plant: Gym-Khana ST with saturating Pacejka tires + friction circle (pilot.tires). Use with
@@ -136,9 +138,10 @@ gif:                         # results/lap.gif: both controllers in the plotted 
   window_m: 9.0
 
 residual:                    # residual RL on the kinematic MPC (pilot.residual_env / train_residual / eval_residual)
-  out: results_st_pacejka/multitrack/s0  # checkpoints, training log, evaluation outputs (run.sh sets --out per seed)
+  out: results_st_pacejka/multitrack_heldout_spielberg/s0  # checkpoints, training log, evaluation outputs
+                             # (run_fold.sh sets --out per fold and seed)
   tracks: [Austin, Catalunya, Silverstone]  # training tracks, one drawn uniformly per episode (pilot.residual_env);
-                             # Spielberg is held out of training and checkpoint selection
+                             # default fold: Spielberg held out. train_residual --holdout overrides this list
   base_K: 0.0                # the residual is learned on top of nominal MPC (no K v^2 kappa term)
   r_max: 0.2                 # [rad] residual range: delta = clip(delta_MPC + r_max * a), a in [-1, 1]
   obs_wall_clearance: true   # observe the body's gap to the side walls along the reference normal, now and

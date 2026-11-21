@@ -1,6 +1,6 @@
 """Train the residual policy with PPO (Stable-Baselines3) on ``pilot.residual_env.ResidualRacingEnv``.
 
-Usage:  uv run python -m pilot.train_residual [--config configs/pilot.yaml] [--steps N]
+Usage:  uv run python -m pilot.train_residual [--config configs/pilot.yaml] [--steps N] [--holdout TRACK]
 Writes checkpoints (ckpt_<steps>.zip), final.zip and train_log.csv to the config's residual.out.
 """
 
@@ -17,6 +17,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecMonitor, VecNormalize
 
+from .protocol import TRACKS
 from .residual_env import ResidualRacingEnv
 
 
@@ -67,6 +68,8 @@ def main():
     ap.add_argument("--steps", type=int, default=None)
     ap.add_argument("--seed", type=int, default=None, help="override residual.ppo.seed (multi-seed runs)")
     ap.add_argument("--out", default=None, help="override residual.out")
+    ap.add_argument("--holdout", default=None, choices=TRACKS,
+                    help="multi-track fold: train on every benchmark track except this one (sets residual.tracks)")
     args = ap.parse_args()
     cfg = yaml.safe_load(open(args.config))
     rc, pc = cfg["residual"], cfg["residual"]["ppo"]
@@ -74,6 +77,8 @@ def main():
         pc["seed"] = args.seed
     if args.out is not None:
         rc["out"] = args.out
+    if args.holdout is not None:
+        rc["tracks"] = [t for t in TRACKS if t != args.holdout]
     out = pathlib.Path(rc["out"])
     out.mkdir(parents=True, exist_ok=True)
     steps = args.steps or pc["total_timesteps"]
