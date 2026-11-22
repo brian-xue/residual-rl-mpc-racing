@@ -1,4 +1,4 @@
-"""Residual RL on top of the kinematic MPC.
+"""Residual RL on top of the kinematic MPC (or, opt-in, the slip-aware MPC: docs/slip_rl_plan.md).
 
 The learned policy adds a steering residual to the MPC command at every control instant (20 Hz):
 
@@ -16,6 +16,8 @@ steering, episodes of ``episode_steps`` control steps (truncated, so values boot
 
 from __future__ import annotations
 
+from collections import deque
+
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
@@ -32,6 +34,56 @@ WALL_OBS_SCALE, WALL_CAP = 0.3, 1.5  # [m]
 
 def obs_dim(ra_max: float, wall: bool = False) -> int:
     return (OBS_DIM_DUAL if ra_max > 0 else OBS_DIM) + (2 * len(WALL_PREVIEW_T) if wall else 0)
+
+
+HIST_DIM = 6  # per history frame: r, beta, yaw-rate error, delta, commanded accel, v
+
+
+def residual_opts(rc: dict) -> dict:
+    """The opt-in residual options beyond (r_max, accel_r_max, obs_wall_clearance); defaults reproduce the
+    published policies' observation and action exactly.
+      kind: "output" (residual added to the base's commands) or "speed" (arm P' of docs/slip_rl_plan.md: one
+            action, a speed-reference scale inside the slip-aware MPC; needs longitudinal.mode: slip)
+      speed_range: [lo, hi] scale range for kind "speed"; action 0 -> 1.0, -1 -> lo, +1 -> hi
+      obs_a_mpc: append the base MPC's acceleration command (slip / coupled base)
+      obs_history: append the last N control-rate frames of (r, beta, r - v kappa, delta, a_cmd, v)"""
+    return dict(kind=rc.get("kind", "output"), speed_range=tuple(rc.get("speed_range", (0.85, 1.05))),
+                obs_a_mpc=bool(rc.get("obs_a_mpc", False)), obs_history=int(rc.get("obs_history", 0)))
+
+
+def speed_scale(a: float, rng: tuple) -> float:
+    """Map an action in [-1, 1] to a speed scale: 0 -> 1.0 (the base controller), -1 -> lo, +1 -> hi."""
+    lo, hi = rng
+    a = float(np.clip(a, -1.0, 1.0))
+    return 1.0 + a * ((hi - 1.0) if a > 0 else (1.0 - lo))
+
+
+class ObsExtras:
+    """Observation terms appended after ``residual_obs`` (all off by default, then this adds nothing)."""
+
+    def __init__(self, opts: dict):
+        self.a_mpc, self.n_hist = opts["obs_a_mpc"], opts["obs_history"]
+        self.dim = int(self.a_mpc) + HIST_DIM * self.n_hist
+        self.hist = None
+
+    def reset(self):
+        self.hist = None
+
+    def __call__(self, sim: LapSim) -> np.ndarray:
+        parts = []
+        if self.a_mpc:
+            parts.append([(sim.a_mpc or 0.0) / 4.0])
+        if self.n_hist:
+            _, _, delta, v, _, r, beta = sim.st[:7]
+            a_cmd = (sim.a_mpc or 0.0) + sim.a_res
+            f = np.array([r / 3.0, beta / 0.2, (r - v * sim.ref.kappa[sim.i_g]) / 1.0, delta / sim.s_max,
+                          a_cmd / 4.0, v / 8.0])
+            if self.hist is None:
+                self.hist = deque([f] * self.n_hist, maxlen=self.n_hist)
+            else:
+                self.hist.append(f)
+            parts.append(np.concatenate(self.hist))
+        return np.clip(np.concatenate(parts), -5.0, 5.0).astype(np.float32) if parts else np.zeros(0, np.float32)
 
 
 def wall_gaps(sim: LapSim, s_ahead: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -76,6 +128,16 @@ def residual_obs(sim: LapSim, prev_res: float, r_max: float, prev_ares: float = 
     return np.clip(o, -5.0, 5.0).astype(np.float32)
 
 
+def build_obs(sim, r_max, ra_max, wall, opts, extras, prev_res=0.0, prev_ares=0.0, prev_s=1.0):
+    """Full policy observation: ``residual_obs`` + the opt-in extras. Shared by training and evaluation."""
+    if opts["kind"] == "speed":
+        lo, hi = opts["speed_range"]
+        o = residual_obs(sim, prev_s - 1.0, max(hi - 1.0, 1.0 - lo), 0.0, 1.0, wall)
+    else:
+        o = residual_obs(sim, prev_res, r_max, prev_ares, ra_max, wall)
+    return np.r_[o, extras(sim)] if extras.dim else o
+
+
 class ResidualRacingEnv(gym.Env):
     """Gymnasium env: one step = one MPC control interval (Ts = 50 ms, 5 physics steps)."""
 
@@ -89,6 +151,13 @@ class ResidualRacingEnv(gym.Env):
         self.ra_max = float(rc.get("accel_r_max", 0.0))  # > 0: dual channel (steering + acceleration residual)
         self.wall_obs = bool(rc.get("obs_wall_clearance", False))  # side-wall gaps in the observation
         self.K = rc.get("base_K", 0.0)
+        self.opts = residual_opts(rc)
+        self.speed_kind = self.opts["kind"] == "speed"
+        if self.speed_kind and cfg["longitudinal"].get("mode") != "slip":
+            raise ValueError("residual.kind: speed needs longitudinal.mode: slip (it scales SlipMPC's speed reference)")
+        if self.speed_kind and self.ra_max > 0:
+            raise ValueError("residual.kind: speed has a single action; set accel_r_max: 0")
+        self.extras = ObsExtras(self.opts)
         # training tracks (residual.tracks, default: the config's track). One Track + simulator env per track,
         # built once; with several tracks each episode draws one uniformly (episodes have a fixed length, so this
         # gives about equal samples per track). A single track draws nothing extra from the rng.
@@ -99,7 +168,9 @@ class ResidualRacingEnv(gym.Env):
             self._tracks[name] = (tc, Track(tc), make_env(name, 1.0, cfg["steer_mode"], cfg["dt"], max_steps=10**9))
         self.track_name = self.track_names[0]
         self.track_cfg, self.track, self._env = self._tracks[self.track_name]
-        self.obs_dim = obs_dim(self.ra_max, self.wall_obs)
+        # kind "speed" uses the dual-channel layout (planned-acceleration preview) with the scale in the
+        # previous-residual slot; its previous-acceleration slot is always 0
+        self.obs_dim = obs_dim(1.0 if self.speed_kind else self.ra_max, self.wall_obs) + self.extras.dim
         self.observation_space = spaces.Box(-5.0, 5.0, (self.obs_dim,), np.float32)
         self.action_space = spaces.Box(-1.0, 1.0, (2 if self.ra_max > 0 else 1,), np.float32)
         lo, hi = rc["a_lat_range"]
@@ -127,17 +198,25 @@ class ResidualRacingEnv(gym.Env):
         self.sim = LapSim(self.track, scn, self.K, self.track_cfg, log=False, env=self._env, ey0=ey0, epsi0=epsi0,
                           steady_init=True)
         self.prev_res = self.prev_ares = 0.0
+        self.prev_s = 1.0
+        self.extras.reset()
         self.n = 0
         self.sim.plan()
         return self._obs(0.0, 0.0), {"a_lat": scn.a_lat, "mu_scale": scn.mu_scale, "track": self.track_name}
 
     def _obs(self, res, ares):
-        return residual_obs(self.sim, res, self.r_max, ares, self.ra_max, self.wall_obs)
+        return build_obs(self.sim, self.r_max, self.ra_max, self.wall_obs, self.opts, self.extras, res, ares,
+                         self.prev_s)
 
     def step(self, action):
         sim, rc = self.sim, self.rc
-        res = float(np.clip(action[0], -1.0, 1.0)) * self.r_max
-        ares = float(np.clip(action[1], -1.0, 1.0)) * self.ra_max if self.ra_max > 0 else 0.0
+        if self.speed_kind:  # arm P': the action scales the speed reference of the NEXT solve (50 ms later)
+            sc = speed_scale(action[0], self.opts["speed_range"])
+            sim.smpc.set_speed_scale(sc)
+            res = ares = 0.0
+        else:
+            res = float(np.clip(action[0], -1.0, 1.0)) * self.r_max
+            ares = float(np.clip(action[1], -1.0, 1.0)) * self.ra_max if self.ra_max > 0 else 0.0
         p0 = sim.progress
         sim.apply(res, ares)
         sim.advance_interval()
@@ -156,6 +235,9 @@ class ResidualRacingEnv(gym.Env):
             rew -= w["slow"] * max(w["slow_ratio"] - ratio, 0.0)
         if w.get("beta", 0.0) > 0:  # high sideslip, before it becomes a spin
             rew -= w["beta"] * max(abs(sim.st[6]) - w["beta_soft_rad"], 0.0) ** 2
+        if self.speed_kind:  # opt-in chatter penalty on the speed scale
+            rew -= w.get("dspeed", 0.0) * (sc - self.prev_s) ** 2
+            self.prev_s = sc
         self.prev_res, self.prev_ares = res, ares
         terminated = truncated = False
         info = {}
@@ -186,15 +268,22 @@ class ResidualPolicy:
     Calling it returns a per-lap callable ``g(sim)`` (deterministic policy mean) that returns delta_res, or
     (delta_res, a_res) for a dual-channel policy (``ra_max > 0``)."""
 
-    def __init__(self, model_path: str, r_max: float, ra_max: float = 0.0, wall_obs: bool = False):
+    def __init__(self, model_path: str, r_max: float, ra_max: float = 0.0, wall_obs: bool = False, opts=None):
         self.model_path, self.r_max, self.ra_max, self.wall_obs = str(model_path), r_max, float(ra_max), bool(wall_obs)
+        self.opts = opts or residual_opts({})
+
+    @classmethod
+    def from_rc(cls, model_path, rc: dict):
+        """All residual settings from a config's ``residual`` block."""
+        return cls(model_path, rc["r_max"], rc.get("accel_r_max", 0.0), rc.get("obs_wall_clearance", False),
+                   residual_opts(rc))
 
     def __call__(self):
-        return _LapResidual(self.model_path, self.r_max, self.ra_max, self.wall_obs)
+        return _LapResidual(self.model_path, self.r_max, self.ra_max, self.wall_obs, self.opts)
 
 
 class _LapResidual:
-    def __init__(self, path, r_max, ra_max=0.0, wall_obs=False):
+    def __init__(self, path, r_max, ra_max=0.0, wall_obs=False, opts=None):
         if path not in _MODELS:
             import torch
             from stable_baselines3 import PPO
@@ -202,14 +291,24 @@ class _LapResidual:
             torch.set_num_threads(1)
             _MODELS[path] = PPO.load(path, device="cpu")
         self.model, self.r_max, self.ra_max, self.wall_obs = _MODELS[path], r_max, ra_max, wall_obs
+        self.opts = opts or residual_opts({})
+        self.extras = ObsExtras(self.opts)
         self.prev = self.prev_a = 0.0
+        self.prev_s = 1.0
 
     def reset(self):
         self.prev = self.prev_a = 0.0
+        self.prev_s = 1.0
+        self.extras.reset()
 
     def __call__(self, sim):
-        obs = residual_obs(sim, self.prev, self.r_max, self.prev_a, self.ra_max, self.wall_obs)
+        obs = build_obs(sim, self.r_max, self.ra_max, self.wall_obs, self.opts, self.extras, self.prev, self.prev_a,
+                        self.prev_s)
         a, _ = self.model.predict(obs, deterministic=True)
+        if self.opts["kind"] == "speed":  # same timing as training: scales the next solve's speed reference
+            self.prev_s = speed_scale(a[0], self.opts["speed_range"])
+            sim.smpc.set_speed_scale(self.prev_s)
+            return 0.0, 0.0
         self.prev = float(np.clip(a[0], -1, 1)) * self.r_max
         if self.ra_max > 0:
             self.prev_a = float(np.clip(a[1], -1, 1)) * self.ra_max

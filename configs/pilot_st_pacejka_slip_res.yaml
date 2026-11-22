@@ -1,6 +1,7 @@
 # SlipMPC + RL, arm R (docs/slip_rl_plan.md): the wall-aware dual-channel residual (delta, a) on top of the
 # slip-aware MPC on the friction-ellipse plan (S-E) instead of the kinematic MPC.
-# Identical to configs/pilot_st_pacejka_residual_dual_wall.yaml except longitudinal.mode and residual.out.
+# Identical to configs/pilot_st_pacejka_residual_dual_wall.yaml except longitudinal.mode, residual.out and
+# residual.obs_a_mpc.
 # OPTIONAL plant: Gym-Khana ST with saturating Pacejka tires + friction circle (pilot.tires). Use with
 # --config configs/pilot_st_pacejka.yaml. Identical to configs/pilot.yaml except: tire, out,
 # geometry.spin_beta_max_rad. The MPC weights and delay compensation are the ones frozen on the linear ST
@@ -141,6 +142,7 @@ residual:                    # residual RL on the kinematic MPC (pilot.residual_
                              # 0.25 / 0.5 / 1 s ahead (pilot.residual_env.wall_gaps; computed per track)
   accel_r_max: 2.0           # [m/s^2] acceleration residual added to the speed command (0 = single channel);
                              # with the P speed gain kv = 3 a constant +-2 shifts the speed by about +-0.67 m/s
+  obs_a_mpc: true            # observe the slip-aware MPC's own acceleration command
   # training distribution (domain randomisation); mu is never observed by the policy
   a_lat_range: [3.0, 9.0]    # speed levels on a 0.5 grid
   mu_range: [0.6, 1.0]

@@ -1,0 +1,42 @@
+      checkpoint  qualifying  completed  crash  too_slow  ey_limit  mean_ratio_completed         steps
+ ckpt_250000.zip          12         12     12         0         0              1.015486        250000
+ ckpt_500000.zip          13         13     11         0         0              1.029740        500000
+ ckpt_750000.zip          14         14     10         0         0              1.033121        750000
+ckpt_1000000.zip          11         16      8         5         0              1.047500       1000000
+ckpt_1250000.zip           0         17      7        17         0              1.068330       1250000
+ckpt_1500000.zip           0         18      6        18         0              1.082711       1500000
+ckpt_1750000.zip           0         18      6        18         0              1.069433       1750000
+ckpt_2000000.zip           0         18      6        18         0              1.070875       2000000
+ckpt_2250000.zip           6         18      6        12         0              1.064742       2250000
+ckpt_2500000.zip           6         18      6        12         0              1.064709       2500000
+ckpt_2750000.zip           0         19      5        19         0              1.069927       2750000
+ckpt_3000000.zip           4         17      7        13         0              1.064713       3000000
+       final.zip           0         19      5        19         0              1.067882 1000000000000
+selected: ckpt_750000.zip
+qualifying                46.000000
+qualifying_austin         20.000000
+qualifying_heldout        26.000000
+qualifying_train          20.000000
+qualifying_Austin         20.000000
+qualifying_Catalunya      12.000000
+qualifying_Silverstone    12.000000
+qualifying_Spielberg       2.000000
+crash_Austin              16.000000
+crash_Catalunya           10.000000
+crash_Silverstone         14.000000
+crash_Spielberg           15.000000
+qualifying_sweep          22.000000
+qualifying_fresh          24.000000
+completed                 89.000000
+crash                     55.000000
+too_slow                  41.000000
+ey_limit                   2.000000
+mean_ratio_completed       1.047551
+max_ratio_qualifying       1.049993
+q_within_0p5pt             5.000000
+q_within_2cm               0.000000
+crash_Aus-152             10.000000
+crash_Spi-42               5.000000
+crash_Spi-304              2.000000
+crash_Sil-176              3.000000
+crash_other               35.000000

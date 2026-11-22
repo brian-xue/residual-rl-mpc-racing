@@ -1,6 +1,6 @@
 # Plan: RL on top of the slip-aware MPC (SlipMPC + RL)
 
-Branch `explore/slip-mpc-rl`. **Status: Stage 0 done, including both oracle checks (see [Stage 0 results](#stage-0-results)). Arm P has been redesigned as a learned speed reference (P′). No training yet.** The design and decision rule below are fixed before any run, as in [`multitrack_plan.md`](multitrack_plan.md).
+Branch `explore/slip-mpc-rl`. **Status: Stage 0 and Stage 1 (smoke runs) done; see [Stage 0 results](#stage-0-results) and [Stage 1 results](#stage-1-results). Arm P has been redesigned as a learned speed reference (P′). Next: the 3-seed runs (Stages 2–3).** The design and decision rule below are fixed before any run, as in [`multitrack_plan.md`](multitrack_plan.md).
 
 ## Why
 
@@ -209,3 +209,106 @@ The first row matches the published S-E (39 / 8 / 24), so the new keys change no
 - **New baseline:** S-E at 0.97 × plan speed qualifies 44 of 72, more than any controller so far (the best learned policy has 40). The decision rule now requires beating it.
 - **Low friction is largely capped by the rule itself.** At μ/μ₀ 0.6 the grip limit is about 6.2 m/s². The a_lat 8 cells, and probably a_lat 6, cannot be driven within 5% of the plan by any controller. The sweep's μ/μ₀ 0.6 row will measure mostly safety, not speed. I'll report safe laps alongside qualifying for every arm.
 
+## Stage 1 results
+
+Script: [`results/analysis/slip_rl/stage1.py`](../results/analysis/slip_rl/stage1.py). Training logs are in `results_st_pacejka/slip_smoke/<variant>/`, and the summary in `results/analysis/slip_rl/stage1/`.
+
+### Code added (all opt-in)
+
+- **`pilot/residual_env.py`:**
+  - `residual.obs_a_mpc` (the base MPC's acceleration command);
+  - `residual.obs_history: N` (last N frames of r, β, r − vκ, δ, a_cmd, v);
+  - `residual.kind: speed` (arm P′: one action → speed scale s, with 0 → 1.0, −1 → 0.85, +1 → 1.05);
+  - an optional `reward.dspeed` chatter penalty.
+- **`ResidualPolicy.from_rc`:** evaluation (`eval_residual`, `protocol`) uses the same observation and action mapping as training.
+- **Configs:**
+  - `configs/pilot_st_pacejka_slip_res.yaml` (arm R) gains `obs_a_mpc: true`;
+  - new `configs/pilot_st_pacejka_slip_speed.yaml` (arm P′: `obs_history: 10`, `dspeed: 5`, untuned).
+- **Timing:** P′'s action sets the scale for the *next* solve, a 50 ms lag. Training and evaluation use the same timing.
+
+### Checks
+
+- `pilot.kernel_check` passes.
+- With `obs_a_mpc` on, env trajectories are identical to those with it off (max |Δ| 0 over 700 steps).
+- P′ with action 0 gives trajectories identical to the zero-residual slip base, in the env and in the lap path. Two Austin S-E sweep laps reproduce exactly through `ResidualPolicy.from_rc`.
+
+### Zero-action reference: S-E on the training distribution
+
+These are 240 episodes of a_lat 3–9, μ/μ₀ 0.6–1.0, random start, with action 0 and no exploration noise:
+- **crash rate 0.50**, episode return 319, mean length 353 steps;
+- the crashes are 61 lateral-error and 58 wall terminations, and only 1 spin.
+
+The policies start from this reference, plus exploration noise.
+
+### Smoke runs (300k steps, seed 0, about 3.5 min each)
+
+Episode-weighted means over training windows. Training episodes include exploration noise (std ≈ 0.2 in action units).
+
+| Variant | Crash rate: first 50k → 100–200k → last 100k | Return: first 50k → last 100k |
+| --- | --- | --- |
+| S-E, zero action (reference) | 0.50 | 319 |
+| **R** (r_max 0.2, ra_max 2.0) | 0.80 → 0.35 → **0.25** | 157 → **423** |
+| R-low (r_max 0.1, ra_max 1.0) | 0.56 → 0.51 → 0.42 | 277 → 363 |
+| P′ (speed scale) | 0.54 → 0.53 → 0.48 | 293 → 322 |
+
+For comparison, the kinematic wall-aware dual policy logged crash rates of 0.31–0.67 over the same 250–400k steps.
+
+**Findings**
+1. **Arm R learns fast and goes below S-E.** Its crash rate halves relative to S-E within 300k steps (0.25 vs 0.50, *with* exploration noise). At first the exploration noise at full authority makes it much worse (0.80): the noise bypasses the slip limits, as finding 5 predicts, and training then removes it.
+2. **R-low learns more slowly and is not safer early on.** Its first-50k crash rate is still 0.56, so the smaller authority buys little safety and costs learning speed. **Decision: arm R keeps r_max 0.2 / ra_max 2.0** (the config as is). R-proj is not needed yet, because training removes the spins. Whether R's laps bypass the slip limits will be checked in the Stage 5 diagnostics (slack activity).
+3. **P′ barely moves in 300k steps** (0.54 → 0.48, within the window-to-window noise of ±0.1).
+   - Exploration noise does not hurt it (0.54 vs 0.50), as expected when everything stays inside the MPC's constraints.
+   - It also gets a weak learning signal: a speed change acts only through the next solve and the speed dynamics.
+   - This is a warning, not yet a failure: the kinematic policies took about 1M steps to settle.
+   - **Decision: run P′ as designed for 3M steps** (no tuning on the smoke run, which would be tuning on seed 0). If its 3-seed result is "no gain", a P′ variant with a larger range or a smaller `dspeed` is the follow-up. It would be reported separately, not swapped in.
+
+**Cost of Stages 2–3:** 300k steps took 3.2–3.7 min, consistent with the ≈ 37 min per 3M-step run measured in Stage 0. Six runs need ≈ 3.7 h sequentially. The machine has 10 cores and each run uses 8 workers, so running two at once would not help.
+
+
+## Stages 2–4 results (3 seeds per arm, 144-lap reporting grid)
+
+Each run was trained on Austin for 3M steps, with the checkpoint chosen on the Austin selection grid (`pilot.protocol`). The tables below come from `results_st_pacejka/slip_rl/compare/`. The dual-residual base comes from `results/analysis/multiseed/report_laps.csv` and is on the same 144 cells. That file has seeds s0–s2 only, not s0–s4 as the plan said, so its median is over 3 seeds.
+
+The Mac slept for about 7 h during R/s1 and P/s0 training. Sleep pauses training without changing what it computes, so the results are not affected; it only made the wall-clock times longer.
+
+| | Qualifying (median; seeds) | Austin | Catalunya | Silverstone | Spielberg | Spin | Wall | Safe (completed, \|e_y\| ≤ 0.5 m) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| S-E | 79 | 18 | 21 | 20 | 20 | 9 | 49 | 79 |
+| S-E at 0.97 × speed | 89 | 20 | 22 | 26 | 21 | 5 | 44 | 90 |
+| Dual-residual base | 91 (81, 114, 91) | 28 | 30 | 13 | 21 | 13 per seed | — | 81–114 |
+| **R** (residual on SlipMPC) | **128** (128, 128, 127) | 32 | 32 | 32 | 32 | **3, 2, 4** | 11, 14, 10 | 127–128 |
+| P′ (speed scale) | 46 (52, 32, 46) | 20 | 12 | 12 | 0 | 8, 8, 5 | 16, 21, 50 | 87–112 |
+
+(Track columns are medians over seeds.)
+
+**Decision rule**
+- **Arm R wins.** It passes all three conditions:
+  1. Its median of 128 is above S-E (79), S-E at 0.97 (89) and the dual base (91). Its worst seed (127) beats every baseline.
+  2. Every held-out track is at 31–34 of 36, against S-E's 20–21.
+  3. Its spins (2–4) are fewer than S-E's 9.
+- The seed spread is 1 lap (127–128), against 33 for the dual base. R gets the dual residual's speed and SlipMPC's consistency at once, which is what the plan was looking for.
+- **P′ is a no gain: it is worse than S-E** (median 46). It does not crash more. It fails by being **too slow**: 41–73 laps fail only the 5% lap-time rule, so it has many safe laps (87–112) but few qualifying ones.
+
+**Where R's gain comes from** (qualifying laps by cell, mean over seeds, out of 8 laps per cell, 16 at μ/μ₀ 1.0):
+
+| μ/μ₀ | a_lat 4: S-E / R | a_lat 6: S-E / R | a_lat 8: S-E / R |
+| --- | --- | --- | --- |
+| 1.0 | 16 / 16 | 16 / 16 | **1 / 16** |
+| 0.9 | 8 / 8 | 8 / 8 | **0 / 8** |
+| 0.8 | 8 / 8 | 6 / 8 | **0 / 8** |
+| 0.7 | 8 / 8 | **0 / 8** | 0 / 2.3 |
+| 0.6 | 8 / 8 | **0 / 5.3** | 0 / 0 |
+
+- **Most of the gain is at a_lat 8** (+40 laps). S-E understeers into the wall there because its 1 s horizon sees the braking too late (README finding 3). R fixes this at μ/μ₀ ≥ 0.8.
+- **The rest is at low friction with a_lat 6** (+13).
+- R still fails μ/μ₀ 0.6 at a_lat 8, as do all the baselines. This matches the Stage 0 argument that those cells cannot be driven within 5% of the plan.
+- R laps at a mean of 0.98 × plan time on completed laps (S-E: 1.00). So the policy learned to go **faster** than the plan where grip allows, not slower. Presumably its acceleration residual adds speed on the straights; this is not yet measured.
+
+**Checkpoint robustness (all-checkpoint diagnostic; selection never saw it)**
+- **R:** every checkpoint from 250k to 3M steps, on all three seeds, scores 112–134 on the reporting grid. Every one is above all the baselines, so R's win does not depend on checkpoint selection. The 250k checkpoints already score 112–117.
+- **P′ gets worse as it trains:** s0 goes 87 → 95 (noisy), s1 goes 90 → 45, and s2 goes 82 → 0 (it is at 0 from 1.25M on). Its early checkpoints (82–90) are about level with S-E at 0.97 × speed. Later the policy drifts toward slowing down (most failures are too-slow laps), which suggests the reward values safety over the lap-time rule. **The likely problem is the reward, not the action space**; Stage 5's s-vs-μ check would confirm it. A follow-up would add a lap-time term to the reward, or tie the lower end of the range to 0.95. As the plan says, that variant would be reported separately.
+
+**Not yet checked (Stage 5)**
+- Whether R's laps bypass the MPC's slip limits, i.e. slack activity compared with S-E. Its low spin count suggests they don't, but this is not measured.
+- What speed scale P′ uses compared with the true μ.
+- Spin and wall locations.

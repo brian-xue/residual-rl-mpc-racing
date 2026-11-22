@@ -72,7 +72,7 @@ def lap(cfg, ckpts, cells):
         cs = [c for c in cells if c[0] == track]
         jobs, keys = [], []
         for ck in ckpts:
-            pol = ResidualPolicy(str(ck), rc["r_max"], rc.get("accel_r_max", 0.0), rc.get("obs_wall_clearance", False))
+            pol = ResidualPolicy.from_rc(str(ck), rc)
             for c in cs:
                 jobs.append((Scenario(c[1], c[2], c[3]), rc.get("base_K", 0.0), False, None, pol))
                 keys.append((ck.name, c))
