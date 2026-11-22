@@ -426,6 +426,7 @@ class SlipMPC:
         self.solver, self.guess, self._mask = None, None, None
         self.alpha_scale = (1.0, 1.0)  # (front, rear) multipliers on alpha_f_max / alpha_r_max, see set_limit_scale
         self.speed_scale = 1.0  # multiplier on the speed reference, see set_speed_scale
+        self.last_slack = None  # (N,) slacks of the last successful solve (diagnostic only, not used in control)
         # cost (constant): block per stage, course error couples e_psi and beta
         rows, cols, vals = [], [], []
         for k in range(1, N + 1):
@@ -653,5 +654,6 @@ class SlipMPC:
         x = res.x
         pred = x[: nz * N].reshape(N, nz)
         self.guess = pred.copy()
+        self.last_slack = x[self._e(0):self._e(0) + N].copy()
         u0 = x[self._u(0):self._u(0) + 2]
         return float(delta_prev + u0[0]), float(a_prev + u0[1]), True, dt, pred

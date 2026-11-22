@@ -1,6 +1,6 @@
 # Plan: RL on top of the slip-aware MPC (SlipMPC + RL)
 
-Branch `explore/slip-mpc-rl`. **Status: Stage 0 and Stage 1 (smoke runs) done; see [Stage 0 results](#stage-0-results) and [Stage 1 results](#stage-1-results). Arm P has been redesigned as a learned speed reference (P′). Next: the 3-seed runs (Stages 2–3).** The design and decision rule below are fixed before any run, as in [`multitrack_plan.md`](multitrack_plan.md).
+Branch `explore/slip-mpc-rl`. **Status: Stages 0–5 done. Arm R wins under the decision rule (median 128 of 144 qualifying laps, against 79–91 for the baselines) without driving past SlipMPC's slip limits. Arm P′ (learned speed reference) is no gain. See [Stages 2–4 results](#stages-24-results-3-seeds-per-arm-144-lap-reporting-grid) and [Stage 5 results](#stage-5-results-diagnostics-lapping-only).** The design and decision rule below are fixed before any run, as in [`multitrack_plan.md`](multitrack_plan.md).
 
 ## Why
 
@@ -302,13 +302,81 @@ The Mac slept for about 7 h during R/s1 and P/s0 training. Sleep pauses training
 - **Most of the gain is at a_lat 8** (+40 laps). S-E understeers into the wall there because its 1 s horizon sees the braking too late (README finding 3). R fixes this at μ/μ₀ ≥ 0.8.
 - **The rest is at low friction with a_lat 6** (+13).
 - R still fails μ/μ₀ 0.6 at a_lat 8, as do all the baselines. This matches the Stage 0 argument that those cells cannot be driven within 5% of the plan.
-- R laps at a mean of 0.98 × plan time on completed laps (S-E: 1.00). So the policy learned to go **faster** than the plan where grip allows, not slower. Presumably its acceleration residual adds speed on the straights; this is not yet measured.
+- R laps at a mean of 0.98 × plan time on completed laps (S-E: 1.00). So the policy learned to go **faster** than the plan where grip allows, not slower. Two seeds get there by accelerating harder on the straights; the third brakes more in the corners (Stage 5, below).
 
 **Checkpoint robustness (all-checkpoint diagnostic; selection never saw it)**
 - **R:** every checkpoint from 250k to 3M steps, on all three seeds, scores 112–134 on the reporting grid. Every one is above all the baselines, so R's win does not depend on checkpoint selection. The 250k checkpoints already score 112–117.
-- **P′ gets worse as it trains:** s0 goes 87 → 95 (noisy), s1 goes 90 → 45, and s2 goes 82 → 0 (it is at 0 from 1.25M on). Its early checkpoints (82–90) are about level with S-E at 0.97 × speed. Later the policy drifts toward slowing down (most failures are too-slow laps), which suggests the reward values safety over the lap-time rule. **The likely problem is the reward, not the action space**; Stage 5's s-vs-μ check would confirm it. A follow-up would add a lap-time term to the reward, or tie the lower end of the range to 0.95. As the plan says, that variant would be reported separately.
+- **P′ gets worse as it trains:** s0 goes 87 → 95 (noisy), s1 goes 90 → 45, and s2 goes 82 → 0 (it is at 0 from 1.25M on). Its early checkpoints (82–90) are about level with S-E at 0.97 × speed. Later the policy drifts toward slowing down (most failures are too-slow laps), which suggests the reward values safety over the lap-time rule. **The likely problem is the reward, not the action space**; Stage 5 §3 confirms it. A follow-up would add a lap-time term to the reward, or tie the lower end of the range to 0.95. As the plan says, that variant would be reported separately.
 
-**Not yet checked (Stage 5)**
-- Whether R's laps bypass the MPC's slip limits, i.e. slack activity compared with S-E. Its low spin count suggests they don't, but this is not measured.
-- What speed scale P′ uses compared with the true μ.
-- Spin and wall locations.
+See Stage 5 for the slack, speed-scale and failure-location checks.
+
+## Stage 5 results (diagnostics, lapping only)
+
+`results/analysis/slip_rl/stage5.py` re-laps the 144-lap grid with S-E, S-E at 0.97 and the **selected** checkpoint of each of the six runs, with two new passive log columns: the speed scale each solve tracked, and SlipMPC's soft-limit slacks (`SlipMPC.last_slack`). **Every one of the 1,152 laps has the same outcome as in the protocol report**, so the logging changes nothing. The per-lap table is `stage5/laps.csv` and the full printout is `stage5/analysis.txt`. The 20 Hz traces are in `results_st_pacejka/slip_rl/stage5/traces/` and are not committed.
+
+Slip angles are the plant's, measured at the control instants: α_f = δ − β − l_f r/v and α_r = −β + l_r r/v. They are compared against the MPC's soft limits (0.25 / 0.12 rad). Those limits are not the tire peaks, which are higher.
+
+### 1. The 8 + 9 feasibility cells
+
+| Cells | S-E | S-E at 0.97 | R (s0 / s1 / s2) | P′ (s0 / s1 / s2) |
+| --- | --- | --- | --- | --- |
+| 8 that S-E fixed and the wall policy failed (corner-exit hotspots) | 8 | 8 | **8 / 8 / 8** | 2 / 0 / 0 |
+| 9 that the wall policy fixed and S-E failed (Austin a_lat 6–8, a_lat 8 elsewhere) | 0 | 3 | **9 / 9 / 9** | 2 / 2 / 2 |
+
+**R gets the union of the two failure sets on every seed.** This is the outcome the feasibility check said a combination could reach. P′ loses even the cells S-E already had.
+
+### 2. Where the spins and walls are
+
+- **R has no spin or wall at μ/μ₀ ≥ 0.8** on any seed. There, S-E has 30 walls and S-E at 0.97 has 22.
+- All of R's failures are at μ/μ₀ 0.6–0.7: 9 spins over three seeds, all at 0.6, and 35 walls.
+- **The locations are spread out.** The most common is Austin s ≈ 152 (8 of 44 over three seeds), and the old corner-exit hotspots are nearly gone: Spielberg 304 has 0, against 2 for S-E.
+- P′ fails all over the place, most of all at Austin 152 (24).
+
+Failures by friction, summed over the runs in each variant (S-E and S-E at 0.97 have one run each; R and P′ have three):
+
+| μ/μ₀ | S-E spin / wall | S-E at 0.97 | R | P′ |
+| --- | --- | --- | --- | --- |
+| 0.6 | 8 / 8 | 5 / 11 | 9 / 21 | 20 / 28 |
+| 0.7 | 1 / 11 | 0 / 11 | 0 / 14 | 1 / 25 |
+| 0.8–1.0 | 0 / 30 | 0 / 22 | **0 / 0** | 0 / 34 |
+
+### 3. P′'s speed scale does not track friction
+
+| Mean scale | μ/μ₀ 0.6 | 0.8 | 1.0 | a_lat 4 | a_lat 8 | Corners (\|κ\| > 0.05) | Straights (\|κ\| < 0.01) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| P′ s0 | 0.952 | 0.952 | 0.954 | 0.975 | 0.933 | 0.954 | 0.943 |
+| P′ s1 | 0.948 | 0.942 | 0.943 | 0.959 | 0.931 | 0.950 | 0.932 |
+| P′ s2 | 0.949 | 0.951 | 0.953 | 0.960 | 0.947 | 0.963 | 0.939 |
+
+- **The scale is flat in μ** (spread ≤ 0.01 between μ/μ₀ 0.6 and 1.0 on every seed). The policy does not infer friction, although the friction probe found μ partly inferable from 10 frames of history.
+- It responds to the **speed level** instead: it slows down more at a_lat 8 than at 4. That is information it already gets from the observation.
+- **It slows down more on the straights than in the corners**, the opposite of the design idea. Slowing on a straight costs lap time and buys no grip.
+- Its mean of 0.94–0.95 sits right at the 5% lap-time limit, so most laps fail as too slow.
+- **This confirms the Stage 2–4 reading:** P′ found a "slow down everywhere a bit" optimum. The reward does not pay for lap time against the plan, and there is no friction signal to make a local slowdown worth learning. As noted, a follow-up variant would need a lap-time term.
+
+### 4. R does not bypass SlipMPC's slip limits
+
+Mean fraction of control instants:
+
+| | Stage-1 slack active | Plant \|α_r\| > 0.12 | Plant \|α_f\| > 0.25 | v / v_plan | Same three, on the 79 cells S-E qualifies |
+| --- | --- | --- | --- | --- | --- |
+| S-E | 0.035 | 0.20 | 0.015 | 1.00 | 0.001 / 0.06 / 0 |
+| S-E at 0.97 | 0.020 | 0.17 | 0.007 | 0.97 | 0 / 0.03 / 0 |
+| R s0 / s1 / s2 | **0.008 / 0.007 / 0.011** | 0.15 / 0.13 / 0.15 | 0.024 / 0.022 / 0.014 | 1.01 / 0.98 / 1.02 | 0 / 0.03–0.06 / 0 |
+| P′ s0 / s1 / s2 | 0.007 / 0.009 / 0.017 | 0.14 / 0.15 / 0.14 | ≤ 0.008 | 0.94–0.95 | 0 / 0.01–0.03 / 0 |
+
+- **Over all 144 laps,** R's laps spend *less* time with an active slack, or beyond the rear limit, than S-E's, while going as fast as the plan or faster. README finding 5's risk, that terms added after the MPC drive past its limits, does not show up here.
+- **On equal laps** (the cells S-E qualifies), R's rear slip matches S-E's (0.03–0.06 vs 0.06), and neither touches the slack.
+- **The front axle is the one exception.** R is beyond 0.25 rad at 1.4–2.4% of instants, against S-E's 1.5%, with a higher peak (0.22–0.25 vs 0.21). This is small, and it is in the failing low-friction laps, not the qualifying ones.
+- **The steering residual is bigger where the MPC is at its limits:** |δ_res| averages 0.025–0.057 rad when the stage-1 slack is active, against 0.017–0.033 elsewhere. It acts mostly near the grip limit, as a correction, not as a constant bias.
+- **The acceleration residual differs by seed:**
+  - s0 and s2 add +0.42 and +0.28 m/s² on the straights; this is where their speed above the plan comes from.
+  - s1 brakes in the corners (−0.48 m/s²) and runs at 0.98 × plan speed.
+  - All three seeds score 127–128, so there are at least two strategies that work.
+- **Before a spin**, the stage-1 slack is active 73% of the last second for R, against 48% for S-E. R's remaining spins happen where the MPC itself already predicts a violation: R is not causing them by going past an MPC that saw no problem.
+
+### What Stage 5 adds to the decision
+
+R's win is not bought by breaking the constraints. It recovers both feasibility failure sets on every seed and removes every failure at μ/μ₀ ≥ 0.8. What is left is low-friction driving (μ/μ₀ 0.6–0.7), where no controller here has a friction estimate. The natural next steps are:
+- the multi-track fold (`run_fold.sh`) for arm R, to test held-out robustness under multi-track training;
+- an R variant with a friction-informative observation, for the μ/μ₀ 0.6 cells.
