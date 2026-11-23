@@ -210,6 +210,12 @@ class LapSim:
             self.smpc = SlipMPC(vehicle_params(1.0), self.Ts, mc["N"],
                                 {k: mc[k] for k in ("q_y", "q_psi", "r_du", "q_terminal")}, sw_,
                                 self.s_max, self.sv_max * self.Ts, ellipse=ell)
+            if sw_.get("oracle_mu_limits", False):  # PRIVILEGED diagnostic (upper bound for a friction estimate):
+                self.smpc.set_limit_scale(scn.mu_scale, scn.mu_scale)  # slip limits scaled by the TRUE mu/mu0
+            if "limit_scale" in sw_:  # diagnostic: constant slip-limit scale for the whole lap (default: none)
+                self.smpc.set_limit_scale(sw_["limit_scale"], sw_["limit_scale"])
+            if "speed_scale" in sw_:  # diagnostic: constant speed-reference scale for the whole lap (default: none)
+                self.smpc.set_speed_scale(sw_["speed_scale"])
         if lc.get("mode", "pfb") == "mpc" and self.planner is None:
             lm = lc["mpc"]
             vp_ = vehicle_params(scn.mu_scale)
@@ -341,6 +347,7 @@ class LapSim:
             d_mpc, ok, tsol = self.planner.solve(st, e_y, e_psi, s, self.delta_mpc_prev, self.vplan_at, ref)
             s_p = s + tau * v
         elif self.smpc is not None:  # slip-aware coupled MPC (20 Hz): measures beta and r, model-based delay comp.
+            self.speed_scale_used = self.smpc.speed_scale  # logged: the scale this solve tracks
             d_mpc, a_mpc, ok, tsol, _ = self.smpc.solve(e_y, e_psi, st[6], st[5], v, self.delta_mpc_prev, self.a_prev,
                                                        s, self.vplan_at, self.aplan_at, ref.kappa_at, tau=tau)
             s_p = s + tau * v
@@ -396,6 +403,11 @@ class LapSim:
                        solver_ok=self.solver_ok, x=x, y=y, yaw=yaw, n_tires_in=int(self.tires_in.sum()))
             if self.cmpc is not None or self.smpc is not None:
                 row["a_mpc"] = self.a_mpc
+            if self.smpc is not None:  # diagnostics only: the scale this solve tracked and its soft-limit slacks
+                sl = self.smpc.last_slack if self.solver_ok else None
+                row["speed_scale"] = self.speed_scale_used
+                row["slack0"] = float(sl[0]) if sl is not None else np.nan
+                row["slack_max"] = float(sl.max()) if sl is not None else np.nan
             if self.residual_logged:
                 row["delta_res"] = self.d_res
                 row["a_res"] = self.a_res

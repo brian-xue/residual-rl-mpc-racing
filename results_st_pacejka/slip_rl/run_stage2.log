@@ -1,0 +1,26 @@
+== train results_st_pacejka/slip_rl/R/s0 (seed 0) 00:10:02
+== protocol results_st_pacejka/slip_rl/R/s0 00:51:02
+== done results_st_pacejka/slip_rl/R/s0 00:57:19
+== train results_st_pacejka/slip_rl/P/s0 (seed 0) 00:57:19
+== protocol results_st_pacejka/slip_rl/P/s0 03:15:21
+== done results_st_pacejka/slip_rl/P/s0 03:19:07
+== train results_st_pacejka/slip_rl/R/s1 (seed 1) 03:19:07
+== protocol results_st_pacejka/slip_rl/R/s1 11:05:21
+== done results_st_pacejka/slip_rl/R/s1 11:13:55
+== train results_st_pacejka/slip_rl/P/s1 (seed 1) 11:13:55
+== protocol results_st_pacejka/slip_rl/P/s1 12:13:14
+== done results_st_pacejka/slip_rl/P/s1 12:21:27
+== train results_st_pacejka/slip_rl/R/s2 (seed 2) 12:21:27
+== protocol results_st_pacejka/slip_rl/R/s2 13:07:45
+== done results_st_pacejka/slip_rl/R/s2 13:13:31
+== train results_st_pacejka/slip_rl/P/s2 (seed 2) 13:13:31
+== protocol results_st_pacejka/slip_rl/P/s2 14:01:52
+== done results_st_pacejka/slip_rl/P/s2 14:10:41
+== primary results in results_st_pacejka/slip_rl/compare 14:10:45
+== all-ckpts results_st_pacejka/slip_rl/R/s0 14:10:45
+== all-ckpts results_st_pacejka/slip_rl/P/s0 14:45:26
+== all-ckpts results_st_pacejka/slip_rl/R/s1 15:21:26
+== all-ckpts results_st_pacejka/slip_rl/P/s1 15:57:45
+== all-ckpts results_st_pacejka/slip_rl/R/s2 16:20:19
+== all-ckpts results_st_pacejka/slip_rl/P/s2 16:36:12
+== all done 16:53:24

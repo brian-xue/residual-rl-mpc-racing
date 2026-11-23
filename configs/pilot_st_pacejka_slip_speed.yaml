@@ -1,0 +1,189 @@
+# SlipMPC + RL, arm P' (docs/slip_rl_plan.md): a learned speed reference INSIDE the slip-aware MPC (S-E base).
+# The policy has one action, a speed-reference scale s in [0.85, 1.05] for SlipMPC's next solve; it never touches
+# the actuators, so every command stays within the MPC's slip-angle limits.
+# Identical to configs/pilot_st_pacejka_slip_res.yaml except residual.{out, kind, speed_range, accel_r_max,
+# obs_history, reward.dspeed}.
+# OPTIONAL plant: Gym-Khana ST with saturating Pacejka tires + friction circle (pilot.tires). Use with
+# --config configs/pilot_st_pacejka.yaml. Identical to configs/pilot.yaml except: tire, out,
+# geometry.spin_beta_max_rad. The MPC weights and delay compensation are the ones frozen on the linear ST
+# plant (not re-tuned). pilot.reference_lap is
+# not available for this plant (its true-model MPC is linear ST).
+track: Austin                # Gym-Khana 1.2.0 map (downloaded by the package from TeoIlie/F1TENTH_Racetracks v1.4.0)
+model: st                    # plant: ST (tires set by "tire:" below)
+tire:                        # saturating ST tires (pilot.tires); linear ST stiffness kept, peak = mu Fz
+  model: pacejka             # "linear" (Gym-Khana ST), "pacejka" (simplified Magic Formula) or "fiala" (brush)
+  C: 1.3                     # Pacejka shape factor; B = mu0 C_S / (C mu xi) per axle
+  stiffness_scales_with_mu: false  # false: mu changes only the peak force (cf. STD: p_dy1 scaled, p_ky1 kept)
+  drive_split_front: null    # front share of traction force; null = proportional to axle normal load
+  brake_split_front: null    # front share of braking force; null = proportional to axle normal load
+  derate: peak               # friction circle: "peak" (D = xi mu Fz, C_alpha kept) or "curve" (Fy = xi Fy0)
+out: results_st_pacejka      # default output folder for this config
+dt: 0.01                     # simulator step [s], RK4
+workers: 8                   # parallel lap simulations
+steer_mode: steering_speed   # sim mode; steering-angle targets are realised by a delay-aware rate-limited servo
+kernel: rust                 # lap loop: "python" or "rust" (pilot_core: physics steps + kinematic MPC incl. OSQP;
+                             # bit-identical, ~5.6x faster lap stepping; ST plant + steering_speed only;
+                             # check with python -m pilot.kernel_check)
+
+reference:                   # fixed reference line
+  source: raceline           # Austin_raceline.csv (shipped with the map); "centerline" = previous pilot
+  # wall_margin_m = smallest of {0.10, 0.15, 0.20} for which the nominal conservative lap is valid;
+  # pilot.sensitivity reports the sweep outcome for all three
+  wall_margin_m: 0.10        # where a wall is within wall_search_m of the centerline, the raceline offset
+                             # is clipped to |n| <= d_wall - width/2 - margin; elsewhere it is unchanged
+  wall_search_m: 1.5
+  wall_lookaround_m: 2.0     # the clip at s uses the tightest wall limit within +/- this distance
+  offset_smooth_sigma_m: 0.5 # smoothing applied only around clipped stretches
+  ds: 0.1
+  smooth_sigma_m: 0.2
+  kappa_sigma_m: 0.6
+
+geometry:                    # validity checks at every physics step (replace Gym-Khana's CG Frenet check)
+  white_line_width_m: 0.05   # legal region = centerline +/- w_tr (CSV); the CSV width is taken as the
+                             # outer edge of the white line, so the line is legal (informational only)
+  tire_half_track_m: 0.12    # lateral offset of tire centres from the body axis (assumed, F1TENTH-like)
+  tire_patch_length_m: 0.04  # contact patch rectangle (assumed)
+  tire_patch_width_m: 0.045
+  spin_beta_max_rad: 1.0     # |sideslip| above this ends the lap as "spin" (V' = a: a spinning ST car keeps its
+                             # speed until the timeout). Laps without a spin stayed below 0.40 rad (both plants)
+  walls:                     # physical walls = simulator occupancy map, minus the walls on curves
+    remove_on_curves: true   # open run-off in corners, walls kept along straights
+    curve_kappa_threshold: 0.05  # |kappa| [1/m] of the smoothed centerline above which a section is a curve
+    curve_extend_m: 3.0      # curve section extended this far before and after
+
+speed_plan:                  # v(s) = min(v_cap, sqrt(a_lat / |kappa|)) with accel/brake passes
+  v_cap: 8.0
+  a_acc: 4.0
+  a_dec: 4.0
+  friction_ellipse: true     # true: passes only use the acceleration the friction ellipse leaves (pilot.reference.speed_plan)
+
+longitudinal:                # a = v dv_plan/ds + kv (v_plan - v), direct acceleration command
+  kv: 3.0
+  mode: slip                 # "pfb": the above (pilot default); "mpc": coupled steering + speed MPC (pilot.mpc.CoupledMPC);
+                             # "slip": slip-aware coupled MPC (pilot.mpc.SlipMPC)
+  mpc:                       # coupled MPC only (steering weights, horizon, rate and limits shared with mpc: below)
+    q_v: 2.0                 # x (v - v_plan)^2
+    q_a: 0.1                 # x (a - a_plan)^2, a_plan = v dv_plan/ds
+    r_da: 1.0                # x (change of acceleration per MPC step)^2
+    da_max: 2.0              # [m/s^2] max acceleration change per MPC step (40 m/s^3)
+    friction_ellipse: false  # (a/ax_max)^2 + (v^2 kappa/a_lat)^2 <= 1 (soft, n-facet polygon)
+    ax_max: 4.0              # [m/s^2] longitudinal semi-axis (= speed_plan.a_dec)
+    n_facets: 8               # outer polygon (8 facets: <= 8% looser than the ellipse)
+    slack_l1: 100.0
+    slack_l2: 1000.0
+  slip_mpc:                  # slip-aware MPC only: dynamic ST model with nominal mu0 and linear stiffness
+    q_v: 2.0                 # (steering weights, horizon, rate and limits shared with mpc: below)
+    q_a: 0.1
+    r_da: 1.0
+    da_max: 2.0
+    alpha_f_max: 0.25        # [rad] soft front slip-angle limit (chosen on the a_lat 5 dev setting, Pacejka plant)
+    alpha_r_max: 0.12        # [rad] soft rear slip-angle limit (Pacejka C 1.3 at mu0: 87% of the linear force)
+    friction_ellipse: false
+    ax_max: 4.0
+    n_facets: 8
+    slack_l1: 100.0
+    slack_l2: 1000.0
+
+limits:                      # final steering limits, applied after the correction
+  s_max: 0.4189              # [rad] (simulator s_max)
+  sv_max: 3.2                # [rad/s] (simulator sv_max)
+
+mpc:
+  Ts: 0.05                   # 20 Hz replanning
+  N: 20                      # 1.0 s horizon
+  # weights selected for ST on mu_scale = 1.0 only (a_lat 6 and 8, centerline reference, 27-point grid), frozen
+  q_y: 10.0
+  q_psi: 3.0
+  r_du: 10.0
+  q_terminal: 5.0
+  delay_comp_s: 0.03         # actuator delay = simulator's 2-step steering FIFO + 1 step (30 ms at dt = 10 ms)
+
+qualifying:                  # fixed before the reported sweep
+  max_abs_ey_m: 0.5          # max |lateral error| of the CG to the reference line
+  max_lap_time_ratio: 1.05   # lap time <= 1.05 x speed-plan lap time
+  max_solver_failures: 0
+  timeout_factor: 1.5        # episode ends at 1.5 x plan lap time
+
+feedforward:
+  # K [rad s^2 / m]; chosen on the development rollouts by: all laps valid, then most mean lap
+  # progress, then lowest mean RMS lateral error; then frozen. dev_a_lat is NOT a sweep level.
+  K_grid: [0.0, 0.002, 0.004, 0.006, 0.008, 0.012, 0.016, 0.020, 0.025, 0.030]
+  dev_a_lat: 5.0
+  dev_mu_scales: [1.0, 0.6]
+  dev_start_s: 0.0
+
+sweep:
+  conservative_a_lat: 3.0
+  a_lat_levels: [4.0, 6.0, 8.0]
+  mu_scales: [1.0, 0.8, 0.6]
+  start_s: 0.0               # primary start pose
+  recheck_start_s: 200.0     # second predetermined start pose (raceline arc length)     # second predetermined start pose, used for promising cells
+                             # (promising = nominal not qualifying, feedforward qualifying)
+
+lap_time:                    # fastest qualifying lap per controller (same K, same friction, own speed level)
+  mu_scales: [1.0, 0.8, 0.6]
+  a_lat_grid: [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0]
+                             # raised until the lap stops qualifying from both start poses
+                             # (sweep.start_s, sweep.recheck_start_s); v_cap stays speed_plan.v_cap
+
+reference_lap:               # pilot.reference_lap: privileged dynamic-model MPC with the true mu
+  extra_a_lat: [10.0, 12.0, 15.0, 20.0, 25.0, 30.0]  # searched after lap_time.a_lat_grid (same v_cap)
+  gif_mu_scale: 0.6          # GIF: nominal / feedforward / reference at their own fastest levels
+
+gif:                         # results/lap.gif: both controllers in the plotted cell, follow camera
+  frame_dt_s: 0.2            # simulated time per frame
+  fps: 20                    # -> 4x real time
+  window_m: 9.0
+
+residual:                    # residual RL on the kinematic MPC (pilot.residual_env / train_residual / eval_residual)
+  out: results_st_pacejka/slip_speed  # checkpoints, training log, evaluation outputs
+  base_K: 0.0                # the residual is learned on top of nominal MPC (no K v^2 kappa term)
+  r_max: 0.2                 # [rad] residual range: delta = clip(delta_MPC + r_max * a), a in [-1, 1]
+  obs_wall_clearance: true   # observe the body's gap to the side walls along the reference normal, now and
+                             # 0.25 / 0.5 / 1 s ahead (pilot.residual_env.wall_gaps; computed per track)
+  accel_r_max: 0.0           # kind speed: no actuator residual (r_max is unused)
+  kind: speed                # action = speed-reference scale of SlipMPC (pilot.residual_env.speed_scale)
+  speed_range: [0.85, 1.05]  # action -1 / 0 / +1 -> 0.85 / 1.0 / 1.05
+  obs_history: 10            # last 10 control frames (0.5 s) of r, beta, r - v kappa, delta, a_cmd, v
+  obs_a_mpc: true            # observe the slip-aware MPC's own acceleration command
+  # training distribution (domain randomisation); mu is never observed by the policy
+  a_lat_range: [3.0, 9.0]    # speed levels on a 0.5 grid
+  mu_range: [0.6, 1.0]
+  init_ey_m: 0.1             # start pose offset ~ U(+-init_ey), heading ~ U(+-init_epsi), anywhere on the lap
+  init_epsi_rad: 0.05
+  episode_steps: 600         # control steps (30 s, about half a lap); truncated, not terminated
+  reward:                    # per control step
+    progress: 1.0            # x (progress / planned progress)
+    e_y: 4.0                 # x e_y^2 [m^2]
+    res: 2.0                 # x residual^2 [rad^2]
+    dres: 20.0               # x (residual change)^2
+    off_track: 1.0           # per control interval with any off-track physics step
+    ares: 0.01               # x a_res^2 [(m/s^2)^2]: gentle size penalty on the acceleration residual
+    dares: 0.05              # x (change of a_res per step)^2: gentle longitudinal chatter penalty
+    beta: 20.0               # x (|sideslip| - beta_soft_rad)^2 above the soft limit (spin = |beta| > 1 rad ends the lap)
+    beta_soft_rad: 0.15      # qualifying slip-aware-MPC laps stayed below ~0.10 rad
+    dspeed: 5.0              # x (change of the speed scale per step)^2 (untuned)
+    crash: 50.0              # wall collision, spin or |e_y| > qualifying.max_abs_ey_m (episode terminates)
+  ppo:
+    total_timesteps: 3000000
+    n_envs: 8
+    n_steps: 1024            # per env per update
+    batch_size: 512
+    n_epochs: 10
+    learning_rate: 3.0e-4
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_range: 0.2
+    ent_coef: 0.0
+    log_std_init: -1.5       # initial exploration std ~0.22 x r_max = 0.045 rad
+    net_arch: [128, 128]
+    checkpoint_every: 250000 # env steps
+    seed: 0
+  # checkpoint selection (before the benchmark): laps at speed levels that are NOT benchmark levels,
+  # start pose not used by the benchmark. Rule: most qualifying laps, then mean progress, then lowest RMS e_y.
+  select:
+    a_lat: [5.0, 7.0]
+    mu_scales: [1.0, 0.7]
+    start_s: 100.0
+  # benchmark: pilot sweep cells + fastest-qualifying-lap search (extended grid) for nominal / ff / residual
+  extra_a_lat: [9.0, 10.0]

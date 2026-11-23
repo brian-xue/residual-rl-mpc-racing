@@ -1,0 +1,14 @@
+{
+ "best_per_cell_qualifying": 44,
+ "best_per_cell_safe": 70,
+ "cells_gained_over_SE": 5,
+ "gained_by_mu": {
+  "0.8": 2,
+  "1.0": 3
+ },
+ "gained_by_track": {
+  "Austin": 2,
+  "Silverstone": 2,
+  "Catalunya": 1
+ }
+}

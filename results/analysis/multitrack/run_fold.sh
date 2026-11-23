@@ -9,6 +9,8 @@
 #   MT-A: the MT runs selected on Austin only (no tag)
 # Idempotent: training is skipped if final.zip exists and a protocol step if its report exists, so re-running
 # only redoes the comparison. Comparison -> results/analysis/multitrack/heldout_<holdout>/.
+# Other base arms: BASE_CFG, MT_CFG, BASE_RUN_FMT, MT_DIR and CMP_OUT override the dual-residual defaults
+# (results/analysis/slip_rl/run_fold_R.sh sets them for SlipMPC arm R).
 set -euo pipefail
 H=${1:?usage: run_fold.sh HOLDOUT_TRACK}
 ALL=(Austin Catalunya Silverstone Spielberg)
@@ -16,11 +18,14 @@ TRAIN=(); for t in "${ALL[@]}"; do [ "$t" != "$H" ] && TRAIN+=("$t"); done
 [ ${#TRAIN[@]} -eq 3 ] || { echo "unknown track $H (one of ${ALL[*]})"; exit 1; }
 SEEDS=${SEEDS:-0 1 2 3 4}
 h=$(echo "$H" | tr '[:upper:]' '[:lower:]')
-M=configs/pilot_st_pacejka_residual_dual_wall_mt.yaml
-B=configs/pilot_st_pacejka_residual_dual_wall.yaml
-D=results_st_pacejka/multitrack_heldout_$h
+M=${MT_CFG:-configs/pilot_st_pacejka_residual_dual_wall_mt.yaml}
+B=${BASE_CFG:-configs/pilot_st_pacejka_residual_dual_wall.yaml}
+D=${MT_DIR:-results_st_pacejka/multitrack_heldout_$h}
+CMP=${CMP_OUT:-results/analysis/multitrack/heldout_$h}
 TAG=no$H
-base_dir() { [ "$1" = 0 ] && echo results_st_pacejka/residual_dual_wall || echo results_st_pacejka/seeds/base/s$1; }
+base_dir() {  # BASE_RUN_FMT (printf format with the seed, e.g. results_st_pacejka/slip_rl/R/s%s) overrides the dual runs
+  if [ -n "${BASE_RUN_FMT:-}" ]; then printf "$BASE_RUN_FMT\n" "$1"; return; fi
+  [ "$1" = 0 ] && echo results_st_pacejka/residual_dual_wall || echo results_st_pacejka/seeds/base/s$1; }
 protocol() {  # cfg run_dir tag [extra args]: selection + report, skipped if the report exists
   local cfg=$1 run=$2 tag=$3; shift 3
   local sx=${tag:+_$tag} log=$run.protocol${tag:+_$tag}.log
@@ -51,5 +56,5 @@ for s in $SEEDS; do args+=("base/s$s=$(base_dir "$s")"); done
 for s in $SEEDS; do args+=("A3/s$s=$(base_dir "$s")@$TAG"); done
 for s in $SEEDS; do args+=("MT/s$s=$D/s$s@$TAG"); done
 for s in $SEEDS; do args+=("MT-A/s$s=$D/s$s"); done
-uv run python -m pilot.protocol compare --out "results/analysis/multitrack/heldout_$h" "${args[@]}"
+uv run python -m pilot.protocol compare --out "$CMP" "${args[@]}"
 echo "== done $(date +%T)"
