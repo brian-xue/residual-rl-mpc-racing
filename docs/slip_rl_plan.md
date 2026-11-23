@@ -380,3 +380,124 @@ Mean fraction of control instants:
 R's win is not bought by breaking the constraints. It recovers both feasibility failure sets on every seed and removes every failure at μ/μ₀ ≥ 0.8. What is left is low-friction driving (μ/μ₀ 0.6–0.7), where no controller here has a friction estimate. The natural next steps are:
 - the multi-track fold (`run_fold.sh`) for arm R, to test held-out robustness under multi-track training;
 - an R variant with a friction-informative observation, for the μ/μ₀ 0.6 cells.
+
+# Next: arm R in a leave-one-track-out fold (plan, fixed before any run)
+
+*Written 2026-11-22, after Stage 5. Nothing has been run for it, and no lap of the held-out track under multi-track training has been seen.*
+
+## Question
+
+Arm R was trained on Austin alone. Does training it on three tracks change what it does on the fourth, unseen one? For the kinematic dual residual, multi-track training made held-out results reliable from seed to seed (Spielberg 29–32 of 36 against 0–32; `results/analysis/multitrack/REPORT.md`). Austin-only R is already reliable (31–34 per held-out track, 127–128 in total), so the question here is different from that study's: **does R lose anything, or gain lap time, when Austin is no longer the only training track?**
+
+## How much room there is: the grid is nearly saturated
+
+Over every checkpoint of every run in this study and the multi-seed study, **only 136 of the 144 cells ever qualify, exactly 34 per track**. The 8 that never qualify are μ/μ₀ 0.6 at a_lat 8, two per track, and Stage 0 already argued they cannot be driven within 5% of the plan.
+
+Austin-only R's selected checkpoints score 32 per track (median). That leaves **about 2 laps per held-out track**, within its checkpoint-to-checkpoint range of 28–34. So:
+- **A "helps" verdict on qualifying laps is not reachable.** A 2-lap gain cannot be told apart from checkpoint noise with 3 seeds. The rule below therefore tests *non-inferiority* on qualifying laps and puts any gain into a secondary, continuous metric (lap time) that is not saturated.
+- **The same saturation limits any further arm-R study on this grid**, including the friction-aware variant: Austin-only R already gets 128 of 136. A harder reporting grid (a_lat 9–10, μ/μ₀ 0.5, or a 2% lap-time rule) is the alternative to this fold. It would be a new grid, fixed before use, and it is not part of this plan.
+
+## Design
+
+Held-out track: **Spielberg** (the original fold).
+- It is R's weakest track: 28–32 over its checkpoints, and it loses all 6 μ/μ₀ 0.7, a_lat 8 laps.
+- It keeps the comparison with the dual residual's MT result (29–32) direct.
+- **Silverstone** (fold 2) is run only if the Spielberg result is "hurts" or borderline (see the rule). Then it checks whether that holds on a second track.
+
+| Variant | Trained on | Checkpoint selected on | Runs |
+| --- | --- | --- | --- |
+| R-base | Austin | Austin | the existing R/s0–s2 |
+| **R-A3** | Austin | Austin + Catalunya + Silverstone | R/s0–s2 re-selected (lapping only) |
+| **R-MT** | Austin + Catalunya + Silverstone | Austin + Catalunya + Silverstone | new, seeds 0–2 |
+| R-MT-A | Austin + Catalunya + Silverstone | Austin | the R-MT runs re-selected |
+
+- The main comparison is **R-MT vs R-A3**, which separates the training effect from the selection effect, as in the multi-track study.
+- **3 seeds**, as in Stages 2–4. The multi-track study needed 5 because its baseline varied by 32 laps; R's varies by 1.
+- **Unchanged:** the arm-R config, PPO settings, 3M steps, the 144-lap grid and the qualifying rule. MT draws one training track per episode, so Austin gets about 1/3 of R-MT's samples.
+- **Spielberg is used by nothing** except the final report: no training, no selection, no stage decision.
+
+## Code (opt-in, no change to existing results)
+
+1. `configs/pilot_st_pacejka_slip_res_mt.yaml`: `pilot_st_pacejka_slip_res.yaml` plus `residual.tracks` and `out`, in the same way that `..._residual_dual_wall_mt.yaml` derives from its base. `train_residual --holdout` already sets the track list.
+2. `results/analysis/multitrack/run_fold.sh`: make the base config, the MT config, the base run directories and the output directory overridable by environment variables. The defaults stay as they are, so the dual folds rerun unchanged. A thin wrapper, `results/analysis/slip_rl/run_fold_R.sh Spielberg`, sets them for arm R and seeds 0–2.
+3. **A check before training:** a 100k-step smoke run of R-MT, to confirm that multi-track sampling works with the slip base and to see that the crash rate falls on all three tracks (per-track columns in `train_log.csv`). Nothing in `residual_env` blocks it; the check is for runtime surprises only.
+
+## Compute
+
+Rates measured in Stages 2–5: about 41 min per 3M-step R run, and about 53 laps per minute when lapping with 8 workers.
+
+| Step | Laps | Time |
+| --- | --- | --- |
+| R-A3: re-select R/s0–s2 on 3 tracks (reports taken from the existing all-checkpoint files) | 3 × 936 | ≈ 55 min |
+| R-MT: train seeds 0–2 | — | ≈ 3 × 41 min |
+| R-MT: 3-track selection + report | 3 × (936 + 144) | ≈ 60 min |
+| R-MT-A: Austin selection | 3 × 312 | ≈ 18 min |
+| R-MT: all-checkpoint diagnostic, last; selection never sees it | 3 × 1,872 | ≈ 1 h 45 min |
+
+That is **≈ 4.2 h to the primary result** and ≈ 6 h with diagnostics. Silverstone, if it is needed, takes about the same again. The Mac needs `caffeinate -s` on AC power; `-i` alone let it sleep for 7 h in Stages 2–4.
+
+## Decision rule (fixed now)
+
+**Primary metric:** Spielberg qualifying laps (of 36; ceiling 34), median of 3 seeds, R-MT vs R-A3.
+
+- **No loss** (expected) if all three hold:
+  1. the R-MT Spielberg median is ≥ the R-A3 median − 2;
+  2. R-MT's worst seed is ≥ 28 on Spielberg, the low end of Austin-only R's checkpoint range;
+  3. the R-MT Austin median is ≥ the R-base Austin median − 3 (as in the multi-track study).
+- **Hurts** if the R-MT Spielberg median is ≤ the R-A3 median − 4. Then run Silverstone.
+- **Borderline** is anything between those two. Then run Silverstone, with the same thresholds.
+- **There is no "helps" verdict on qualifying laps** (see the ceiling above).
+
+**Secondary metric, where a gain could show:** the Spielberg mean lap-time ratio on the cells that every R-A3 and R-MT run qualifies. R-MT is "faster" if its median is ≥ 1 percentage point below R-A3's, and every R-MT seed is below the R-A3 median. This is the only part of the question the grid has room for.
+
+**Also reported, with no verdict:**
+- totals over all 4 tracks;
+- spins;
+- μ/μ₀ 0.6–0.7 failures by track;
+- safe laps;
+- R-MT against the dual residual's MT on Spielberg (29–32 of 36);
+- the Stage 5 slack and slip-angle columns for R-MT's selected checkpoints, to check that multi-track training does not push R past the slip limits.
+
+## Fold results: Spielberg held out (3 seeds)
+
+Run with `results/analysis/slip_rl/run_fold_R.sh Spielberg` (2026-11-22, 20:35 → 00:47). The comparison is in `results/analysis/slip_rl/heldout_spielberg/`, and the R-MT runs are in `results_st_pacejka/slip_rl/heldout_spielberg/s0–s2`. A 100k-step smoke run came first: the crash rate fell on all three training tracks. One deviation from the plan's compute table: the fold script runs each MT run's all-checkpoint pass right after its selection, not at the very end. Selection is made first and never reads it.
+
+Qualifying laps of 36 per track (144 in total). Medians over 3 seeds; seeds in brackets.
+
+| Variant | Total | Austin | Catalunya | Silverstone | **Spielberg** | Spins (sum) |
+| --- | --- | --- | --- | --- | --- | --- |
+| R-base (Austin / Austin) | 128 (128, 128, 127) | 32 | 32 | 32 | **32** (32, 32, 32) | 9 |
+| R-A3 (Austin / 3 tracks) | 133 (133, 128, 134) | 32 | 34 | 34 | **32** (32, 32, 34) | 5 |
+| **R-MT** (3 tracks / 3 tracks) | 125 (125, 127, 125) | 30 | 33 | 32 | **32** (26, 32, 32) | 9 |
+| R-MT-A (3 tracks / Austin) | 121 (114, 121, 126) | 30 | 32 | 32 | 30 (18, 30, 32) | 9 |
+
+### Decision rule (as fixed in the plan)
+
+| Condition | Value | Met? |
+| --- | --- | --- |
+| 1. R-MT Spielberg median ≥ R-A3 median − 2 | 32 vs 30 | yes |
+| 2. R-MT worst seed ≥ 28 on Spielberg | **26** (s0) | **no** |
+| 3. R-MT Austin median ≥ R-base Austin median − 3 | 30 vs 29 | yes |
+| Hurts: R-MT Spielberg median ≤ R-A3 median − 4 | 32 vs 28 | no |
+
+**Primary verdict: borderline.** The median shows no loss, but one seed (s0) falls 2 laps below the floor. The plan says to run the Silverstone fold next, with the same thresholds.
+
+**Secondary metric: R-MT is faster on Spielberg.** On the 26 Spielberg cells that every R-A3 and R-MT run qualifies, the mean lap-time ratio is:
+- R-MT: 0.985 / 0.982 / 0.957 (median 0.982);
+- R-A3: 1.018 / 1.018 / 0.996 (median 1.018).
+
+That is 3.6 percentage points lower, and every R-MT seed is below the R-A3 median, so the "faster" condition holds (≥ 1 point, every seed below).
+
+### What else the fold shows
+
+- **The cost of multi-track training is consistency, not the median.**
+  - R-MT/s0's 10 Spielberg failures are all wall collisions, and they are at the same places as Austin-only R's (s ≈ 42, 114, 224). Austin-only R fails at s ≈ 114 only at μ/μ₀ 0.7 with a_lat 8. R-MT/s0 also fails there at μ/μ₀ 0.7 with a_lat 6, at μ/μ₀ 0.8 with a_lat 8 (where Austin-only R had no failure at all; Stage 5 §2), and at μ/μ₀ 0.6 with a_lat 6. So the place is the same, but the hard corner fails over a wider range of conditions.
+  - Over checkpoints (diagnostic only), R-MT's Spielberg score ranges **15–34** (s0), 20–32 (s1) and 26–32 (s2), against 28–34 for Austin-only R.
+  - Multi-track training spreads the residual over three tracks' corners. It drives faster, but the selected checkpoint is less certain to be a safe one on the unseen track.
+- **This is the opposite of the dual residual's fold.** There, MT removed a 0–32 seed lottery. Here the Austin-only base had no lottery to remove (32 on every seed), and MT adds a small one.
+- **Selection on three tracks helps the Austin-only runs:** R-A3's 133 / 128 / 134 are the highest totals in the study, with 5 spins over three seeds. That re-selection uses no Spielberg laps, so it is a fair, free improvement on the Stage 2–4 result. It was not pre-registered as a variant to report as the headline, though, and it is not what the decision rule compares.
+- **Austin selection of the MT runs (R-MT-A) is worst** (s0: 18 on Spielberg), as for the dual residual: one track is not enough to choose among multi-track checkpoints.
+
+**Not done:** the Stage 5 slack and slip-angle check for R-MT's selected checkpoints. `stage5.py` reads only the Stage 2–4 run folders; it needs a small change to take the `_noSpielberg` selections.
+
+**Next, per the rule:** the Silverstone fold (`results/analysis/slip_rl/run_fold_R.sh Silverstone`, ≈ 6 h). It reuses the R-base runs, and nothing from this fold's result changes its design or thresholds.

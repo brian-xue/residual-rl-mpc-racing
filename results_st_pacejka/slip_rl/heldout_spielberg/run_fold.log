@@ -1,0 +1,112 @@
+== fold: hold out Spielberg, train on Austin Catalunya Silverstone, seeds 0 1 2 20:35:33
+   (protocol of results_st_pacejka/slip_rl/R/s0 exists, skipped)
+== protocol_noSpielberg results_st_pacejka/slip_rl/R/s0 20:35:33
+== train results_st_pacejka/slip_rl/heldout_spielberg/s0 (seed 0) 20:43:12
+== protocol_noSpielberg results_st_pacejka/slip_rl/heldout_spielberg/s0 21:21:06
+== protocol results_st_pacejka/slip_rl/heldout_spielberg/s0 21:52:58
+   (protocol of results_st_pacejka/slip_rl/R/s1 exists, skipped)
+== protocol_noSpielberg results_st_pacejka/slip_rl/R/s1 21:56:30
+== train results_st_pacejka/slip_rl/heldout_spielberg/s1 (seed 1) 22:07:15
+== protocol_noSpielberg results_st_pacejka/slip_rl/heldout_spielberg/s1 22:47:41
+== protocol results_st_pacejka/slip_rl/heldout_spielberg/s1 23:17:10
+   (protocol of results_st_pacejka/slip_rl/R/s2 exists, skipped)
+== protocol_noSpielberg results_st_pacejka/slip_rl/R/s2 23:20:29
+== train results_st_pacejka/slip_rl/heldout_spielberg/s2 (seed 2) 23:31:32
+== protocol_noSpielberg results_st_pacejka/slip_rl/heldout_spielberg/s2 00:10:08
+== protocol results_st_pacejka/slip_rl/heldout_spielberg/s2 00:43:35
+    run variant         selected  qualifying  qualifying_austin  qualifying_heldout  qualifying_train  qualifying_Austin  qualifying_Catalunya  qualifying_Silverstone  qualifying_Spielberg  crash_Austin  crash_Catalunya  crash_Silverstone  crash_Spielberg  qualifying_sweep  qualifying_fresh  completed  crash  too_slow  ey_limit  mean_ratio_completed  max_ratio_qualifying  q_within_0p5pt  q_within_2cm  crash_Aus-152  crash_Spi-42  crash_Spi-304  crash_Sil-176  crash_other  mean_ratio_common_cells  n_common_cells
+base/s0    base ckpt_2250000.zip       128.0               30.0                98.0              30.0               30.0                  32.0                    34.0                  32.0           6.0              2.0                2.0              4.0              62.0              66.0      130.0   14.0       0.0       0.0              0.988280                1.0095             0.0           2.0            4.0           1.0            0.0            0.0          9.0                 0.985328             110
+base/s1    base ckpt_3000000.zip       128.0               32.0                96.0              32.0               32.0                  32.0                    32.0                  32.0           4.0              4.0                4.0              4.0              64.0              64.0      128.0   16.0       0.0       0.0              1.020429                1.0403             0.0           0.0            2.0           1.0            0.0            2.0         11.0                 1.020275             110
+base/s2    base ckpt_2500000.zip       127.0               32.0                95.0              32.0               32.0                  32.0                    31.0                  32.0           4.0              2.0                4.0              4.0              58.0              69.0      130.0   14.0       0.0       3.0              0.981205                1.0274             0.0           2.0            2.0           1.0            0.0            2.0          9.0                 0.976134             110
+  A3/s0      A3 ckpt_3000000.zip       133.0               33.0               100.0              33.0               33.0                  34.0                    34.0                  32.0           3.0              2.0                2.0              4.0              63.0              70.0      133.0   11.0       0.0       0.0              1.006168                1.0399             0.0           1.0            1.0           1.0            0.0            0.0          9.0                 1.001834             110
+  A3/s1      A3 ckpt_3000000.zip       128.0               32.0                96.0              32.0               32.0                  32.0                    32.0                  32.0           4.0              4.0                4.0              4.0              64.0              64.0      128.0   16.0       0.0       0.0              1.020429                1.0403             0.0           0.0            2.0           1.0            0.0            2.0         11.0                 1.020275             110
+  A3/s2      A3 ckpt_2750000.zip       134.0               32.0               102.0              32.0               32.0                  34.0                    34.0                  34.0           4.0              2.0                2.0              2.0              62.0              72.0      134.0   10.0       0.0       0.0              0.989492                1.0316             0.0           0.0            2.0           2.0            0.0            0.0          6.0                 0.983593             110
+  MT/s0      MT ckpt_1750000.zip       125.0               32.0                26.0              99.0               32.0                  34.0                    33.0                  26.0           4.0              2.0                3.0             10.0              57.0              68.0      125.0   19.0       0.0       0.0              0.998557                1.0424             0.0           0.0            2.0           3.0            0.0            0.0         14.0                 0.997351             110
+  MT/s1      MT ckpt_1750000.zip       127.0               30.0                32.0              95.0               30.0                  33.0                    32.0                  32.0           6.0              3.0                4.0              4.0              62.0              65.0      127.0   17.0       0.0       0.0              0.990416                1.0068             0.0           0.0            2.0           1.0            0.0            0.0         14.0                 0.990958             110
+  MT/s2      MT ckpt_2750000.zip       125.0               30.0                32.0              93.0               30.0                  32.0                    31.0                  32.0           6.0              2.0                2.0              4.0              57.0              68.0      130.0   14.0       0.0       5.0              0.970372                1.0173             0.0           0.0            1.0           1.0            2.0            0.0         10.0                 0.968779             110
+MT-A/s0    MT-A ckpt_2500000.zip       114.0               32.0                18.0              96.0               32.0                  32.0                    32.0                  18.0           4.0              2.0                4.0             18.0              50.0              64.0      116.0   28.0       0.0       2.0              0.987928                1.0406             0.0           0.0            2.0           2.0            2.0            0.0         22.0                 0.986122             110
+MT-A/s1    MT-A ckpt_1000000.zip       121.0               30.0                30.0              91.0               30.0                  30.0                    31.0                  30.0           6.0              4.0                4.0              6.0              57.0              64.0      124.0   20.0       0.0       3.0              0.987286                1.0013             0.0           0.0            2.0           1.0            0.0            1.0         16.0                 0.987538             110
+MT-A/s2    MT-A ckpt_1750000.zip       126.0               30.0                32.0              94.0               30.0                  32.0                    32.0                  32.0           6.0              4.0                4.0              4.0              62.0              64.0      126.0   18.0       0.0       0.0              1.000911                1.0324             0.0           0.0            2.0           1.0            0.0            1.0         14.0                 1.001399             110
+variant                                A3          MT        MT-A        base
+median qualifying              133.000000  125.000000  121.000000  128.000000
+       qualifying_austin        32.000000   30.000000   30.000000   32.000000
+       qualifying_heldout      100.000000   32.000000   30.000000   96.000000
+       qualifying_train         32.000000   95.000000   94.000000   32.000000
+       qualifying_Austin        32.000000   30.000000   30.000000   32.000000
+       qualifying_Catalunya     34.000000   33.000000   32.000000   32.000000
+       qualifying_Silverstone   34.000000   32.000000   32.000000   32.000000
+       qualifying_Spielberg     32.000000   32.000000   30.000000   32.000000
+       crash_Austin              4.000000    6.000000    6.000000    4.000000
+       crash_Catalunya           2.000000    2.000000    4.000000    2.000000
+       crash_Silverstone         2.000000    3.000000    4.000000    4.000000
+       crash_Spielberg           4.000000    4.000000    6.000000    4.000000
+       qualifying_sweep         63.000000   57.000000   57.000000   62.000000
+       qualifying_fresh         70.000000   68.000000   64.000000   66.000000
+       completed               133.000000  127.000000  124.000000  130.000000
+       crash                    11.000000   17.000000   20.000000   14.000000
+       too_slow                  0.000000    0.000000    0.000000    0.000000
+       ey_limit                  0.000000    0.000000    2.000000    0.000000
+       mean_ratio_completed      1.006168    0.990416    0.987928    0.988280
+       max_ratio_qualifying      1.039900    1.017300    1.032400    1.027400
+       q_within_0p5pt            0.000000    0.000000    0.000000    0.000000
+       q_within_2cm              0.000000    0.000000    0.000000    2.000000
+       crash_Aus-152             2.000000    2.000000    2.000000    2.000000
+       crash_Spi-42              1.000000    1.000000    1.000000    1.000000
+       crash_Spi-304             0.000000    0.000000    0.000000    0.000000
+       crash_Sil-176             0.000000    0.000000    1.000000    2.000000
+       crash_other               9.000000   14.000000   16.000000    9.000000
+min    qualifying              128.000000  125.000000  114.000000  127.000000
+       qualifying_austin        32.000000   30.000000   30.000000   30.000000
+       qualifying_heldout       96.000000   26.000000   18.000000   95.000000
+       qualifying_train         32.000000   93.000000   91.000000   30.000000
+       qualifying_Austin        32.000000   30.000000   30.000000   30.000000
+       qualifying_Catalunya     32.000000   32.000000   30.000000   32.000000
+       qualifying_Silverstone   32.000000   31.000000   31.000000   31.000000
+       qualifying_Spielberg     32.000000   26.000000   18.000000   32.000000
+       crash_Austin              3.000000    4.000000    4.000000    4.000000
+       crash_Catalunya           2.000000    2.000000    2.000000    2.000000
+       crash_Silverstone         2.000000    2.000000    4.000000    2.000000
+       crash_Spielberg           2.000000    4.000000    4.000000    4.000000
+       qualifying_sweep         62.000000   57.000000   50.000000   58.000000
+       qualifying_fresh         64.000000   65.000000   64.000000   64.000000
+       completed               128.000000  125.000000  116.000000  128.000000
+       crash                    10.000000   14.000000   18.000000   14.000000
+       too_slow                  0.000000    0.000000    0.000000    0.000000
+       ey_limit                  0.000000    0.000000    0.000000    0.000000
+       mean_ratio_completed      0.989492    0.970372    0.987286    0.981205
+       max_ratio_qualifying      1.031600    1.006800    1.001300    1.009500
+       q_within_0p5pt            0.000000    0.000000    0.000000    0.000000
+       q_within_2cm              0.000000    0.000000    0.000000    0.000000
+       crash_Aus-152             1.000000    1.000000    2.000000    2.000000
+       crash_Spi-42              1.000000    1.000000    1.000000    1.000000
+       crash_Spi-304             0.000000    0.000000    0.000000    0.000000
+       crash_Sil-176             0.000000    0.000000    0.000000    0.000000
+       crash_other               6.000000   10.000000   14.000000    9.000000
+max    qualifying              134.000000  127.000000  126.000000  128.000000
+       qualifying_austin        33.000000   32.000000   32.000000   32.000000
+       qualifying_heldout      102.000000   32.000000   32.000000   98.000000
+       qualifying_train         33.000000   99.000000   96.000000   32.000000
+       qualifying_Austin        33.000000   32.000000   32.000000   32.000000
+       qualifying_Catalunya     34.000000   34.000000   32.000000   32.000000
+       qualifying_Silverstone   34.000000   33.000000   32.000000   34.000000
+       qualifying_Spielberg     34.000000   32.000000   32.000000   32.000000
+       crash_Austin              4.000000    6.000000    6.000000    6.000000
+       crash_Catalunya           4.000000    3.000000    4.000000    4.000000
+       crash_Silverstone         4.000000    4.000000    4.000000    4.000000
+       crash_Spielberg           4.000000   10.000000   18.000000    4.000000
+       qualifying_sweep         64.000000   62.000000   62.000000   64.000000
+       qualifying_fresh         72.000000   68.000000   64.000000   69.000000
+       completed               134.000000  130.000000  126.000000  130.000000
+       crash                    16.000000   19.000000   28.000000   16.000000
+       too_slow                  0.000000    0.000000    0.000000    0.000000
+       ey_limit                  0.000000    5.000000    3.000000    3.000000
+       mean_ratio_completed      1.020429    0.998557    1.000911    1.020429
+       max_ratio_qualifying      1.040300    1.042400    1.040600    1.040300
+       q_within_0p5pt            0.000000    0.000000    0.000000    0.000000
+       q_within_2cm              1.000000    0.000000    0.000000    2.000000
+       crash_Aus-152             2.000000    2.000000    2.000000    4.000000
+       crash_Spi-42              2.000000    3.000000    2.000000    1.000000
+       crash_Spi-304             0.000000    2.000000    2.000000    0.000000
+       crash_Sil-176             2.000000    0.000000    1.000000    2.000000
+       crash_other              11.000000   14.000000   22.000000   11.000000
+== done 00:46:54
