@@ -1,6 +1,6 @@
 # Plan: RL on top of the slip-aware MPC (SlipMPC + RL)
 
-Branch `explore/slip-mpc-rl`. **Status: Stages 0–5 done. Arm R wins under the decision rule (median 128 of 144 qualifying laps, against 79–91 for the baselines) without driving past SlipMPC's slip limits. Arm P′ (learned speed reference) is no gain. See [Stages 2–4 results](#stages-24-results-3-seeds-per-arm-144-lap-reporting-grid) and [Stage 5 results](#stage-5-results-diagnostics-lapping-only).** The design and decision rule below are fixed before any run, as in [`multitrack_plan.md`](multitrack_plan.md).
+Branch `explore/slip-mpc-rl`. **Status: Stages 0–5 done. Arm R wins under the decision rule (median 128 of 144 qualifying laps, against 79–91 for the baselines) without driving past SlipMPC's slip limits. Arm P′ (learned speed reference) is no gain. Leave-one-track-out folds (Spielberg, Silverstone): training R on three tracks neither clearly hurts nor clearly helps the unseen track, and costs laps on the training tracks; keep Austin-only R ([conclusion](#conclusion-across-both-folds)). See [Stages 2–4 results](#stages-24-results-3-seeds-per-arm-144-lap-reporting-grid) and [Stage 5 results](#stage-5-results-diagnostics-lapping-only).** The design and decision rule below are fixed before any run, as in [`multitrack_plan.md`](multitrack_plan.md).
 
 ## Why
 
@@ -501,3 +501,58 @@ That is 3.6 percentage points lower, and every R-MT seed is below the R-A3 media
 **Not done:** the Stage 5 slack and slip-angle check for R-MT's selected checkpoints. `stage5.py` reads only the Stage 2–4 run folders; it needs a small change to take the `_noSpielberg` selections.
 
 **Next, per the rule:** the Silverstone fold (`results/analysis/slip_rl/run_fold_R.sh Silverstone`, ≈ 6 h). It reuses the R-base runs, and nothing from this fold's result changes its design or thresholds.
+
+## Fold results: Silverstone held out (3 seeds)
+
+Run with `results/analysis/slip_rl/run_fold_R.sh Silverstone` (2026-11-23, finished 04:52). The comparison is in `results/analysis/slip_rl/heldout_silverstone/`, and the R-MT runs (trained on Austin, Catalunya and Spielberg) are in `results_st_pacejka/slip_rl/heldout_silverstone/s0–s2`. R-base is the same three runs as before; R-A3 is now selected on Austin, Catalunya and Spielberg, so its checkpoints differ from the Spielberg fold's R-A3.
+
+Qualifying laps of 36 per track (144 in total). Medians over 3 seeds; seeds in brackets.
+
+| Variant | Total | Austin | Catalunya | **Silverstone** | Spielberg | Spins (sum) |
+| --- | --- | --- | --- | --- | --- | --- |
+| R-base (Austin / Austin) | 128 (128, 128, 127) | 32 | 32 | **32** (34, 32, 31) | 32 | 9 |
+| R-A3 (Austin / 3 tracks) | 132 (133, 122, 132) | 33 | 34 | **32** (34, 28, 32) | 32 | 9 |
+| **R-MT** (3 tracks / 3 tracks) | 124 (134, 122, 124) | 30 | 32 | **30** (34, 30, 30) | 32 | 16 |
+| R-MT-A (3 tracks / Austin) | 124 (134, 122, 124) | 30 | 32 | 30 (34, 30, 30) | 32 | 20 |
+
+R-MT-A picks the same checkpoint as R-MT on s0 and s1, and a neighbouring one on s2 with the same per-track counts.
+
+### Decision rule (as fixed in the plan, Silverstone held out)
+
+| Condition | Value | Met? |
+| --- | --- | --- |
+| 1. R-MT Silverstone median ≥ R-A3 median − 2 | 30 vs 30 | yes (exactly at the threshold) |
+| 2. R-MT worst seed ≥ 28 on Silverstone | 30 | yes |
+| 3. R-MT Austin median ≥ R-base Austin median − 3 | 30 vs 29 | yes |
+| Hurts: R-MT Silverstone median ≤ R-A3 median − 4 | 30 vs 28 | no |
+
+**Primary verdict: no loss**, with no margin on condition 1.
+
+**Secondary metric: R-MT is not faster on Silverstone.** On the 28 Silverstone cells that every R-A3 and R-MT run qualifies, the mean lap-time ratio is:
+- R-MT: 1.012 / 0.952 / 1.013 (median 1.012);
+- R-A3: 1.003 / 1.012 / 0.986 (median 1.003).
+
+R-MT's median is 0.9 points *slower*. Only s1 is faster (by 5 points), and that seed has the most failures. The Spielberg fold's 3.6-point gain does not repeat.
+
+### What else the fold shows
+
+- **No checkpoint lottery this time.** Over checkpoints (diagnostic only), R-MT's Silverstone score ranges 28–34, 28–32 and 30–32, the same as Austin-only R's 28–34, 28–32 and 28–34. The Spielberg fold's 15–34 for R-MT/s0 is not a general property of multi-track training.
+- **R-MT/s1 fails at a new place.** Its four walls at s ≈ 86 (μ/μ₀ 0.6 with a_lat 6, μ/μ₀ 0.7 with a_lat 8) are at a corner where no R-base or R-A3 run fails. Every other R-MT failure on Silverstone is at a place the Austin-only runs also fail (s ≈ 78, 176, 396), under similar conditions. All Silverstone failures of every variant are at μ/μ₀ ≤ 0.8.
+- **The costs on the training tracks hold.** R-MT's Austin median is 30 in both folds, against 32 for R-base and 32–33 for R-A3. Its total median is 124–125, against 132–133 for R-A3. It spins more: 16 against 9 here, 9 against 5 in the Spielberg fold.
+- **Three-track selection of Austin-only runs is not uniformly better.** R-A3/s1 picked the 750k checkpoint here and scores 122 (28 on Silverstone), below its Austin-selected 128. The other two seeds gain (133 and 132). So R-A3 is a good median, but not a free improvement on every seed.
+
+## Conclusion across both folds
+
+| | Spielberg held out | Silverstone held out |
+| --- | --- | --- |
+| Primary verdict | borderline (worst seed 26) | no loss (median exactly at threshold) |
+| Secondary: faster? | yes, by 3.6 points | no, 0.9 points slower |
+| R-MT total median vs R-A3 | 125 vs 133 | 124 vs 132 |
+| R-MT spins vs R-A3 | 9 vs 5 | 16 vs 9 |
+
+- Training arm R on three tracks **does not clearly hurt** the unseen track. Neither fold reaches "hurts", and the median is within 2 laps of R-A3 in both.
+- It **does not clearly help** either. The lap-time gain shows on Spielberg only, and the cost on the training tracks (about 8 fewer qualifying laps, more spins, 2 fewer on Austin) shows in both folds.
+- Unlike the dual residual, Austin-only R had little held-out weakness to remove: R-base already scores 32 on every held-out track at its median. That is the main reason multi-track training has nothing to fix here.
+- **Recommendation: keep Austin-only R.** If more than one track is available for selection, selecting on it (R-A3) gives the best median totals (132–133), with the caveat of one bad seed in this fold.
+
+**Not done:** the Stage 5 slack and slip-angle check for the R-MT selected checkpoints, in either fold (`stage5.py` reads only the Stage 2–4 selections).
