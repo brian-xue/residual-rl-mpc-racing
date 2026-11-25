@@ -1,0 +1,198 @@
+track: Austin
+model: st
+tire:
+  model: pacejka
+  C: 1.3
+  stiffness_scales_with_mu: false
+  drive_split_front: null
+  brake_split_front: null
+  derate: peak
+out: results_st_pacejka
+dt: 0.01
+workers: 8
+steer_mode: steering_speed
+kernel: rust
+reference:
+  source: raceline
+  wall_margin_m: 0.1
+  wall_search_m: 1.5
+  wall_lookaround_m: 2.0
+  offset_smooth_sigma_m: 0.5
+  ds: 0.1
+  smooth_sigma_m: 0.2
+  kappa_sigma_m: 0.6
+geometry:
+  white_line_width_m: 0.05
+  tire_half_track_m: 0.12
+  tire_patch_length_m: 0.04
+  tire_patch_width_m: 0.045
+  spin_beta_max_rad: 1.0
+  walls:
+    remove_on_curves: true
+    curve_kappa_threshold: 0.05
+    curve_extend_m: 3.0
+speed_plan:
+  v_cap: 8.0
+  a_acc: 4.0
+  a_dec: 4.0
+  friction_ellipse: true
+longitudinal:
+  kv: 3.0
+  mode: slip
+  mpc:
+    q_v: 2.0
+    q_a: 0.1
+    r_da: 1.0
+    da_max: 2.0
+    friction_ellipse: false
+    ax_max: 4.0
+    n_facets: 8
+    slack_l1: 100.0
+    slack_l2: 1000.0
+  slip_mpc:
+    q_v: 2.0
+    q_a: 0.1
+    r_da: 1.0
+    da_max: 2.0
+    alpha_f_max: 0.25
+    alpha_r_max: 0.12
+    friction_ellipse: false
+    ax_max: 4.0
+    n_facets: 8
+    slack_l1: 100.0
+    slack_l2: 1000.0
+limits:
+  s_max: 0.4189
+  sv_max: 3.2
+mpc:
+  Ts: 0.05
+  N: 20
+  q_y: 10.0
+  q_psi: 3.0
+  r_du: 10.0
+  q_terminal: 5.0
+  delay_comp_s: 0.03
+qualifying:
+  max_abs_ey_m: 0.5
+  max_lap_time_ratio: 1.05
+  max_solver_failures: 0
+  timeout_factor: 1.5
+feedforward:
+  K_grid:
+  - 0.0
+  - 0.002
+  - 0.004
+  - 0.006
+  - 0.008
+  - 0.012
+  - 0.016
+  - 0.02
+  - 0.025
+  - 0.03
+  dev_a_lat: 5.0
+  dev_mu_scales:
+  - 1.0
+  - 0.6
+  dev_start_s: 0.0
+sweep:
+  conservative_a_lat: 3.0
+  a_lat_levels:
+  - 4.0
+  - 6.0
+  - 8.0
+  mu_scales:
+  - 1.0
+  - 0.8
+  - 0.6
+  start_s: 0.0
+  recheck_start_s: 200.0
+lap_time:
+  mu_scales:
+  - 1.0
+  - 0.8
+  - 0.6
+  a_lat_grid:
+  - 1.0
+  - 1.5
+  - 2.0
+  - 2.5
+  - 3.0
+  - 3.5
+  - 4.0
+  - 4.5
+  - 5.0
+  - 5.5
+  - 6.0
+  - 7.0
+  - 8.0
+reference_lap:
+  extra_a_lat:
+  - 10.0
+  - 12.0
+  - 15.0
+  - 20.0
+  - 25.0
+  - 30.0
+  gif_mu_scale: 0.6
+gif:
+  frame_dt_s: 0.2
+  fps: 20
+  window_m: 9.0
+residual:
+  out: results_st_pacejka/history_mu/RH0/s1
+  base_K: 0.0
+  r_max: 0.2
+  obs_wall_clearance: true
+  accel_r_max: 2.0
+  obs_a_mpc: true
+  obs_history: 5
+  obs_history_features: f2
+  obs_history_mode: repeat
+  a_lat_range:
+  - 3.0
+  - 9.0
+  mu_range:
+  - 0.6
+  - 1.0
+  init_ey_m: 0.1
+  init_epsi_rad: 0.05
+  episode_steps: 600
+  reward:
+    progress: 1.0
+    e_y: 4.0
+    res: 2.0
+    dres: 20.0
+    off_track: 1.0
+    ares: 0.01
+    dares: 0.05
+    beta: 20.0
+    beta_soft_rad: 0.15
+    crash: 50.0
+  ppo:
+    total_timesteps: 3000000
+    n_envs: 8
+    n_steps: 1024
+    batch_size: 512
+    n_epochs: 10
+    learning_rate: 0.0003
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_range: 0.2
+    ent_coef: 0.0
+    log_std_init: -1.5
+    net_arch:
+    - 128
+    - 128
+    checkpoint_every: 250000
+    seed: 1
+  select:
+    a_lat:
+    - 5.0
+    - 7.0
+    mu_scales:
+    - 1.0
+    - 0.7
+    start_s: 100.0
+  extra_a_lat:
+  - 9.0
+  - 10.0

@@ -1,0 +1,69 @@
+{
+ "1 passive RH": {
+  "ok": true,
+  "states": true,
+  "r_obs": true,
+  "steps": 359
+ },
+ "3 history env RH": {
+  "ok": true,
+  "detail": [
+   "175 instants",
+   "33 instants",
+   "149 instants"
+  ]
+ },
+ "1 passive RH0": {
+  "ok": true,
+  "states": true,
+  "r_obs": true,
+  "steps": 359
+ },
+ "3 history env RH0": {
+  "ok": true,
+  "detail": [
+   "175 instants",
+   "33 instants",
+   "149 instants"
+  ]
+ },
+ "2 f0 unchanged (P')": {
+  "ok": true,
+  "instants": 286,
+  "mismatches": 0
+ },
+ "3 history eval RH": {
+  "ok": true,
+  "laps": [
+   {
+    "ok": true,
+    "msg": "422 instants",
+    "outcome": "wall_collision"
+   },
+   {
+    "ok": true,
+    "msg": "1224 instants",
+    "outcome": "completed"
+   }
+  ]
+ },
+ "3 history eval RH0": {
+  "ok": true,
+  "laps": [
+   {
+    "ok": true,
+    "msg": "422 instants",
+    "outcome": "wall_collision"
+   },
+   {
+    "ok": true,
+    "msg": "1224 instants",
+    "outcome": "completed"
+   }
+  ]
+ },
+ "4 step cost": {
+  "R_us_per_step": 3891,
+  "RH_us_per_step": 4210
+ }
+}

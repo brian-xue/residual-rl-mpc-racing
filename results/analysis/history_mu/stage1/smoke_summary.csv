@@ -1,0 +1,7 @@
+variant,window,crash_rate,ep_return
+R (slip_rl Stage 1),first 50k,0.802,156.804
+R (slip_rl Stage 1),100-200k,0.350,377.780
+R (slip_rl Stage 1),last 100k,0.256,420.226
+R-H,first 50k,0.843,134.836
+R-H,100-200k,0.496,305.869
+R-H,last 100k,0.336,396.831

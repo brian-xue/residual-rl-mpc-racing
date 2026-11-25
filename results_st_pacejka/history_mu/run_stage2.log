@@ -1,0 +1,19 @@
+== train results_st_pacejka/history_mu/RH/s0 (seed 0) 22:10:36
+== protocol results_st_pacejka/history_mu/RH/s0 22:46:07
+== done results_st_pacejka/history_mu/RH/s0 22:51:51
+== train results_st_pacejka/history_mu/RH0/s0 (seed 0) 22:51:51
+== protocol results_st_pacejka/history_mu/RH0/s0 23:31:09
+== done results_st_pacejka/history_mu/RH0/s0 23:36:58
+== train results_st_pacejka/history_mu/RH/s1 (seed 1) 23:36:58
+== protocol results_st_pacejka/history_mu/RH/s1 00:14:02
+== done results_st_pacejka/history_mu/RH/s1 00:19:25
+== train results_st_pacejka/history_mu/RH0/s1 (seed 1) 00:19:25
+== protocol results_st_pacejka/history_mu/RH0/s1 00:57:13
+== done results_st_pacejka/history_mu/RH0/s1 01:03:53
+== train results_st_pacejka/history_mu/RH/s2 (seed 2) 01:03:53
+== protocol results_st_pacejka/history_mu/RH/s2 01:48:35
+== done results_st_pacejka/history_mu/RH/s2 01:54:56
+== train results_st_pacejka/history_mu/RH0/s2 (seed 2) 01:54:56
+== protocol results_st_pacejka/history_mu/RH0/s2 02:36:12
+== done results_st_pacejka/history_mu/RH0/s2 02:42:41
+== all done 02:42:41

@@ -37,6 +37,10 @@ def obs_dim(ra_max: float, wall: bool = False) -> int:
 
 
 HIST_DIM = 6  # per history frame: r, beta, yaw-rate error, delta, commanded accel, v
+HIST_DIMS = {"f0": HIST_DIM, "f1": HIST_DIM + 1, "f2": HIST_DIM + 4}  # residual.obs_history_features
+# scales of the extra frame signals (docs/history_mu_plan.md): realized a_y [m/s^2] and the SlipMPC one-step
+# innovation in (beta [rad], r [rad/s], v [m/s]); roughly 2-3 standard deviations of each on arm-R rollouts
+AY_SCALE, INN_SCALE = 8.0, (0.01, 0.1, 0.01)
 
 
 def residual_opts(rc: dict) -> dict:
@@ -46,9 +50,15 @@ def residual_opts(rc: dict) -> dict:
             action, a speed-reference scale inside the slip-aware MPC; needs longitudinal.mode: slip)
       speed_range: [lo, hi] scale range for kind "speed"; action 0 -> 1.0, -1 -> lo, +1 -> hi
       obs_a_mpc: append the base MPC's acceleration command (slip / coupled base)
-      obs_history: append the last N control-rate frames of (r, beta, r - v kappa, delta, a_cmd, v)"""
+      obs_history: append the last N control-rate frames of (r, beta, r - v kappa, delta, a_cmd, v)
+      obs_history_features: "f0" (the six above), "f1" (+ realized a_y over the last interval) or "f2" (f1 + the
+            SlipMPC one-step innovation in beta, r, v; needs longitudinal.mode: slip). docs/history_mu_plan.md
+      obs_history_mode: "past" (the last N frames) or "repeat" (the current frame N times: a control with the
+            same input size and no past information)"""
     return dict(kind=rc.get("kind", "output"), speed_range=tuple(rc.get("speed_range", (0.85, 1.05))),
-                obs_a_mpc=bool(rc.get("obs_a_mpc", False)), obs_history=int(rc.get("obs_history", 0)))
+                obs_a_mpc=bool(rc.get("obs_a_mpc", False)), obs_history=int(rc.get("obs_history", 0)),
+                obs_history_features=rc.get("obs_history_features", "f0"),
+                obs_history_mode=rc.get("obs_history_mode", "past"))
 
 
 def speed_scale(a: float, rng: tuple) -> float:
@@ -63,22 +73,51 @@ class ObsExtras:
 
     def __init__(self, opts: dict):
         self.a_mpc, self.n_hist = opts["obs_a_mpc"], opts["obs_history"]
-        self.dim = int(self.a_mpc) + HIST_DIM * self.n_hist
+        self.feat, self.mode = opts["obs_history_features"], opts["obs_history_mode"]
+        if self.feat not in HIST_DIMS or self.mode not in ("past", "repeat"):
+            raise ValueError(f"bad obs_history_features / obs_history_mode: {self.feat!r} / {self.mode!r}")
+        self.dim = int(self.a_mpc) + HIST_DIMS[self.feat] * self.n_hist
         self.hist = None
+        self.prev = None  # (x = [e_y, e_psi, beta, r, v], delta, kappa, a_mpc) at the previous control instant
 
     def reset(self):
         self.hist = None
+        self.prev = None
+
+    def frame_signals(self, sim: LapSim) -> np.ndarray:
+        """One history frame at the current control instant (after ``sim.plan()``), scaled. Called exactly once
+        per control instant: f1 / f2 difference against the state stored by the previous call."""
+        _, _, delta, v, _, r, beta = sim.st[:7]
+        kap = sim.ref.kappa[sim.i_g]
+        a_cmd = (sim.a_mpc or 0.0) + sim.a_res
+        f = [r / 3.0, beta / 0.2, (r - v * kap) / 1.0, delta / sim.s_max, a_cmd / 4.0, v / 8.0]
+        if self.feat == "f0":
+            return np.array(f)
+        x = np.array([sim.e_y, sim.e_psi, beta, r, v], float)
+        if self.prev is None:  # first instant of an episode / lap: steady estimate, no innovation
+            a_y, inn = v * r, np.zeros(3)
+        else:
+            x0, d0, k0, am0 = self.prev
+            a_y = 0.5 * (x0[4] + v) * (0.5 * (x0[3] + r) + (beta - x0[2]) / sim.Ts)
+            if self.feat == "f2":
+                # command applied over the last interval: the previous solve's acceleration + the residual
+                # applied since (sim.a_res, not changed by plan()); steering: mean realized angle
+                a_app = float(np.clip(am0 + sim.a_res, -sim.a_max, sim.a_max))
+                pred = sim.smpc.predict(x0, (0.5 * (d0 + delta), a_app), k0, sim.Ts)
+                inn = (x[2:5] - pred[2:5]) / np.asarray(INN_SCALE)
+        self.prev = (x, float(delta), float(kap), float(sim.a_mpc or 0.0))
+        f.append(a_y / AY_SCALE)
+        if self.feat == "f2":
+            f.extend(inn)
+        return np.array(f)
 
     def __call__(self, sim: LapSim) -> np.ndarray:
         parts = []
         if self.a_mpc:
             parts.append([(sim.a_mpc or 0.0) / 4.0])
         if self.n_hist:
-            _, _, delta, v, _, r, beta = sim.st[:7]
-            a_cmd = (sim.a_mpc or 0.0) + sim.a_res
-            f = np.array([r / 3.0, beta / 0.2, (r - v * sim.ref.kappa[sim.i_g]) / 1.0, delta / sim.s_max,
-                          a_cmd / 4.0, v / 8.0])
-            if self.hist is None:
+            f = self.frame_signals(sim)
+            if self.hist is None or self.mode == "repeat":
                 self.hist = deque([f] * self.n_hist, maxlen=self.n_hist)
             else:
                 self.hist.append(f)
@@ -157,6 +196,9 @@ class ResidualRacingEnv(gym.Env):
             raise ValueError("residual.kind: speed needs longitudinal.mode: slip (it scales SlipMPC's speed reference)")
         if self.speed_kind and self.ra_max > 0:
             raise ValueError("residual.kind: speed has a single action; set accel_r_max: 0")
+        if self.opts["obs_history"] and self.opts["obs_history_features"] == "f2" and \
+                cfg["longitudinal"].get("mode") != "slip":
+            raise ValueError("obs_history_features: f2 needs longitudinal.mode: slip (SlipMPC's model innovation)")
         self.extras = ObsExtras(self.opts)
         # training tracks (residual.tracks, default: the config's track). One Track + simulator env per track,
         # built once; with several tracks each episode draws one uniformly (episodes have a fixed length, so this
