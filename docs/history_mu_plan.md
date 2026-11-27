@@ -1,6 +1,6 @@
 # Plan: arm R with a short history window, so the policy can infer μ online
 
-Branch `explore/history-window-mu`. **Status: Stages 0–2 done. The gate passed with F2, N = 5 ([Stage 0](#stage-0-results)); checks pass ([Stage 1](#stage-1-results)). In Stage 2, R-H is worse than R and R-H-zero on low-μ failures (median 24 vs 14 vs 14) and on qualifying laps, so the decision rule's verdict is no gain ([Stage 2](#stage-2-results)). Stages 3 (stress grid) and 4 (diagnostics) not run.** The design and decision rule below are fixed before any run, as in [`slip_rl_plan.md`](slip_rl_plan.md).
+Branch `explore/history-window-mu`. **Status: done (Stages 0, 1, 2 and 4; Stage 3's stress grid not run). Verdict: no gain. R-H is worse than R and R-H-zero on low-μ failures (median 24 vs 14 vs 14) and on qualifying laps ([Stage 2](#stage-2-results)). Stage 4: the F2 signals do put μ into the policy and make it back off slightly at low μ, but one frame (R-H-zero) does this as well as five, and the effect is too small to cut failures ([Stage 4](#stage-4-results)).** The design and decision rule below are fixed before any run, as in [`slip_rl_plan.md`](slip_rl_plan.md).
 
 ## Why
 
@@ -236,3 +236,72 @@ Against the rule:
 - **Selection lands early for some runs:** R-H seed 2 and R-H-zero seed 0 both select the 0.75M checkpoint; R's three seeds all select ≥ 2.25M.
 - **R-H seed 0 has the only failures at μ/μ₀ ≥ 0.8** in any arm (6), i.e. a policy degraded in general, not one that is miscalibrated at low μ.
 - The Stage 0 probe showed μ is decodable from F2 frames by a supervised MLP (held-out R² 0.83 at high excitation). PPO's 128×128 policy, trained on the race reward alone, does not get there in 3M steps. That gap (supervised decodability vs RL use) is the main lesson.
+
+## Stage 4 results
+
+Script: [`results/analysis/history_mu/stage4.py`](../results/analysis/history_mu/stage4.py) (`lap`, `rollout`, `analyse`); tables in `stage4/analysis.txt`, per-lap rows in `stage4/laps.csv`, the in-policy probe in `stage4/hidden_probe.csv`. Arm R's laps are reused from slip_rl Stage 5 (same grid, same aggregates). Re-lapping the six R-H / R-H-zero runs with logging on reproduced every protocol outcome (864 laps), so the logging is passive. The rollouts are 864 training-distribution episodes (9 runs × 4 tracks × 24, deterministic actions, the same episodes for every arm). Cost: 12 min lapping, 6 min rollouts, a few minutes of probe fits.
+
+Stage 3's stress grid was not run: Stage 2 already decides the verdict, and the stress grid is secondary.
+
+### 1. Does the residual depend on μ? (criterion 4)
+
+Corner (|κ| > 0.05) acceleration residual, m/s²:
+
+| Run | Grid: μ/μ₀ 0.6 − 1.0 (same cells) | Rollouts: slope on μ/μ₀, controlled for v, \|v r\|, \|κ\| |
+| --- | --- | --- |
+| R s0 / s1 / s2 | −0.09 / +0.03 / −0.23 | −0.10 / −0.09 / +0.56 |
+| R-H s0 / s1 / s2 | −0.45 / −0.24 / −0.14 | +0.71 / +0.63 / +0.41 |
+| R-H-zero s0 / s1 / s2 | −0.26 / −0.48 / −0.25 | +0.48 / +1.15 / +0.61 |
+
+- Both measures say the same thing. **R-H and R-H-zero both accelerate less in corners at low μ.** On the grid, the gap between μ/μ₀ 0.6 and 1.0 is −0.25 m/s² (R-H median −0.24, R-H-zero −0.26), against −0.09 for R. In the rollouts, both arms' slopes are positive (+0.4 to +1.1), against R's near 0.
+- **Against the rule, though, it is weak.** On each measure only 2 of 3 R-H seeds fall outside R's seed range. R's range is wide (0.26 on the grid, 0.66 on the slope), and R/s2's slope of +0.56 drops to −0.03 without the state controls. So criterion 4 is borderline, and it is met equally by the control, R-H-zero.
+- **The effect is small.** The acceleration residual's range is ±2 m/s², and the cells that fail are at a_lat 8, where S-E's corner speeds are too high for μ/μ₀ 0.6 by far more than 0.25 m/s² of correction can fix.
+
+### 2. Is μ in the policy's hidden layer?
+
+μ probe on the last hidden layer (128 units, better of ridge / 2×64 MLP), leave-one-track-out R², mean over the 4 held-out tracks:
+
+| Layer, excitation | R s0 / s1 / s2 | R-H s0 / s1 / s2 | R-H-zero s0 / s1 / s2 |
+| --- | --- | --- | --- |
+| actor, high (\|v r\| > 4) | 0.05 / −0.01 / 0.12 | **0.42 / 0.40 / 0.48** | **0.49 / 0.37 / 0.47** |
+| actor, all | −0.09 / −0.19 / −0.07 | 0.05 / 0.06 / 0.01 | 0.05 / −0.03 / 0.01 |
+| critic, high | −0.04 / −0.30 / −0.06 | 0.17 / 0.11 / 0.19 | 0.22 / 0.10 / 0.13 |
+
+- **The F2 frames put μ into the actor, for R-H and R-H-zero alike.** At high excitation, R² is 0.37–0.49 for both, against about 0 for R. Like the Stage 0 probe, it is only there under high excitation.
+- **The past four frames add nothing to this.** R-H-zero sees only the current frame (repeated), so the current interval's realized a_y and SlipMPC innovation alone carry as much μ as the policy extracts. That fits Stage 0, where N = 5 and N = 10 were within 0.01 of each other.
+- The actor's R² (≈ 0.45) is below the Stage 0 supervised probe on the raw frames (0.83). The policy keeps only part of what the frames hold, which is expected when nothing in the reward asks for μ directly.
+
+### 3. Where the failures are
+
+- The places are the same for all three arms (Spielberg 100, Austin 152, Silverstone 375, Spielberg 42, Silverstone 176, …). R-H fails more at most of them, so it is not failing at new corners.
+- By cell (spins / walls, summed over seeds):
+
+  | Cell (μ/μ₀, a_lat) | R | R-H | R-H-zero |
+  | --- | --- | --- | --- |
+  | 0.6, 6 | 0 / 6 | **10 / 6** | 2 / 2 |
+  | 0.6, 8 | 9 / 15 | 9 / 15 | 6 / 18 |
+  | 0.7, 6 | 0 / 0 | **3** / 0 | 0 / 0 |
+  | 0.7, 8 | 0 / 14 | 0 / **22** | 0 / 16 |
+  | 0.8, 8 | 0 / 0 | **6** / 0 | 0 / 0 |
+
+  R-H's extra failures are mostly spins (28 against R's 9: at μ/μ₀ 0.6 and 0.7 with a_lat 6, and 6 at μ/μ₀ 0.8), plus 8 more walls at μ/μ₀ 0.7, a_lat 8.
+- R-H-zero has fewer spins than R (8 vs 9) and slightly more walls (36 vs 35).
+
+### 4. Soft limits and residual size
+
+- **R-H s0 and s1 drive closer to the slip limits.** Their stage-1 slack is active 1.7–2.2% of the time, against 0.7–1.1% for every R and R-H-zero run. Their rear slip angle is over its 0.12 rad limit 17–18% of the time, against 13–15%, and their max |α_r| is 0.27–0.29 rad, against 0.20–0.24.
+- They also add more acceleration in corners on the 111 cells every run qualifies: +0.51 and +0.11 m/s², against R's −0.46 to +0.39.
+- So the extra failures come with a policy that pushes harder in general, not with one that misjudges μ. R-H s2, the seed with R-level failures (14), has R-level slack and slip-angle columns.
+- Before a spin, all three arms are deep past the rear limit (last-second max |α_r| ≈ 1.05 rad). Before a wall, R-H and R-H-zero are braking (a_res −0.34 and −0.81 m/s²), as R is (−0.54).
+
+### Conclusion
+
+- **The history window does not help, and the reason is not missing information.** SlipMPC's one-step innovation and realized a_y let the policy encode μ (actor R² ≈ 0.45 at high excitation) and back off slightly at low μ. But:
+  - one frame does this as well as five, so R-H-zero is the better variant;
+  - the back-off (≈ 0.25 m/s² in corners) is far too small to move the low-μ failures, which stay at R's level for R-H-zero (median 14);
+  - with the past frames, two of three R-H seeds learned a policy that pushes harder everywhere, and those seeds account for its extra failures.
+- Per the plan, this is **"No gain"**. The cause is that the policy's use of μ is weak, not that μ cannot be inferred.
+- **Next steps** (not run; each would be its own plan):
+  - add the current-frame F2 signals (a_y, innovation) to R's observation without any history. R-H-zero suggests this is free, and it is the cheapest base for anything below;
+  - feed the μ estimate to SlipMPC (scale its tyre model / limits) instead of asking the RL residual to compensate. The Stage 0 probe (R² 0.83) is a ready estimator, and a ±2 m/s² residual is too weak a lever at a_lat 8;
+  - a supervised μ head or asymmetric critic, if the residual is to carry the adaptation itself.
